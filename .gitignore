@@ -1,0 +1,27 @@
+# Ignore the portfolio binary
+portfolio
+
+# Ignore the WebAssembly file
+web/app.wasm
+web/wasm_exec.js
+
+# Ignore build artifacts and temporary files
+*.exe
+*.out
+*.log
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
+# Ignore Go build cache and files
+*.test
+*.cover
+*.prof
+*.a
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
