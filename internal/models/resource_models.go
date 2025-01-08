@@ -20,11 +20,13 @@ func (r ResourceBase) GetFields() map[string]string {
 		fields["Namespace"] = r.Namespace
 	}
 	for k, v := range r.Data {
+		if strings.HasPrefix(k, "\"") { // Skip quoted keys
+			continue
+		}
 		switch val := v.(type) {
 		case ResourceBase:
-			fields[k] = val.Name // Single ResourceBase
+			fields[k] = val.Name
 		case []ResourceBase:
-			// Concatenate names of all ResourceBases in the list
 			var resourceNames []string
 			for _, resource := range val {
 				resourceNames = append(resourceNames, resource.Name)

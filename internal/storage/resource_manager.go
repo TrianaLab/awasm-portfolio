@@ -88,3 +88,19 @@ func (rm *ResourceManager) Delete(resourceType, name, namespace string) error {
 	delete(resourceMap, name)
 	return nil
 }
+
+func (rm *ResourceManager) ValidateNamespace(namespace string) error {
+	rm.mu.RLock()
+	defer rm.mu.RUnlock()
+
+	nsMap, exists := rm.Resources["namespace"]
+	if !exists || namespace == "" {
+		return fmt.Errorf("namespace '%s' does not exist", namespace)
+	}
+
+	if _, exists := nsMap[namespace]; !exists {
+		return fmt.Errorf("namespace '%s' does not exist", namespace)
+	}
+
+	return nil
+}

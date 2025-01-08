@@ -1,42 +1,73 @@
 package ui
 
 import (
+	"awasm-portfolio/internal/models"
 	"fmt"
-	"sort"
 	"strings"
 )
 
 type TextFormatter struct{}
 
-func (f TextFormatter) FormatTable(data map[string]interface{}) string {
-	headers := []string{}
+func (f TextFormatter) FormatTable(data map[string]models.ResourceBase) string {
+	var headers []string
 	rows := [][]string{}
 
-	// Collect headers and rows dynamically
-	for _, value := range data {
-		resource, ok := value.(interface{ GetFields() map[string]string })
-		if !ok {
-			continue
+	// Determine if the data represents namespaces
+	isNamespace := false
+	for _, resource := range data {
+		if resource.Namespace == "" {
+			isNamespace = true
+			break
 		}
-
-		fields := resource.GetFields()
-		if len(headers) == 0 {
-			for field := range fields {
-				headers = append(headers, field)
-			}
-			sort.Strings(headers) // Ensure consistent order
-		}
-
-		row := []string{}
-		for _, header := range headers {
-			row = append(row, fields[header])
-		}
-		rows = append(rows, row)
 	}
 
-	sort.Slice(rows, func(i, j int) bool {
-		return rows[i][0] < rows[j][0]
-	})
+	// Set headers based on the resource type
+	if isNamespace {
+		headers = []string{"Name"} // Only "Name" for namespaces
+	} else {
+		headers = []string{"Name", "Namespace"} // Default headers for non-namespace resources
+		headerSet := map[string]bool{"Name": true, "Namespace": true}
+
+		// Dynamically collect additional headers
+		for _, resource := range data {
+			fields := resource.GetFields()
+			for key, val := range fields {
+				if key != "Name" && key != "Namespace" && val != "" && !headerSet[key] {
+					headerSet[key] = true
+					headers = append(headers, strings.Title(key)) // Capitalize header
+				}
+			}
+		}
+	}
+
+	// Collect rows
+	for _, resource := range data {
+		fields := resource.GetFields()
+		var row []string
+
+		if isNamespace {
+			// For namespaces, only include the "Name" field
+			row = []string{fields["Name"]}
+		} else {
+			// For non-namespace resources, ensure "Name" and "Namespace" are always included
+			row = []string{
+				fields["Name"],      // Include Name
+				fields["Namespace"], // Include Namespace
+			}
+
+			// Include additional headers dynamically
+			for _, header := range headers[2:] { // Skip Name and Namespace headers
+				fieldKey := strings.ToLower(header) // Match header to field key
+				if val, exists := fields[fieldKey]; exists {
+					row = append(row, val)
+				} else {
+					row = append(row, "") // Ensure alignment for missing fields
+				}
+			}
+		}
+
+		rows = append(rows, row)
+	}
 
 	// Determine column widths
 	colWidths := make([]int, len(headers))
@@ -56,13 +87,13 @@ func (f TextFormatter) FormatTable(data map[string]interface{}) string {
 	for i, header := range headers {
 		output.WriteString(fmt.Sprintf("%-*s  ", colWidths[i], header))
 	}
-	output.WriteString("\n")
+	output.WriteString("\r\n") // Add newline after headers
 
 	for _, row := range rows {
 		for i, field := range row {
 			output.WriteString(fmt.Sprintf("%-*s  ", colWidths[i], field))
 		}
-		output.WriteString("\n")
+		output.WriteString("\r\n")
 	}
 
 	return strings.TrimSuffix(output.String(), "\n")
