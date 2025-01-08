@@ -15,6 +15,8 @@ func normalizeResourceName(resource string) string {
 		"skills":      "skill",
 		"contacts":    "contact",
 		"profiles":    "profile",
+		"namespaces":  "namespace",
+		"ns":          "namespace", // Add alias for namespace
 	}
 	if singular, exists := plurals[resource]; exists {
 		return singular

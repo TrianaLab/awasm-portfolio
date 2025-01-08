@@ -3,6 +3,7 @@ package storage
 import (
 	"awasm-portfolio/internal/models"
 	"errors"
+	"fmt"
 	"sync"
 )
 
@@ -48,12 +49,22 @@ func (rm *ResourceManager) Create(resourceType string, resource models.ResourceB
 	rm.mu.Lock()
 	defer rm.mu.Unlock()
 
+	// Check for namespace existence if resource is namespaced
+	if resource.Namespaced && resource.Namespace != "" {
+		nsMap, exists := rm.Resources["namespace"]
+		if !exists || nsMap[resource.Namespace].Name == "" {
+			return fmt.Errorf("namespace '%s' does not exist", resource.Namespace)
+		}
+	}
+
+	// Create resource type map if not exists
 	if _, exists := rm.Resources[resourceType]; !exists {
 		rm.Resources[resourceType] = make(map[string]models.ResourceBase)
 	}
 
+	// Avoid duplicates
 	if _, exists := rm.Resources[resourceType][resource.Name]; exists {
-		return errors.New("resource already exists")
+		return fmt.Errorf("resource '%s' already exists", resource.Name)
 	}
 
 	rm.Resources[resourceType][resource.Name] = resource

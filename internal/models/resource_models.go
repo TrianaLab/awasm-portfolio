@@ -39,6 +39,9 @@ func (r ResourceBase) GetFields() map[string]string {
 
 // GetScope returns the resource's scope as "namespaced" or "cluster-wide".
 func (r ResourceBase) GetScope() string {
+	if r.Name == "Namespace" {
+		return "cluster-wide"
+	}
 	if r.Namespaced {
 		return "namespaced"
 	}
