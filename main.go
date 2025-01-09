@@ -2,7 +2,10 @@ package main
 
 import (
 	"awasm-portfolio/cmd"
-	"awasm-portfolio/internal/storage"
+	"awasm-portfolio/internal/preload"
+	"awasm-portfolio/internal/repository"
+	"awasm-portfolio/internal/service"
+	"awasm-portfolio/internal/ui"
 	"bytes"
 	"fmt"
 	"strings"
@@ -13,18 +16,20 @@ import (
 )
 
 func main() {
-	// Initialize the resource manager
-	resourceManager := storage.NewResourceManager()
+	// Initialize repository
+	repo := repository.NewInMemoryRepository()
+
+	// Initialize formatter
+	formatter := ui.TextFormatter{}
+
+	// Initialize service with repository and formatter
+	resourceService := service.NewResourceService(repo, formatter)
 
 	// Preload data
-	storage.PreloadData(resourceManager)
+	preload.PreloadData(repo)
 
 	// Initialize commands
-	rootCmd := cmd.RootCmd()
-	rootCmd.AddCommand(cmd.GetCmd(resourceManager))
-	rootCmd.AddCommand(cmd.DescribeCmd(resourceManager))
-	rootCmd.AddCommand(cmd.CreateCmd(resourceManager))
-	rootCmd.AddCommand(cmd.DeleteCmd(resourceManager))
+	rootCmd := cmd.NewRootCommand(resourceService)
 
 	// Expose executeCommand to JavaScript
 	js.Global().Set("executeCommand", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
@@ -58,23 +63,23 @@ func runCLICommand(rootCmd *cobra.Command, command string) string {
 	rootCmd.SetErr(&buf)
 
 	if err := rootCmd.Execute(); err != nil {
-		buf.WriteString(fmt.Sprintf("Error: %s", err.Error()))
+		if strings.Contains(err.Error(), "unknown command") || strings.Contains(err.Error(), "requires at least") {
+			buf.WriteString(fmt.Sprintf("Error: %s\n", err.Error()))
+		} else {
+			buf.WriteString(err.Error())
+		}
 	}
 
 	return strings.TrimSpace(buf.String())
 }
 
-// resetFlagValues resets all flag values to their defaults for the root command and its subcommands.
 func resetFlagValues(cmd *cobra.Command) {
-	// Reset flags for the current command
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 		flag.Value.Set(flag.DefValue)
 	})
 	cmd.PersistentFlags().VisitAll(func(flag *pflag.Flag) {
 		flag.Value.Set(flag.DefValue)
 	})
-
-	// Recursively reset flags for subcommands
 	for _, subCmd := range cmd.Commands() {
 		resetFlagValues(subCmd)
 	}
