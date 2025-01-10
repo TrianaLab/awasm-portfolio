@@ -20,6 +20,15 @@ func NewResourceService(repo *repository.InMemoryRepository, formatter ui.Format
 }
 
 func (s *ResourceService) CreateResource(kind string, resource models.Resource) error {
+	// Validate namespace existence
+	if resource.GetNamespace() != "" && kind != "namespace" {
+		_, err := s.repo.Get("namespace", resource.GetNamespace())
+		if err != nil {
+			return fmt.Errorf("namespace '%s' does not exist", resource.GetNamespace())
+		}
+	}
+
+	// Proceed with resource creation
 	return s.repo.Create(kind, resource)
 }
 
