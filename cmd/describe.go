@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -16,26 +15,30 @@ func NewDescribeCommand(svc *service.ResourceService) *cobra.Command {
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
+			name := args[1]
 
-			// Validate resource type
-			if !service.IsValidResource(kind) {
-				return fmt.Errorf("error: unknown resource type '%s'", args[0])
+			// Special case for namespace
+			if kind == "namespace" {
+				resource, err := svc.DescribeResource(kind, name, "")
+				if err != nil {
+					return err
+				}
+				cmd.Println(resource)
+				return nil
 			}
 
-			name := args[1]
+			// Handle other resources
 			namespace, _ := cmd.Flags().GetString("namespace")
-
 			resource, err := svc.DescribeResource(kind, name, namespace)
 			if err != nil {
 				return err
 			}
-
 			cmd.Println(resource)
 			return nil
 		},
 	}
 
 	// Add namespace flag
-	cmd.Flags().StringP("namespace", "n", "default", "Namespace of the resource")
+	cmd.Flags().StringP("namespace", "n", "default", "Namespace of the resource (default: 'default')")
 	return cmd
 }

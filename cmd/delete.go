@@ -16,9 +16,19 @@ func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			name := args[1]
-			namespace, _ := cmd.Flags().GetString("namespace")
 
-			// Call cascading delete
+			// Special case for namespace
+			if kind == "namespace" {
+				message, err := svc.DeleteResourceWithNamespace(kind, name, "")
+				if err != nil {
+					return err
+				}
+				cmd.Println(message)
+				return nil
+			}
+
+			// Handle other resources
+			namespace, _ := cmd.Flags().GetString("namespace")
 			message, err := svc.DeleteResourceWithNamespace(kind, name, namespace)
 			if err != nil {
 				return err
@@ -30,6 +40,6 @@ func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
 	}
 
 	// Add namespace flag
-	cmd.Flags().StringP("namespace", "n", "default", "Namespace of the resource")
+	cmd.Flags().StringP("namespace", "n", "default", "Namespace of the resource (default: 'default')")
 	return cmd
 }

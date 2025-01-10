@@ -89,6 +89,12 @@ func (s *ResourceService) DeleteResource(kind, name string) (string, error) {
 
 // DeleteResourceWithNamespace validates namespace before deletion
 func (s *ResourceService) DeleteResourceWithNamespace(kind, name, namespace string) (string, error) {
+	// Special case: Namespace is a cluster-wide resource and doesn't have a namespace
+	if kind == "namespace" {
+		return s.DeleteResource(kind, name)
+	}
+
+	// Fetch the resource to ensure it exists
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
 		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
