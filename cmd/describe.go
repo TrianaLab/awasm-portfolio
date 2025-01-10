@@ -12,7 +12,7 @@ func NewDescribeCommand(svc *service.ResourceService) *cobra.Command {
 		Short: "Describe a specific resource",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			kind := args[0]
+			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			name := args[1]
 			namespace, _ := cmd.Flags().GetString("namespace")
 

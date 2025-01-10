@@ -12,7 +12,7 @@ func NewGetCommand(svc *service.ResourceService) *cobra.Command {
 		Short: "List all resources of a given kind",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			kind := args[0]
+			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			namespace, _ := cmd.Flags().GetString("namespace")
 			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
 
