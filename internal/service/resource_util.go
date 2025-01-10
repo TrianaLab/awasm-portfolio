@@ -22,3 +22,23 @@ func NormalizeResourceName(resource string) string {
 	// Return the resource unchanged if no match is found
 	return resource
 }
+
+// SupportedResources returns a list of valid resource types
+func SupportedResources() map[string]struct{} {
+	return map[string]struct{}{
+		"profile":       {},
+		"namespace":     {},
+		"education":     {},
+		"experience":    {},
+		"contact":       {},
+		"certification": {},
+		"contribution":  {},
+		"skill":         {},
+	}
+}
+
+// IsValidResource checks if a given resource type is supported
+func IsValidResource(resource string) bool {
+	_, exists := SupportedResources()[resource]
+	return exists
+}
