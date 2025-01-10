@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -16,15 +15,10 @@ func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
-
-			// Validate resource type
-			if !service.IsValidResource(kind) {
-				return fmt.Errorf("error: unknown resource type '%s'", args[0])
-			}
-
 			name := args[1]
 			namespace, _ := cmd.Flags().GetString("namespace")
 
+			// Call cascading delete
 			message, err := svc.DeleteResourceWithNamespace(kind, name, namespace)
 			if err != nil {
 				return err

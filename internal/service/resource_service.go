@@ -5,6 +5,7 @@ import (
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -48,21 +49,32 @@ func (s *ResourceService) CreateResource(kind string, resource models.Resource) 
 
 // DeleteResource handles cascading deletion
 func (s *ResourceService) DeleteResource(kind, name string) (string, error) {
+	// Normalize the kind to lowercase
+	kind = strings.ToLower(kind)
+
 	// Fetch resource to ensure it exists
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, "unknown")
 	}
+
+	fmt.Printf("Deleting resource: %s/%s in namespace '%s'\n", kind, name, resource.GetNamespace())
 
 	var messages []string
 
 	// Perform cascading delete for child resources
-	for _, owner := range resource.GetOwnerReferences() {
-		msg, err := s.DeleteResource(owner.Kind, owner.Name)
+	children := s.repo.FindByOwner(kind, name, resource.GetNamespace())
+	for _, child := range children {
+		// Normalize child kind to lowercase
+		childKind := strings.ToLower(reflect.TypeOf(child).Elem().Name())
+		fmt.Printf("Deleting child %s/%s in namespace '%s'\n", childKind, child.GetName(), resource.GetNamespace())
+
+		// Recursive deletion
+		childMessage, err := s.DeleteResourceWithNamespace(childKind, child.GetName(), resource.GetNamespace())
 		if err != nil {
 			return "", err
 		}
-		messages = append(messages, msg)
+		messages = append(messages, childMessage)
 	}
 
 	// Delete the resource itself
@@ -71,18 +83,15 @@ func (s *ResourceService) DeleteResource(kind, name string) (string, error) {
 		return "", err
 	}
 
-	// Append deletion message
 	messages = append(messages, fmt.Sprintf("%s/%s deleted successfully from namespace '%s'.", kind, name, resource.GetNamespace()))
-
-	// Combine all messages
-	return s.formatter.FormatDetails(resource) + "\n" + fmt.Sprintf(strings.Join(messages, "\n")), nil
+	return strings.Join(messages, "\n"), nil
 }
 
 // DeleteResourceWithNamespace validates namespace before deletion
 func (s *ResourceService) DeleteResourceWithNamespace(kind, name, namespace string) (string, error) {
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
 	}
 
 	// Validate namespace
@@ -90,6 +99,7 @@ func (s *ResourceService) DeleteResourceWithNamespace(kind, name, namespace stri
 		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
 	}
 
+	// Perform cascading delete
 	return s.DeleteResource(kind, name)
 }
 

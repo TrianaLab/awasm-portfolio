@@ -3,6 +3,8 @@ package repository
 import (
 	"awasm-portfolio/internal/models"
 	"errors"
+	"fmt"
+	"strings"
 	"sync"
 )
 
@@ -62,4 +64,28 @@ func (r *InMemoryRepository) Delete(kind, name string) error {
 	}
 	delete(r.resources[kind], name)
 	return nil
+}
+
+func (r *InMemoryRepository) FindByOwner(kind, name, namespace string) []models.Resource {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	kind = strings.ToLower(kind) // Normalize kind to lowercase
+
+	var results []models.Resource
+	for _, kindResources := range r.resources {
+		for _, res := range kindResources {
+			for _, ownerRef := range res.GetOwnerReferences() {
+				fmt.Printf("Checking owner: resource=%s/%s owner=%s/%s namespace='%s'\n",
+					res.GetName(), res.GetNamespace(), ownerRef.Kind, ownerRef.Name, res.GetNamespace())
+
+				// Match Kind, Name, and Namespace
+				if strings.ToLower(ownerRef.Kind) == kind && ownerRef.Name == name && res.GetNamespace() == namespace {
+					fmt.Printf("Matched child resource: %s/%s owned by %s/%s\n", res.GetName(), res.GetNamespace(), kind, name)
+					results = append(results, res)
+				}
+			}
+		}
+	}
+	return results
 }
