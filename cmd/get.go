@@ -8,9 +8,11 @@ import (
 
 func NewGetCommand(svc *service.ResourceService) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get [kind]",
-		Short: "List all resources of a given kind",
-		Args:  cobra.ExactArgs(1),
+		Use:           "get [kind]",
+		Short:         "List all resources of a given kind",
+		Args:          cobra.ExactArgs(1),
+		SilenceUsage:  true, // Prevent help text on error
+		SilenceErrors: true, // Prevent error stack on error
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			namespace, _ := cmd.Flags().GetString("namespace")

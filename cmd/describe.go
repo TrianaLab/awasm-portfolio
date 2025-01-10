@@ -8,9 +8,11 @@ import (
 
 func NewDescribeCommand(svc *service.ResourceService) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "describe [kind] [name]",
-		Short: "Describe a specific resource",
-		Args:  cobra.ExactArgs(2),
+		Use:           "describe [kind] [name]",
+		Short:         "Describe a specific resource",
+		Args:          cobra.ExactArgs(2),
+		SilenceUsage:  true, // Prevent help text on error
+		SilenceErrors: true, // Prevent error stack on error
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			name := args[1]

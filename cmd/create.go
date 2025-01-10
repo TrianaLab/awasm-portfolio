@@ -9,9 +9,11 @@ import (
 
 func NewCreateCommand(svc *service.ResourceService) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [kind] [name]",
-		Short: "Create a new resource",
-		Args:  cobra.MinimumNArgs(2),
+		Use:           "create [kind] [name]",
+		Short:         "Create a new resource",
+		Args:          cobra.MinimumNArgs(2),
+		SilenceUsage:  true, // Prevent help text on error
+		SilenceErrors: true, // Prevent error stack on error
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			name := args[1]
