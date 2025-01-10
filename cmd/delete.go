@@ -16,7 +16,13 @@ func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
 			name := args[1]
 			namespace, _ := cmd.Flags().GetString("namespace")
 
-			return svc.DeleteResourceWithNamespace(kind, name, namespace)
+			message, err := svc.DeleteResourceWithNamespace(kind, name, namespace)
+			if err != nil {
+				return err
+			}
+
+			cmd.Println(message)
+			return nil
 		},
 	}
 

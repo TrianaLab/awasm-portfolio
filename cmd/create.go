@@ -24,7 +24,14 @@ func NewCreateCommand(svc *service.ResourceService) *cobra.Command {
 				"namespace": namespace,
 			})
 
-			return svc.CreateResource(kind, resource)
+			// Call CreateResource and print the result
+			message, err := svc.CreateResource(kind, resource)
+			if err != nil {
+				return err
+			}
+
+			cmd.Println(message)
+			return nil
 		},
 	}
 
