@@ -42,6 +42,10 @@ func SupportedResources() map[string]string {
 
 // NormalizeResourceName converts aliases/plurals to singular
 func NormalizeResourceName(resource string) string {
+	if strings.EqualFold(resource, "all") {
+		return "all" // Special case for "all"
+	}
+
 	supported := SupportedResources()
 
 	// Check if the resource is in the supported map

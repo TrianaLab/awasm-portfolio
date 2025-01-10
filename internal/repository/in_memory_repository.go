@@ -40,18 +40,17 @@ func (r *InMemoryRepository) Get(kind, name string) (models.Resource, error) {
 	return resource, nil
 }
 
-func (r *InMemoryRepository) List(kind string) ([]models.Resource, error) {
+func (r *InMemoryRepository) List(kind string) []models.Resource {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	if _, exists := r.resources[kind]; !exists {
-		return nil, errors.New("resource kind not found")
-	}
 	var resources []models.Resource
-	for _, res := range r.resources[kind] {
-		resources = append(resources, res)
+	if kindResources, exists := r.resources[kind]; exists {
+		for _, res := range kindResources {
+			resources = append(resources, res)
+		}
 	}
-	return resources, nil
+	return resources
 }
 
 func (r *InMemoryRepository) Delete(kind, name string) error {

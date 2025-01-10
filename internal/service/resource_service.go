@@ -94,23 +94,17 @@ func (s *ResourceService) DeleteResourceWithNamespace(kind, name, namespace stri
 }
 
 func (s *ResourceService) ListResources(kind, namespace string, allNamespaces bool) ([]models.Resource, error) {
-	resources, err := s.repo.List(kind)
-	if err != nil {
-		return nil, err
-	}
+	resources := s.repo.List(kind)
 
-	if allNamespaces {
-		return resources, nil
-	}
-
-	// Filter by namespace
 	var filtered []models.Resource
 	for _, res := range resources {
-		if res.GetNamespace() == namespace {
+		// Filter by namespace if allNamespaces is false
+		if allNamespaces || namespace == "" || strings.EqualFold(res.GetNamespace(), namespace) {
 			filtered = append(filtered, res)
 		}
 	}
 
+	// Return the filtered resources
 	return filtered, nil
 }
 
@@ -127,4 +121,28 @@ func (s *ResourceService) DescribeResource(kind, name, namespace string) (string
 
 	// Use the formatter to return resource details
 	return s.formatter.FormatDetails(resource), nil
+}
+
+func (s *ResourceService) ListAllResources(namespace string, allNamespaces bool) (map[string][]models.Resource, error) {
+	resourcesByKind := make(map[string][]models.Resource)
+
+	// Iterate over all supported resource kinds
+	for kind := range SupportedResources() {
+		// Skip "all" as it's not a real resource kind
+		if kind == "all" {
+			continue
+		}
+
+		// Attempt to list resources with namespace filtering
+		resources, err := s.ListResources(kind, namespace, allNamespaces)
+		if err != nil {
+			continue // Skip kinds with no resources
+		}
+
+		if len(resources) > 0 {
+			resourcesByKind[kind] = resources
+		}
+	}
+
+	return resourcesByKind, nil
 }
