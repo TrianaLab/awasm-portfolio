@@ -49,32 +49,47 @@ func (s *ResourceService) CreateResource(kind string, resource models.Resource) 
 
 // DeleteResource handles cascading deletion
 func (s *ResourceService) DeleteResource(kind, name string) (string, error) {
-	// Normalize the kind to lowercase
+	return s.DeleteResourceInNamespace(kind, name, "")
+}
+
+// DeleteResourceInNamespace deletes a resource in a specific namespace
+func (s *ResourceService) DeleteResourceInNamespace(kind, name, namespace string) (string, error) {
+	// Normalize kind to lowercase
 	kind = strings.ToLower(kind)
+
+	// Special handling for namespaces
+	if kind == "namespace" {
+		return s.CascadeDeleteNamespace(name)
+	}
 
 	// Fetch resource to ensure it exists
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
-		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, "unknown")
+		if strings.Contains(err.Error(), "not found") {
+			fmt.Printf("Resource %s/%s already deleted, skipping.\n", kind, name)
+			return "", nil
+		}
+		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
 	}
 
-	fmt.Printf("Deleting resource: %s/%s in namespace '%s'\n", kind, name, resource.GetNamespace())
-
-	var messages []string
+	// Validate namespace if applicable
+	if namespace != "" && resource.GetNamespace() != namespace {
+		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
+	}
 
 	// Perform cascading delete for child resources
+	var messages []string
 	children := s.repo.FindByOwner(kind, name, resource.GetNamespace())
 	for _, child := range children {
-		// Normalize child kind to lowercase
 		childKind := strings.ToLower(reflect.TypeOf(child).Elem().Name())
 		fmt.Printf("Deleting child %s/%s in namespace '%s'\n", childKind, child.GetName(), resource.GetNamespace())
 
-		// Recursive deletion
-		childMessage, err := s.DeleteResourceWithNamespace(childKind, child.GetName(), resource.GetNamespace())
+		msg, err := s.DeleteResourceInNamespace(childKind, child.GetName(), resource.GetNamespace())
 		if err != nil {
-			return "", err
+			fmt.Printf("Error deleting child %s/%s: %s\n", childKind, child.GetName(), err)
+			continue
 		}
-		messages = append(messages, childMessage)
+		messages = append(messages, msg)
 	}
 
 	// Delete the resource itself
@@ -87,28 +102,36 @@ func (s *ResourceService) DeleteResource(kind, name string) (string, error) {
 	return strings.Join(messages, "\n"), nil
 }
 
-// DeleteResourceWithNamespace validates namespace before deletion
-func (s *ResourceService) DeleteResourceWithNamespace(kind, name, namespace string) (string, error) {
-	// Special case: Namespace is a cluster-wide resource and doesn't have a namespace
-	if kind == "namespace" {
-		return s.DeleteResource(kind, name)
+// CascadeDeleteNamespace handles deletion of a namespace and all its resources
+func (s *ResourceService) CascadeDeleteNamespace(namespace string) (string, error) {
+	var messages []string
+
+	// Iterate over all resources in the namespace
+	for kind, resources := range s.repo.ListAll() {
+		for _, resource := range resources {
+			if resource.GetNamespace() == namespace {
+				fmt.Printf("Deleting %s/%s in namespace '%s'\n", kind, resource.GetName(), namespace)
+				msg, err := s.DeleteResource(kind, resource.GetName())
+				if err != nil {
+					fmt.Printf("Error deleting %s/%s: %s\n", kind, resource.GetName(), err)
+					continue
+				}
+				messages = append(messages, msg)
+			}
+		}
 	}
 
-	// Fetch the resource to ensure it exists
-	resource, err := s.repo.Get(kind, name)
+	// Finally, delete the namespace itself
+	err := s.repo.Delete("namespace", namespace)
 	if err != nil {
-		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
+		return "", err
 	}
+	messages = append(messages, fmt.Sprintf("namespace/%s deleted successfully.", namespace))
 
-	// Validate namespace
-	if namespace != "" && resource.GetNamespace() != namespace {
-		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
-	}
-
-	// Perform cascading delete
-	return s.DeleteResource(kind, name)
+	return strings.Join(messages, "\n"), nil
 }
 
+// ListResources lists resources of a given kind with optional namespace filtering
 func (s *ResourceService) ListResources(kind, namespace string, allNamespaces bool) ([]models.Resource, error) {
 	resources := s.repo.List(kind)
 
@@ -124,6 +147,7 @@ func (s *ResourceService) ListResources(kind, namespace string, allNamespaces bo
 	return filtered, nil
 }
 
+// DescribeResource provides detailed information about a specific resource
 func (s *ResourceService) DescribeResource(kind, name, namespace string) (string, error) {
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
@@ -139,6 +163,7 @@ func (s *ResourceService) DescribeResource(kind, name, namespace string) (string
 	return s.formatter.FormatDetails(resource), nil
 }
 
+// ListAllResources lists all resources with optional namespace filtering
 func (s *ResourceService) ListAllResources(namespace string, allNamespaces bool) (map[string][]models.Resource, error) {
 	resourcesByKind := make(map[string][]models.Resource)
 

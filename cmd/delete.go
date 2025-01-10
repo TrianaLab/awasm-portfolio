@@ -17,9 +17,9 @@ func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
 			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
 			name := args[1]
 
-			// Special case for namespace
+			// Handle namespace deletion
 			if kind == "namespace" {
-				message, err := svc.DeleteResourceWithNamespace(kind, name, "")
+				message, err := svc.DeleteResourceInNamespace(kind, name, "")
 				if err != nil {
 					return err
 				}
@@ -29,7 +29,7 @@ func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
 
 			// Handle other resources
 			namespace, _ := cmd.Flags().GetString("namespace")
-			message, err := svc.DeleteResourceWithNamespace(kind, name, namespace)
+			message, err := svc.DeleteResourceInNamespace(kind, name, namespace)
 			if err != nil {
 				return err
 			}

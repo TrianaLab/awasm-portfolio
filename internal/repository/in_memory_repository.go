@@ -59,11 +59,13 @@ func (r *InMemoryRepository) Delete(kind, name string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, exists := r.resources[kind]; !exists {
-		return errors.New("resource kind not found")
+	if resources, exists := r.resources[kind]; exists {
+		if _, exists := resources[name]; exists {
+			delete(resources, name) // Remove the resource
+			return nil
+		}
 	}
-	delete(r.resources[kind], name)
-	return nil
+	return fmt.Errorf("%s/%s not found", kind, name)
 }
 
 func (r *InMemoryRepository) FindByOwner(kind, name, namespace string) []models.Resource {
@@ -88,4 +90,19 @@ func (r *InMemoryRepository) FindByOwner(kind, name, namespace string) []models.
 		}
 	}
 	return results
+}
+
+func (r *InMemoryRepository) ListAll() map[string][]models.Resource {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	allResources := make(map[string][]models.Resource)
+	for kind, resources := range r.resources {
+		var resourceList []models.Resource
+		for _, res := range resources {
+			resourceList = append(resourceList, res)
+		}
+		allResources[kind] = resourceList
+	}
+	return allResources
 }
