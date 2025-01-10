@@ -128,7 +128,9 @@ func (s *ResourceService) CascadeDeleteNamespace(namespace string) (string, erro
 	}
 	messages = append(messages, fmt.Sprintf("namespace/%s deleted successfully.", namespace))
 
-	return strings.Join(messages, "\n"), nil
+	// Ensure messages are joined without extra spaces
+	result := strings.TrimSpace(strings.Join(messages, "\n"))
+	return result, nil
 }
 
 // ListResources lists resources of a given kind with optional namespace filtering
