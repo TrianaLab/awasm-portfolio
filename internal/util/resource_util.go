@@ -33,21 +33,21 @@ func SupportedResources() map[string]string {
 
 // NormalizeResourceName normalizes a given resource name to its canonical form.
 func NormalizeResourceName(resource string) string {
+	resource = strings.ToLower(resource)
 	supported := SupportedResources()
-	normalized := supported[strings.ToLower(resource)]
-	logger.Trace(logrus.Fields{
-		"input":      resource,
-		"normalized": normalized,
-	}, "NormalizeResourceName called")
+	normalized, exists := supported[resource]
+	if !exists {
+		logger.Trace(logrus.Fields{
+			"input": resource,
+		}, "Unsupported resource kind in NormalizeResourceName")
+		return resource // Return the original kind to preserve it in error messages
+	}
 	return normalized
 }
 
 // IsValidResource checks if a given resource kind is supported.
 func IsValidResource(resource string) bool {
-	_, exists := SupportedResources()[strings.ToLower(resource)]
-	logger.Trace(logrus.Fields{
-		"resource": resource,
-		"valid":    exists,
-	}, "IsValidResource called")
+	resource = strings.ToLower(resource)
+	_, exists := SupportedResources()[resource]
 	return exists
 }

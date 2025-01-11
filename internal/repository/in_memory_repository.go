@@ -3,6 +3,7 @@ package repository
 import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
+	"awasm-portfolio/internal/util"
 	"errors"
 	"fmt"
 	"strings"
@@ -35,6 +36,17 @@ func generateResourceID(kind, name, namespace string) string {
 
 // List retrieves resources matching the kind, name, and namespace criteria.
 func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resource, error) {
+	kind = strings.ToLower(kind)
+	name = strings.ToLower(name)
+	namespace = strings.ToLower(namespace)
+
+	if !util.IsValidResource(kind) {
+		logger.Error(logrus.Fields{
+			"kind": kind,
+		}, "Unsupported resource kind")
+		return nil, fmt.Errorf("unsupported resource kind: %s", kind)
+	}
+
 	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
@@ -42,29 +54,27 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 	}, "InMemoryRepository.List called")
 
 	if kind == "" {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Kind is required")
+		logger.Error(logrus.Fields{"kind": kind}, "Kind is required")
 		return nil, errors.New("kind is required")
 	}
-
-	kind, name, namespace = normalizeID(kind, name, namespace)
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	var resources []models.Resource
 	for id, res := range r.resources {
+		matchKind := strings.ToLower(res.GetKind()) == kind
+		matchName := name == "" || strings.ToLower(res.GetName()) == name
+		matchNamespace := namespace == "" || res.GetNamespace() == namespace || (res.GetNamespace() == "" && namespace != "")
+
 		logger.Trace(logrus.Fields{
-			"id":        id,
-			"kind":      res.GetKind(),
-			"namespace": res.GetNamespace(),
-			"name":      res.GetName(),
-			"owner_ref": res.GetOwnerReference(),
-		}, "Iterating resource")
-		if res.GetKind() == kind &&
-			(name == "" || res.GetName() == name) &&
-			(namespace == "" || res.GetNamespace() == namespace) {
+			"id":             id,
+			"matchKind":      matchKind,
+			"matchName":      matchName,
+			"matchNamespace": matchNamespace,
+		}, "Matching resource")
+
+		if matchKind && matchName && matchNamespace {
 			resources = append(resources, res)
 		}
 	}
@@ -83,6 +93,13 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 	kind := resource.GetKind()
 	name := resource.GetName()
 	namespace := resource.GetNamespace()
+
+	if !util.IsValidResource(kind) {
+		logger.Error(logrus.Fields{
+			"kind": kind,
+		}, "Unsupported resource kind")
+		return "", fmt.Errorf("unsupported resource kind: %s", kind)
+	}
 
 	kind, name, namespace = normalizeID(kind, name, namespace)
 	id := generateResourceID(kind, name, namespace)
@@ -122,13 +139,23 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 
 // Delete removes a resource and handles cascade deletions.
 func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error) {
+	kind = strings.ToLower(kind)
+	name = strings.ToLower(name)
+	namespace = strings.ToLower(namespace)
+
+	if !util.IsValidResource(kind) {
+		logger.Error(logrus.Fields{
+			"kind": kind,
+		}, "Unsupported resource kind")
+		return "", fmt.Errorf("unsupported resource kind: %s", kind)
+	}
+
 	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
 		"namespace": namespace,
 	}, "InMemoryRepository.Delete called")
 
-	kind, name, namespace = normalizeID(kind, name, namespace)
 	id := generateResourceID(kind, name, namespace)
 
 	r.mu.Lock()

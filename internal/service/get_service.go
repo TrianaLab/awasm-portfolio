@@ -29,13 +29,6 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		"normalized_kind": kind,
 	}, "Normalized kind for GetService")
 
-	if !util.IsValidResource(kind) {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Unsupported resource kind")
-		return "", fmt.Errorf("unsupported resource kind: %s", kind)
-	}
-
 	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {
 		logger.Error(logrus.Fields{
