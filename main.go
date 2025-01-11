@@ -44,10 +44,8 @@ func runCLICommand(rootCmd *cobra.Command, command string) string {
 		args = args[1:]
 	}
 
-	// Reset flag values recursively
 	resetFlagValues(rootCmd)
 
-	// Set the sanitized arguments
 	rootCmd.SetArgs(args)
 
 	var buf bytes.Buffer

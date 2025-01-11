@@ -32,7 +32,7 @@ func NewGetCommand(service service.ResourceService) *cobra.Command {
 				return
 			}
 
-			fmt.Println(result)
+			cmd.Println(result)
 		},
 	}
 }
