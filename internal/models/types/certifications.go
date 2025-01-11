@@ -1,6 +1,9 @@
 package types
 
-import "awasm-portfolio/internal/models"
+import (
+	"awasm-portfolio/internal/models"
+	"reflect"
+)
 
 type Certification struct {
 	Description string
@@ -10,13 +13,14 @@ type Certification struct {
 type Certifications struct {
 	Name           string
 	Namespace      string
-	OwnerRefs      []models.OwnerReference
+	OwnerRef       models.OwnerReference
 	Certifications []Certification
 }
 
-func (c *Certifications) GetName() string                                   { return c.Name }
-func (c *Certifications) SetName(name string)                               { c.Name = name }
-func (c *Certifications) GetNamespace() string                              { return c.Namespace }
-func (c *Certifications) SetNamespace(namespace string)                     { c.Namespace = namespace }
-func (c *Certifications) GetOwnerReferences() []models.OwnerReference       { return c.OwnerRefs }
-func (c *Certifications) SetOwnerReferences(owners []models.OwnerReference) { c.OwnerRefs = owners }
+func (c *Certifications) GetKind() string                               { return reflect.TypeOf(*c).Name() }
+func (c *Certifications) GetName() string                               { return c.Name }
+func (c *Certifications) SetName(name string)                           { c.Name = name }
+func (c *Certifications) GetNamespace() string                          { return c.Namespace }
+func (c *Certifications) SetNamespace(namespace string)                 { c.Namespace = namespace }
+func (c *Certifications) GetOwnerReference() models.OwnerReference      { return c.OwnerRef }
+func (c *Certifications) SetOwnerReference(owner models.OwnerReference) { c.OwnerRef = owner }

@@ -1,117 +1,124 @@
 package preload
 
 import (
-	"awasm-portfolio/internal/models"
+	"awasm-portfolio/internal/factory"
 	"awasm-portfolio/internal/models/types"
 	"awasm-portfolio/internal/repository"
 	"fmt"
 )
 
-// PreloadData preloads namespaces, profiles, and associated resources
 func PreloadData(repo *repository.InMemoryRepository) {
+	factory := factory.NewResourceFactory()
+
 	// Preload namespaces
 	namespaces := []string{"default", "dev", "test"}
 	for _, ns := range namespaces {
-		repo.Create("namespace", &types.Namespace{
-			Name: ns,
+		namespace := factory.Create("namespace", map[string]interface{}{
+			"name": ns,
 		})
+		repo.Create(namespace)
 		fmt.Printf("Preloaded namespace: %s\n", ns)
 	}
 
-	// Preload profiles in different namespaces
+	// Preload profiles with associated data
 	profiles := []struct {
-		Name      string
-		Namespace string
+		Name           string
+		Namespace      string
+		Certifications []types.Certification
+		Contact        types.Contact
+		Experience     []types.Job
+		Education      []types.Course
+		Skills         []types.Skill
 	}{
-		{"john-doe", "default"},
-		{"jane-doe", "default"},
-		{"dev-user", "dev"},
-		{"test-user", "test"},
+		{
+			Name:      "john-doe",
+			Namespace: "default",
+			Certifications: []types.Certification{
+				{Description: "AWS Certified Solutions Architect", Link: "https://aws.amazon.com"},
+				{Description: "Certified Kubernetes Administrator", Link: "https://kubernetes.io"},
+			},
+			Contact: types.Contact{
+				Email:    "john.doe@example.com",
+				LinkedIn: "linkedin.com/in/john-doe",
+				GitHub:   "github.com/johndoe",
+			},
+			Experience: []types.Job{
+				{Title: "Backend Developer", Company: "TechCorp", Duration: "2 years", Description: "Developed microservices in Go."},
+				{Title: "DevOps Engineer", Company: "CloudOps", Duration: "3 years", Description: "Implemented CI/CD pipelines."},
+			},
+			Education: []types.Course{
+				{Title: "BSc in Computer Science", Institution: "XYZ University", Duration: "4 years"},
+			},
+			Skills: []types.Skill{
+				{Name: "Go", Proficiency: "Expert"},
+				{Name: "Docker", Proficiency: "Advanced"},
+			},
+		},
+		{
+			Name:      "jane-doe",
+			Namespace: "dev",
+			Certifications: []types.Certification{
+				{Description: "Google Cloud Professional Data Engineer", Link: "https://cloud.google.com"},
+			},
+			Contact: types.Contact{
+				Email:    "jane.doe@example.com",
+				LinkedIn: "linkedin.com/in/jane-doe",
+				GitHub:   "github.com/janedoe",
+			},
+			Experience: []types.Job{
+				{Title: "Frontend Developer", Company: "WebStudio", Duration: "1 year", Description: "Built responsive web apps."},
+			},
+			Education: []types.Course{
+				{Title: "MSc in Data Science", Institution: "ABC University", Duration: "2 years"},
+			},
+			Skills: []types.Skill{
+				{Name: "React", Proficiency: "Advanced"},
+				{Name: "Python", Proficiency: "Intermediate"},
+			},
+		},
+		{
+			Name:      "dev-user",
+			Namespace: "test",
+			Certifications: []types.Certification{
+				{Description: "Red Hat Certified Engineer", Link: "https://redhat.com"},
+			},
+			Contact: types.Contact{
+				Email:    "dev.user@example.com",
+				LinkedIn: "linkedin.com/in/dev-user",
+				GitHub:   "github.com/devuser",
+			},
+			Experience: []types.Job{
+				{Title: "Full Stack Developer", Company: "CodeBase", Duration: "5 years", Description: "Developed full-stack applications."},
+			},
+			Education: []types.Course{
+				{Title: "Diploma in Software Engineering", Institution: "PQR Institute", Duration: "3 years"},
+			},
+			Skills: []types.Skill{
+				{Name: "JavaScript", Proficiency: "Advanced"},
+				{Name: "Kubernetes", Proficiency: "Expert"},
+			},
+		},
 	}
 
 	for _, profile := range profiles {
-		repo.Create("profile", &types.Profile{
-			Name:      profile.Name,
-			Namespace: profile.Namespace,
-			OwnerRefs: []models.OwnerReference{
-				{Kind: "namespace", Name: profile.Namespace}, // Namespace as owner
-			},
+		resource := factory.Create("profile", map[string]interface{}{
+			"name":      profile.Name,
+			"namespace": profile.Namespace,
 		})
+		repo.Create(resource)
+
+		certifications := factory.Create("certifications", map[string]interface{}{
+			"name":      profile.Name + "-certifications",
+			"namespace": profile.Namespace,
+		})
+		repo.Create(certifications)
+
+		contact := factory.Create("contact", map[string]interface{}{
+			"name":      profile.Name + "-contact",
+			"namespace": profile.Namespace,
+		})
+		repo.Create(contact)
+
 		fmt.Printf("Preloaded profile: %s in namespace: %s\n", profile.Name, profile.Namespace)
 	}
-
-	// Preload resources with profiles as their owners
-	repo.Create("experience", &types.Experience{
-		Name:      "senior-developer",
-		Namespace: "default",
-		OwnerRefs: []models.OwnerReference{
-			{Kind: "profile", Name: "john-doe"}, // Profile as owner
-		},
-		Jobs: []types.Job{
-			{Title: "Senior Developer", Company: "TechCorp", Duration: "3 years", Description: "Backend development"},
-		},
-	})
-	fmt.Printf("Preloaded experience: senior-developer owned by profile: john-doe\n")
-
-	repo.Create("education", &types.Education{
-		Name:      "bachelor-cs",
-		Namespace: "default",
-		OwnerRefs: []models.OwnerReference{
-			{Kind: "profile", Name: "jane-doe"}, // Profile as owner
-		},
-		Courses: []types.Course{
-			{Title: "Computer Science", Institution: "XYZ University", Duration: "4 years"},
-		},
-	})
-	fmt.Printf("Preloaded education: bachelor-cs owned by profile: jane-doe\n")
-
-	repo.Create("certifications", &types.Certifications{
-		Name:      "aws-certified",
-		Namespace: "dev",
-		OwnerRefs: []models.OwnerReference{
-			{Kind: "profile", Name: "dev-user"}, // Profile as owner
-		},
-		Certifications: []types.Certification{
-			{Description: "AWS Certified Solutions Architect", Link: "https://aws.amazon.com"},
-		},
-	})
-	fmt.Printf("Preloaded certification: aws-certified owned by profile: dev-user\n")
-
-	repo.Create("contributions", &types.Contributions{
-		Name:      "open-source-projects",
-		Namespace: "test",
-		OwnerRefs: []models.OwnerReference{
-			{Kind: "profile", Name: "test-user"}, // Profile as owner
-		},
-		Contributions: []types.Contribution{
-			{Project: "CLI Tool", Description: "A Kubernetes-like CLI for managing resources", Link: "https://github.com/example/cli-tool"},
-		},
-	})
-	fmt.Printf("Preloaded contributions: open-source-projects owned by profile: test-user\n")
-
-	repo.Create("skills", &types.Skills{
-		Name:      "programming-languages",
-		Namespace: "default",
-		OwnerRefs: []models.OwnerReference{
-			{Kind: "profile", Name: "john-doe"}, // Profile as owner
-		},
-		Skills: []types.Skill{
-			{Name: "Go", Proficiency: "Expert"},
-			{Name: "JavaScript", Proficiency: "Intermediate"},
-		},
-	})
-	fmt.Printf("Preloaded skills: programming-languages owned by profile: john-doe\n")
-
-	repo.Create("skills", &types.Skills{
-		Name:      "devops-tools",
-		Namespace: "dev",
-		OwnerRefs: []models.OwnerReference{
-			{Kind: "profile", Name: "dev-user"}, // Profile as owner
-		},
-		Skills: []types.Skill{
-			{Name: "Kubernetes", Proficiency: "Advanced"},
-			{Name: "Docker", Proficiency: "Expert"},
-		},
-	})
-	fmt.Printf("Preloaded skills: devops-tools owned by profile: dev-user\n")
 }

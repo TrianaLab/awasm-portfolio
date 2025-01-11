@@ -1,6 +1,9 @@
 package types
 
-import "awasm-portfolio/internal/models"
+import (
+	"awasm-portfolio/internal/models"
+	"reflect"
+)
 
 type Job struct {
 	Title       string
@@ -12,13 +15,14 @@ type Job struct {
 type Experience struct {
 	Name      string
 	Namespace string
-	OwnerRefs []models.OwnerReference
+	OwnerRef  models.OwnerReference
 	Jobs      []Job
 }
 
-func (e *Experience) GetName() string                                   { return e.Name }
-func (e *Experience) SetName(name string)                               { e.Name = name }
-func (e *Experience) GetNamespace() string                              { return e.Namespace }
-func (e *Experience) SetNamespace(namespace string)                     { e.Namespace = namespace }
-func (e *Experience) GetOwnerReferences() []models.OwnerReference       { return e.OwnerRefs }
-func (e *Experience) SetOwnerReferences(owners []models.OwnerReference) { e.OwnerRefs = owners }
+func (e *Experience) GetKind() string                               { return reflect.TypeOf(*e).Name() }
+func (e *Experience) GetName() string                               { return e.Name }
+func (e *Experience) SetName(name string)                           { e.Name = name }
+func (e *Experience) GetNamespace() string                          { return e.Namespace }
+func (e *Experience) SetNamespace(namespace string)                 { e.Namespace = namespace }
+func (e *Experience) GetOwnerReference() models.OwnerReference      { return e.OwnerRef }
+func (e *Experience) SetOwnerReference(owner models.OwnerReference) { e.OwnerRef = owner }

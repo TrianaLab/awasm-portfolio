@@ -19,12 +19,16 @@ func NewDescribeService(repo *repository.InMemoryRepository) *DescribeService {
 }
 
 func (s *DescribeService) DescribeResource(kind, name, namespace string) (string, error) {
+	if namespace == "" {
+		return "", fmt.Errorf("describe command does not support --all-namespaces")
+	}
+
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
 		return "", err
 	}
 
-	if namespace != "" && resource.GetNamespace() != namespace {
+	if resource.GetNamespace() != namespace {
 		return "", fmt.Errorf("resource %s/%s not found in namespace %s", kind, name, namespace)
 	}
 

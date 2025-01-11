@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -17,19 +16,13 @@ func NewDeleteCommand(service service.ResourceService) *cobra.Command {
 			namespace, _ := cmd.Flags().GetString("namespace")
 			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
 
-			// Validate flags
 			if allNamespaces {
-				fmt.Println("Error: --all-namespaces is not supported for delete command")
-				return
-			}
-			if namespace == "" {
-				fmt.Println("Error: --namespace flag is required for delete command")
-				return
+				namespace = ""
 			}
 
 			result, err := service.DeleteResource(kind, name, namespace)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+				cmd.Println("Error: ", err)
 				return
 			}
 

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -23,12 +22,12 @@ func NewGetCommand(service service.ResourceService) *cobra.Command {
 			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
 
 			if allNamespaces {
-				namespace = "" // Ignore namespace if --all-namespaces is set
+				namespace = ""
 			}
 
 			result, err := service.GetResources(kind, name, namespace)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+				cmd.Println("Error: ", err)
 				return
 			}
 

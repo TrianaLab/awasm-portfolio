@@ -14,12 +14,16 @@ func NewDeleteService(repo *repository.InMemoryRepository) *DeleteService {
 }
 
 func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, error) {
+	if namespace == "" {
+		return "", fmt.Errorf("delete command does not support --all-namespaces")
+	}
+
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
 		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
 	}
 
-	if namespace != "" && resource.GetNamespace() != namespace {
+	if resource.GetNamespace() != namespace {
 		return "", fmt.Errorf("%s/%s not found in namespace '%s'", kind, name, namespace)
 	}
 
@@ -29,5 +33,5 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 		return "", err
 	}
 
-	return fmt.Sprintf("%s/%s deleted successfully from namespace '%s'.", kind, name, resource.GetNamespace()), nil
+	return fmt.Sprintf("%s/%s deleted successfully from namespace '%s'.", kind, name, namespace), nil
 }

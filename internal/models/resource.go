@@ -1,12 +1,13 @@
 package models
 
 type Resource interface {
+	GetKind() string
 	GetName() string
 	SetName(name string)
 	GetNamespace() string
 	SetNamespace(namespace string)
-	GetOwnerReferences() []OwnerReference
-	SetOwnerReferences(owners []OwnerReference)
+	GetOwnerReference() OwnerReference
+	SetOwnerReference(owner OwnerReference)
 }
 
 type OwnerReference struct {

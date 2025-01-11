@@ -19,8 +19,12 @@ func NewCreateService(repo *repository.InMemoryRepository) *CreateService {
 }
 
 func (s *CreateService) CreateResource(kind, name, namespace string) (string, error) {
+	if namespace == "" {
+		return "", fmt.Errorf("create command does not support --all-namespaces")
+	}
+
 	// Validate namespace existence
-	if namespace != "" && kind != "namespace" {
+	if kind != "namespace" {
 		_, err := s.repo.Get("namespace", namespace)
 		if err != nil {
 			return "", fmt.Errorf("namespace '%s' does not exist", namespace)
@@ -43,7 +47,7 @@ func (s *CreateService) CreateResource(kind, name, namespace string) (string, er
 	}
 
 	// Save the resource to the repository
-	err := s.repo.Create(kind, resource)
+	err := s.repo.Create(resource)
 	if err != nil {
 		return "", err
 	}

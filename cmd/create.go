@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
-	"fmt"
 
 	"github.com/spf13/cobra"
 )
@@ -15,15 +14,15 @@ func NewCreateCommand(service service.ResourceService) *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			kind, name := args[0], args[1]
 			namespace, _ := cmd.Flags().GetString("namespace")
+			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
 
-			if namespace == "" {
-				fmt.Println("Error: --namespace flag is required for create command")
-				return
+			if allNamespaces {
+				namespace = ""
 			}
 
 			result, err := service.CreateResource(kind, name, namespace)
 			if err != nil {
-				fmt.Printf("Error: %v\n", err)
+				cmd.Println("Error: ", err)
 				return
 			}
 

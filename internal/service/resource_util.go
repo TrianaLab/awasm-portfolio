@@ -1,44 +1,44 @@
 package service
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
-	"reflect"
 	"strings"
 )
 
+// SupportedResources returns a map of supported resource kinds.
+// Keys are the accepted inputs, and values are the canonical names.
 func SupportedResources() map[string]string {
-	supported := map[string]string{}
-
-	types := []models.Resource{
-		&types.Profile{}, &types.Namespace{}, &types.Education{},
-		&types.Experience{}, &types.Contact{}, &types.Certifications{},
-		&types.Contributions{}, &types.Skills{},
+	return map[string]string{
+		"profile":        "profile",
+		"profiles":       "profile",
+		"namespace":      "namespace",
+		"namespaces":     "namespace",
+		"education":      "education",
+		"educations":     "education",
+		"experience":     "experience",
+		"experiences":    "experience",
+		"contact":        "contact",
+		"contacts":       "contact",
+		"certification":  "certifications",
+		"certifications": "certifications",
+		"contribution":   "contributions",
+		"contributions":  "contributions",
+		"skill":          "skills",
+		"skills":         "skills",
+		"ns":             "namespace", // Alias for namespace
 	}
-
-	for _, t := range types {
-		kind := normalizeKind(reflect.TypeOf(t).Elem().Name())
-		supported[kind] = kind
-		supported[kind+"s"] = kind
-	}
-
-	supported["ns"] = "namespace"
-	return supported
 }
 
+// NormalizeResourceName normalizes a given resource name to its canonical form.
 func NormalizeResourceName(resource string) string {
 	supported := SupportedResources()
-	if singular, exists := supported[resource]; exists {
-		return singular
+	if canonical, exists := supported[strings.ToLower(resource)]; exists {
+		return canonical
 	}
 	return resource
 }
 
+// IsValidResource checks if a given resource kind is supported.
 func IsValidResource(resource string) bool {
-	_, exists := SupportedResources()[resource]
+	_, exists := SupportedResources()[strings.ToLower(resource)]
 	return exists
-}
-
-func normalizeKind(kind string) string {
-	return strings.ToLower(kind)
 }

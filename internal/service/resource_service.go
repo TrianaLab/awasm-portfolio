@@ -5,10 +5,10 @@ import (
 )
 
 type ResourceService interface {
-	CreateResource(kind, name, namespace string) (string, error)
-	DeleteResource(kind, name, namespace string) (string, error)
-	GetResources(kind, name, namespace string) (string, error) // Fixed: Ensure this method is implemented
-	DescribeResource(kind, name, namespace string) (string, error)
+	CreateResource(kind string, name string, namespace string) (string, error)
+	DeleteResource(kind string, name string, namespace string) (string, error)
+	GetResources(kind string, name string, namespace string) (string, error)
+	DescribeResource(kind string, name string, namespace string) (string, error)
 }
 
 type ResourceServiceImpl struct {

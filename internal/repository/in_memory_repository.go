@@ -4,7 +4,6 @@ import (
 	"awasm-portfolio/internal/models"
 	"errors"
 	"fmt"
-	"strings"
 	"sync"
 )
 
@@ -14,95 +13,118 @@ type InMemoryRepository struct {
 }
 
 func NewInMemoryRepository() *InMemoryRepository {
-	return &InMemoryRepository{resources: make(map[string]map[string]models.Resource)}
+	return &InMemoryRepository{
+		resources: make(map[string]map[string]models.Resource),
+	}
 }
 
-func (r *InMemoryRepository) Create(kind string, resource models.Resource) error {
+// Create adds a new resource to the repository.
+func (r *InMemoryRepository) Create(resource models.Resource) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	kind := resource.GetKind()
+	name := resource.GetName()
 	if _, exists := r.resources[kind]; !exists {
 		r.resources[kind] = make(map[string]models.Resource)
 	}
-	r.resources[kind][resource.GetName()] = resource
+
+	if _, exists := r.resources[kind][name]; exists {
+		return fmt.Errorf("%s/%s already exists", kind, name)
+	}
+
+	r.resources[kind][name] = resource
 	return nil
 }
 
+// Get retrieves a single resource by kind and name.
 func (r *InMemoryRepository) Get(kind, name string) (models.Resource, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	if _, exists := r.resources[kind]; !exists {
+	resourcesByKind, exists := r.resources[kind]
+	if !exists {
 		return nil, errors.New("resource kind not found")
 	}
-	resource, exists := r.resources[kind][name]
+
+	resource, exists := resourcesByKind[name]
 	if !exists {
 		return nil, errors.New("resource not found")
 	}
+
 	return resource, nil
 }
 
-func (r *InMemoryRepository) List(kind string) []models.Resource {
-	r.mu.RLock()
-	defer r.mu.RUnlock()
+// Update modifies an existing resource.
+func (r *InMemoryRepository) Update(resource models.Resource) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
-	var resources []models.Resource
-	if kindResources, exists := r.resources[kind]; exists {
-		for _, res := range kindResources {
-			resources = append(resources, res)
-		}
+	kind := resource.GetKind()
+	name := resource.GetName()
+
+	resourcesByKind, exists := r.resources[kind]
+	if !exists {
+		return errors.New("resource kind not found")
 	}
-	return resources
+
+	if _, exists := resourcesByKind[name]; !exists {
+		return errors.New("resource not found")
+	}
+
+	r.resources[kind][name] = resource
+	return nil
 }
 
+// Delete removes a resource by kind and name.
 func (r *InMemoryRepository) Delete(kind, name string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if resources, exists := r.resources[kind]; exists {
-		if _, exists := resources[name]; exists {
-			delete(resources, name) // Remove the resource
-			return nil
-		}
+	resourcesByKind, exists := r.resources[kind]
+	if !exists {
+		return errors.New("resource kind not found")
 	}
-	return fmt.Errorf("%s/%s not found", kind, name)
+
+	if _, exists := resourcesByKind[name]; !exists {
+		return fmt.Errorf("%s/%s not found", kind, name)
+	}
+
+	delete(resourcesByKind, name)
+	return nil
 }
 
-func (r *InMemoryRepository) FindByOwner(kind, name, namespace string) []models.Resource {
+// List retrieves all resources of a specific kind.
+func (r *InMemoryRepository) List(kind string) ([]models.Resource, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
-	kind = strings.ToLower(kind) // Normalize kind to lowercase
-
-	var results []models.Resource
-	for _, kindResources := range r.resources {
-		for _, res := range kindResources {
-			for _, ownerRef := range res.GetOwnerReferences() {
-				fmt.Printf("Checking owner: resource=%s/%s owner=%s/%s namespace='%s'\n",
-					res.GetName(), res.GetNamespace(), ownerRef.Kind, ownerRef.Name, res.GetNamespace())
-
-				// Match Kind, Name, and Namespace
-				if strings.ToLower(ownerRef.Kind) == kind && ownerRef.Name == name && res.GetNamespace() == namespace {
-					fmt.Printf("Matched child resource: %s/%s owned by %s/%s\n", res.GetName(), res.GetNamespace(), kind, name)
-					results = append(results, res)
-				}
-			}
-		}
+	resourcesByKind, exists := r.resources[kind]
+	if !exists {
+		return nil, errors.New("resource kind not found")
 	}
-	return results
+
+	var resources []models.Resource
+	for _, resource := range resourcesByKind {
+		resources = append(resources, resource)
+	}
+
+	return resources, nil
 }
 
+// ListAll retrieves all resources grouped by kind.
 func (r *InMemoryRepository) ListAll() map[string][]models.Resource {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	allResources := make(map[string][]models.Resource)
-	for kind, resources := range r.resources {
-		var resourceList []models.Resource
-		for _, res := range resources {
-			resourceList = append(resourceList, res)
+	for kind, resourcesByKind := range r.resources {
+		var resources []models.Resource
+		for _, resource := range resourcesByKind {
+			resources = append(resources, resource)
 		}
-		allResources[kind] = resourceList
+		allResources[kind] = resources
 	}
+
 	return allResources
 }
