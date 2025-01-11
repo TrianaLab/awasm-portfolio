@@ -137,69 +137,72 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, name, namespace), nil
 }
 
-// Delete removes a resource and handles cascade deletions.
 func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error) {
-	kind = strings.ToLower(kind)
-	name = strings.ToLower(name)
-	namespace = strings.ToLower(namespace)
-
-	if !util.IsValidResource(kind) {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Unsupported resource kind")
-		return "", fmt.Errorf("unsupported resource kind: %s", kind)
-	}
-
 	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
 		"namespace": namespace,
 	}, "InMemoryRepository.Delete called")
 
-	id := generateResourceID(kind, name, namespace)
+	// Normalize kind and namespace
+	kind = util.NormalizeResourceName(kind)
+	if kind == "namespace" {
+		namespace = ""
+	}
 
+	// Use List to find matching resources for deletion
+	resources, err := r.List(kind, name, namespace)
+	if err != nil {
+		logger.Error(logrus.Fields{
+			"kind":  kind,
+			"name":  name,
+			"error": err,
+		}, "Failed to list resources for deletion")
+		return "", err
+	}
+
+	if len(resources) == 0 {
+		return "", fmt.Errorf("no resources found to delete")
+	}
+
+	deletedResources := []string{}
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	_, exists := r.resources[id]
-	if !exists {
-		return "", fmt.Errorf("resource %s not found", id)
-	}
+	// Delete each resource and handle cascade deletions
+	for _, resource := range resources {
+		id := generateResourceID(resource.GetKind(), resource.GetName(), resource.GetNamespace())
+		delete(r.resources, id)
+		deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", resource.GetKind(), resource.GetName(), resource.GetNamespace()))
+		logger.Info(logrus.Fields{
+			"id": id,
+		}, "Resource deleted")
 
-	// Delete the resource
-	delete(r.resources, id)
-	logger.Info(logrus.Fields{
-		"id": id,
-	}, "Resource deleted successfully")
-
-	deletedResources := []string{fmt.Sprintf("%s/%s in namespace '%s'", kind, name, namespace)}
-
-	if kind == "namespace" {
-		// Cascade delete all resources in the namespace
-		for resID, res := range r.resources {
-			if res.GetNamespace() == namespace {
-				delete(r.resources, resID)
-				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", res.GetKind(), res.GetName(), res.GetNamespace()))
-				logger.Info(logrus.Fields{
-					"id": resID,
-				}, "Cascade deleted resource in namespace")
+		// Handle cascade deletion for namespaces
+		if resource.GetKind() == "namespace" {
+			namespaceResources, _ := r.List("", "", resource.GetName())
+			for _, nsRes := range namespaceResources {
+				nsID := generateResourceID(nsRes.GetKind(), nsRes.GetName(), nsRes.GetNamespace())
+				delete(r.resources, nsID)
+				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", nsRes.GetKind(), nsRes.GetName(), nsRes.GetNamespace()))
+				logger.Info(logrus.Fields{"id": nsID}, "Cascade deleted resource in namespace")
 			}
 		}
-	} else {
-		// Cascade delete based on owner reference
-		for resID, res := range r.resources {
-			owner := res.GetOwnerReference()
-			if owner.Kind == kind && owner.Name == name && owner.Namespace == namespace {
-				delete(r.resources, resID)
-				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", res.GetKind(), res.GetName(), res.GetNamespace()))
-				logger.Info(logrus.Fields{
-					"id": resID,
-				}, "Cascade deleted resource")
+
+		// Handle cascade deletion based on owner references
+		ownerResources, _ := r.List("", "", "")
+		for _, ownerRes := range ownerResources {
+			owner := ownerRes.GetOwnerReference()
+			if owner.Kind == resource.GetKind() && owner.Name == resource.GetName() && owner.Namespace == resource.GetNamespace() {
+				ownerID := generateResourceID(ownerRes.GetKind(), ownerRes.GetName(), ownerRes.GetNamespace())
+				delete(r.resources, ownerID)
+				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", ownerRes.GetKind(), ownerRes.GetName(), ownerRes.GetNamespace()))
+				logger.Info(logrus.Fields{"id": ownerID}, "Cascade deleted resource with owner reference")
 			}
 		}
 	}
 
-	return fmt.Sprintf("Deleted resources:\n%s", stringList(deletedResources)), nil
+	return fmt.Sprintf("Deleted resources:\n%s", strings.Join(deletedResources, "\n")), nil
 }
 
 // stringList formats a list of strings into a single string with newlines.
