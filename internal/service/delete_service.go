@@ -23,7 +23,7 @@ func (s *DeleteService) DeleteResource(kind string, name string, namespace strin
 		"namespace": namespace,
 	}, "DeleteService.DeleteResource called")
 
-	if namespace == "" {
+	if namespace == "" && kind != "namespace" {
 		logger.Error(logrus.Fields{
 			"kind":      kind,
 			"name":      name,
@@ -32,7 +32,7 @@ func (s *DeleteService) DeleteResource(kind string, name string, namespace strin
 		return "", fmt.Errorf("namespace is required")
 	}
 
-	err := s.repo.Delete(kind, name)
+	msg, err := s.repo.Delete(kind, name, namespace)
 	if err != nil {
 		logger.Error(logrus.Fields{
 			"kind":  kind,
@@ -46,5 +46,5 @@ func (s *DeleteService) DeleteResource(kind string, name string, namespace strin
 		"kind": kind,
 		"name": name,
 	}, "Resource deleted successfully")
-	return fmt.Sprintf("%s/%s deleted successfully", kind, name), nil
+	return msg, nil
 }

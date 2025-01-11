@@ -11,6 +11,7 @@ type Resource interface {
 }
 
 type OwnerReference struct {
-	Kind string
-	Name string
+	Kind      string
+	Name      string
+	Namespace string
 }

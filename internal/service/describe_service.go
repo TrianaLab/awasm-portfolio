@@ -4,7 +4,6 @@ import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 )
@@ -28,7 +27,7 @@ func (s *DescribeService) DescribeResource(kind string, name string, namespace s
 		"namespace": namespace,
 	}, "DescribeService.DescribeResource called")
 
-	resource, err := s.repo.Get(kind, name)
+	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {
 		logger.Error(logrus.Fields{
 			"kind":  kind,
@@ -38,7 +37,16 @@ func (s *DescribeService) DescribeResource(kind string, name string, namespace s
 		return "", err
 	}
 
-	details := fmt.Sprintf("Name: %s\nNamespace: %s\nKind: %s\n", resource.GetName(), resource.GetNamespace(), kind)
+	if len(resources) == 0 {
+		logger.Info(logrus.Fields{
+			"kind":      kind,
+			"name":      name,
+			"namespace": namespace,
+		}, "No resources found for description")
+		return "No resources found.", nil
+	}
+
+	details := s.formatter.FormatDetails(resources[0])
 	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,

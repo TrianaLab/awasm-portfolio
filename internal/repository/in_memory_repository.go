@@ -6,6 +6,7 @@ import (
 	"awasm-portfolio/internal/util"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/sirupsen/logrus"
@@ -13,172 +14,156 @@ import (
 
 type InMemoryRepository struct {
 	mu        sync.RWMutex
-	resources map[string]map[string]models.Resource
+	resources map[string]models.Resource
 }
 
 func NewInMemoryRepository() *InMemoryRepository {
 	return &InMemoryRepository{
-		resources: make(map[string]map[string]models.Resource),
+		resources: make(map[string]models.Resource),
 	}
 }
 
-func (r *InMemoryRepository) Create(resource models.Resource) error {
-	kind := util.NormalizeResourceName(resource.GetKind()) // Normalize kind
-	name := resource.GetName()
+// generateResourceID generates a unique ID for a resource based on its kind, name, and namespace.
+func generateResourceID(kind, name, namespace string) string {
+	return fmt.Sprintf("%s:%s:%s", kind, name, namespace)
+}
 
+// List retrieves resources matching the kind, name, and namespace criteria.
+func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resource, error) {
 	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
+		"namespace": namespace,
+	}, "InMemoryRepository.List called")
+
+	if kind == "" {
+		logger.Error(logrus.Fields{
+			"kind": kind,
+		}, "Kind is required")
+		return nil, errors.New("kind is required")
+	}
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var resources []models.Resource
+	for id, res := range r.resources {
+		logger.Trace(logrus.Fields{
+			"id":        id,
+			"kind":      res.GetKind(),
+			"namespace": res.GetNamespace(),
+			"name":      res.GetName(),
+			"owner_ref": res.GetOwnerReference(),
+		}, "Iterating resource")
+		if res.GetKind() == kind &&
+			(name == "" || res.GetName() == name) &&
+			(namespace == "" || res.GetNamespace() == namespace) {
+			resources = append(resources, res)
+		}
+	}
+
+	logger.Info(logrus.Fields{
+		"kind":      kind,
+		"name":      name,
+		"namespace": namespace,
+		"count":     len(resources),
+	}, "Resources listed successfully")
+	return resources, nil
+}
+
+// Create adds a new resource to the repository.
+func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
+	kind := util.NormalizeResourceName(resource.GetKind())
+	id := generateResourceID(kind, resource.GetName(), resource.GetNamespace())
+
+	logger.Trace(logrus.Fields{
+		"id":        id,
+		"kind":      kind,
+		"name":      resource.GetName(),
 		"namespace": resource.GetNamespace(),
 	}, "InMemoryRepository.Create called")
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, exists := r.resources[kind]; !exists {
-		r.resources[kind] = make(map[string]models.Resource)
-	}
-	if _, exists := r.resources[kind][name]; exists {
-		err := fmt.Errorf("%s/%s already exists", kind, name)
+	if _, exists := r.resources[id]; exists {
+		err := fmt.Errorf("resource %s already exists", id)
 		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"name":  name,
+			"id":    id,
 			"error": err,
-		}, "Resource already exists")
-		return err
+		}, "Failed to create resource")
+		return "", err
 	}
 
-	r.resources[kind][name] = resource
+	// Add owner reference if not a namespace and owner is not set
+	if kind != "namespace" && resource.GetOwnerReference().Kind == "" {
+		resource.SetOwnerReference(models.OwnerReference{
+			Kind: "namespace",
+			Name: resource.GetNamespace(),
+		})
+	}
+
+	r.resources[id] = resource
 	logger.Info(logrus.Fields{
-		"kind": kind,
-		"name": name,
+		"id": id,
 	}, "Resource created successfully")
-	return nil
+	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, resource.GetName(), resource.GetNamespace()), nil
 }
 
-func (r *InMemoryRepository) Get(kind, name string) (models.Resource, error) {
+// Delete removes a resource and handles cascade deletions.
+func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error) {
 	logger.Trace(logrus.Fields{
-		"kind": kind,
-		"name": name,
-	}, "InMemoryRepository.Get called")
-
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	resourcesByKind, exists := r.resources[kind]
-	if !exists {
-		err := errors.New("resource kind not found")
-		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"error": err,
-		}, "Resource kind not found")
-		return nil, err
-	}
-
-	resource, exists := resourcesByKind[name]
-	if !exists {
-		err := fmt.Errorf("resource %s/%s not found", kind, name)
-		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"name":  name,
-			"error": err,
-		}, "Resource not found")
-		return nil, err
-	}
-
-	logger.Info(logrus.Fields{
-		"kind": kind,
-		"name": name,
-	}, "Resource retrieved successfully")
-	return resource, nil
-}
-
-func (r *InMemoryRepository) Update(resource models.Resource) error {
-	logger.Trace(logrus.Fields{
-		"kind":      resource.GetKind(),
-		"name":      resource.GetName(),
-		"namespace": resource.GetNamespace(),
-	}, "InMemoryRepository.Update called")
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	kind := resource.GetKind()
-	name := resource.GetName()
-
-	resourcesByKind, exists := r.resources[kind]
-	if !exists || resourcesByKind[name] == nil {
-		err := fmt.Errorf("resource %s/%s not found", kind, name)
-		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"name":  name,
-			"error": err,
-		}, "Resource not found")
-		return err
-	}
-
-	r.resources[kind][name] = resource
-	logger.Info(logrus.Fields{
-		"kind": kind,
-		"name": name,
-	}, "Resource updated successfully")
-	return nil
-}
-
-func (r *InMemoryRepository) Delete(kind, name string) error {
-	logger.Trace(logrus.Fields{
-		"kind": kind,
-		"name": name,
+		"kind":      kind,
+		"name":      name,
+		"namespace": namespace,
 	}, "InMemoryRepository.Delete called")
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	resourcesByKind, exists := r.resources[kind]
-	if !exists || resourcesByKind[name] == nil {
-		err := fmt.Errorf("resource %s/%s not found", kind, name)
-		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"name":  name,
-			"error": err,
-		}, "Resource not found")
-		return err
+	id := generateResourceID(kind, name, namespace)
+	_, exists := r.resources[id]
+	if !exists {
+		return "", fmt.Errorf("resource %s not found", id)
 	}
 
-	delete(resourcesByKind, name)
+	// Delete the resource
+	delete(r.resources, id)
 	logger.Info(logrus.Fields{
-		"kind": kind,
-		"name": name,
+		"id": id,
 	}, "Resource deleted successfully")
-	return nil
+
+	deletedResources := []string{fmt.Sprintf("%s/%s in namespace '%s'", kind, name, namespace)}
+
+	if kind == "namespace" {
+		// Cascade delete all resources in the namespace
+		for resID, res := range r.resources {
+			if res.GetNamespace() == name { // Match namespace name with the resource's namespace
+				delete(r.resources, resID)
+				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", res.GetKind(), res.GetName(), res.GetNamespace()))
+				logger.Info(logrus.Fields{
+					"id": resID,
+				}, "Cascade deleted resource in namespace")
+			}
+		}
+	} else {
+		// Cascade delete based on owner reference
+		for resID, res := range r.resources {
+			owner := res.GetOwnerReference()
+			if owner.Kind == kind && owner.Name == name && owner.Namespace == namespace {
+				delete(r.resources, resID)
+				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", res.GetKind(), res.GetName(), res.GetNamespace()))
+				logger.Info(logrus.Fields{
+					"id": resID,
+				}, "Cascade deleted resource")
+			}
+		}
+	}
+
+	return fmt.Sprintf("Deleted resources:\n%s", stringList(deletedResources)), nil
 }
 
-func (r *InMemoryRepository) List(kind string) ([]models.Resource, error) {
-	logger.Trace(logrus.Fields{
-		"kind": kind,
-	}, "InMemoryRepository.List called")
-
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	resourcesByKind, exists := r.resources[kind]
-	if !exists {
-		err := fmt.Errorf("resource kind %s not found", kind)
-		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"error": err,
-		}, "Resource kind not found")
-		return nil, err
-	}
-
-	var resources []models.Resource
-	for _, res := range resourcesByKind {
-		resources = append(resources, res)
-	}
-
-	logger.Info(logrus.Fields{
-		"kind":  kind,
-		"count": len(resources),
-	}, "Resources listed successfully")
-	return resources, nil
+// stringList formats a list of strings into a single string with newlines.
+func stringList(items []string) string {
+	return fmt.Sprintf("%s", string([]byte(strings.Join(items, "\n"))))
 }

@@ -28,7 +28,7 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		"namespace": namespace,
 	}, "CreateService.CreateResource called")
 
-	if namespace == "" {
+	if namespace == "" && kind != "namespace" {
 		logger.Error(logrus.Fields{
 			"kind":      kind,
 			"name":      name,
@@ -48,7 +48,7 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		return "", fmt.Errorf("unsupported resource kind: %s", kind)
 	}
 
-	err := s.repo.Create(resource)
+	msg, err := s.repo.Create(resource)
 	if err != nil {
 		logger.Error(logrus.Fields{
 			"kind":  kind,
@@ -63,5 +63,5 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		"name":      name,
 		"namespace": namespace,
 	}, "Resource created successfully")
-	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, name, namespace), nil
+	return msg, nil
 }
