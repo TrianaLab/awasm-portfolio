@@ -3,7 +3,6 @@ package repository
 import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/util"
 	"errors"
 	"fmt"
 	"strings"
@@ -23,8 +22,14 @@ func NewInMemoryRepository() *InMemoryRepository {
 	}
 }
 
+// normalizeID normalizes the ID components to ensure consistent storage and retrieval.
+func normalizeID(kind, name, namespace string) (string, string, string) {
+	return strings.ToLower(kind), strings.ToLower(name), strings.ToLower(namespace)
+}
+
 // generateResourceID generates a unique ID for a resource based on its kind, name, and namespace.
 func generateResourceID(kind, name, namespace string) string {
+	kind, name, namespace = normalizeID(kind, name, namespace)
 	return fmt.Sprintf("%s:%s:%s", kind, name, namespace)
 }
 
@@ -42,6 +47,8 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 		}, "Kind is required")
 		return nil, errors.New("kind is required")
 	}
+
+	kind, name, namespace = normalizeID(kind, name, namespace)
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -73,14 +80,18 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 
 // Create adds a new resource to the repository.
 func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
-	kind := util.NormalizeResourceName(resource.GetKind())
-	id := generateResourceID(kind, resource.GetName(), resource.GetNamespace())
+	kind := resource.GetKind()
+	name := resource.GetName()
+	namespace := resource.GetNamespace()
+
+	kind, name, namespace = normalizeID(kind, name, namespace)
+	id := generateResourceID(kind, name, namespace)
 
 	logger.Trace(logrus.Fields{
 		"id":        id,
 		"kind":      kind,
-		"name":      resource.GetName(),
-		"namespace": resource.GetNamespace(),
+		"name":      name,
+		"namespace": namespace,
 	}, "InMemoryRepository.Create called")
 
 	r.mu.Lock()
@@ -95,11 +106,10 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 		return "", err
 	}
 
-	// Add owner reference if not a namespace and owner is not set
 	if kind != "namespace" && resource.GetOwnerReference().Kind == "" {
 		resource.SetOwnerReference(models.OwnerReference{
 			Kind: "namespace",
-			Name: resource.GetNamespace(),
+			Name: namespace,
 		})
 	}
 
@@ -107,7 +117,7 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 	logger.Info(logrus.Fields{
 		"id": id,
 	}, "Resource created successfully")
-	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, resource.GetName(), resource.GetNamespace()), nil
+	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, name, namespace), nil
 }
 
 // Delete removes a resource and handles cascade deletions.
@@ -118,10 +128,12 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 		"namespace": namespace,
 	}, "InMemoryRepository.Delete called")
 
+	kind, name, namespace = normalizeID(kind, name, namespace)
+	id := generateResourceID(kind, name, namespace)
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	id := generateResourceID(kind, name, namespace)
 	_, exists := r.resources[id]
 	if !exists {
 		return "", fmt.Errorf("resource %s not found", id)
@@ -138,7 +150,7 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 	if kind == "namespace" {
 		// Cascade delete all resources in the namespace
 		for resID, res := range r.resources {
-			if res.GetNamespace() == name { // Match namespace name with the resource's namespace
+			if res.GetNamespace() == namespace {
 				delete(r.resources, resID)
 				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", res.GetKind(), res.GetName(), res.GetNamespace()))
 				logger.Info(logrus.Fields{
@@ -165,5 +177,5 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 
 // stringList formats a list of strings into a single string with newlines.
 func stringList(items []string) string {
-	return fmt.Sprintf("%s", string([]byte(strings.Join(items, "\n"))))
+	return fmt.Sprintf("%s", strings.Join(items, "\n"))
 }
