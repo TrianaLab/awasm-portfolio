@@ -24,14 +24,6 @@ func NewInMemoryRepository() *InMemoryRepository {
 
 // List retrieves resources matching the kind, name, and namespace criteria.
 func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resource, error) {
-	kind, err := util.NormalizeKind(kind)
-	if err != nil {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Unsupported resource kind in List")
-		return nil, err
-	}
-
 	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
@@ -102,8 +94,8 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, resource.GetName(), resource.GetNamespace()), nil
 }
 
-// Delete removes a resource and handles cascade deletions.
 func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error) {
+	// Normalize and validate the kind
 	kind, err := util.NormalizeKind(kind)
 	if err != nil {
 		logger.Error(logrus.Fields{
@@ -118,7 +110,7 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 		"namespace": namespace,
 	}, "InMemoryRepository.Delete called")
 
-	// Step 1: Collect the IDs of resources to delete
+	// Step 1: List resources to delete
 	r.mu.RLock()
 	resourcesToDelete, err := r.List(kind, name, namespace)
 	r.mu.RUnlock()
@@ -126,7 +118,7 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 		return "", fmt.Errorf("no resources found to delete")
 	}
 
-	// Step 2: Delete the resources and handle cascade deletions
+	// Step 2: Collect IDs and handle cascade deletions
 	deletedResources := []string{}
 	for _, res := range resourcesToDelete {
 		resourceID := res.GetID()
@@ -141,11 +133,23 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 			"id": resourceID,
 		}, "Resource deleted successfully")
 
-		// Step 3: Handle cascade deletions if the resource is a namespace
+		// Step 3: Handle cascade deletions for namespaces
 		if kind == "namespace" {
-			cascadeResources, _ := r.List("", "", res.GetNamespace())
+			namespaceToDelete := name
+
+			// List all resources in the namespace and delete them
+			cascadeResources, err := r.List("", "", namespaceToDelete) // Wildcard for kind
+			if err != nil {
+				logger.Error(logrus.Fields{
+					"namespace": namespaceToDelete,
+					"error":     err,
+				}, "Failed to list resources for namespace cascade deletion")
+				continue
+			}
+
 			for _, cascadeRes := range cascadeResources {
 				cascadeID := cascadeRes.GetID()
+
 				r.mu.Lock()
 				delete(r.resources, cascadeID)
 				r.mu.Unlock()
@@ -153,29 +157,10 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", cascadeRes.GetKind(), cascadeRes.GetName(), cascadeRes.GetNamespace()))
 				logger.Info(logrus.Fields{
 					"id": cascadeID,
-				}, "Cascade deleted resource")
+				}, "Cascade deleted resource in namespace")
 			}
-		} else {
-			// Step 4: Handle cascade deletions for dependent resources
-			ownerKind, ownerName, ownerNamespace := res.GetKind(), res.GetName(), res.GetNamespace()
-			r.mu.RLock()
-			for id, potentialRes := range r.resources {
-				owner := potentialRes.GetOwnerReference()
-				if owner.Kind == ownerKind && owner.Name == ownerName && owner.Namespace == ownerNamespace {
-					r.mu.RUnlock()
-					r.mu.Lock()
-					delete(r.resources, id)
-					r.mu.Unlock()
-					r.mu.RLock()
-
-					deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", potentialRes.GetKind(), potentialRes.GetName(), potentialRes.GetNamespace()))
-					logger.Info(logrus.Fields{
-						"id": id,
-					}, "Cascade deleted resource")
-				}
-			}
-			r.mu.RUnlock()
 		}
+
 	}
 
 	return fmt.Sprintf("Deleted resources:\n%s", strings.Join(deletedResources, "\n")), nil
@@ -183,12 +168,17 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 
 // matchResource checks if a resource matches the given kind, name, and namespace criteria.
 func matchResource(res models.Resource, kind, name, namespace string) bool {
-	matchKind := strings.ToLower(res.GetKind()) == kind
+	// Allow wildcard for kind by checking if kind is empty
+	matchKind := kind == "" || strings.ToLower(res.GetKind()) == kind
 	matchName := name == "" || strings.ToLower(res.GetName()) == name
-	matchNamespace := namespace == "" || res.GetNamespace() == namespace || (res.GetNamespace() == "" && namespace != "")
+	matchNamespace := namespace == "" || strings.ToLower(res.GetNamespace()) == namespace ||
+		(res.GetNamespace() == "" && namespace != "")
 
 	logger.Trace(logrus.Fields{
 		"id":             res.GetID(),
+		"kind":           res.GetKind(),
+		"name":           res.GetName(),
+		"namespace":      res.GetNamespace(),
 		"matchKind":      matchKind,
 		"matchName":      matchName,
 		"matchNamespace": matchNamespace,

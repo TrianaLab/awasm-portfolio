@@ -1,8 +1,11 @@
 package util
 
 import (
+	"awasm-portfolio/internal/logger"
 	"fmt"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // SupportedResources returns a map of supported resource kinds.
@@ -32,10 +35,20 @@ func SupportedResources() map[string]string {
 // NormalizeKind normalizes a given kind to its canonical form if valid,
 // or returns an error if the kind is not supported.
 func NormalizeKind(kind string) (string, error) {
-	kind = strings.ToLower(kind)
-	supported := SupportedResources()
-	if normalized, exists := supported[kind]; exists {
-		return normalized, nil
+	kind = strings.ToLower(strings.TrimSpace(kind))
+	supportedResources := SupportedResources()
+
+	// Special case for "all"
+	if kind == "all" {
+		return "", nil
 	}
-	return "", fmt.Errorf("unsupported resource kind: %s", kind)
+
+	normalized, exists := supportedResources[kind]
+	if !exists {
+		logger.Trace(logrus.Fields{
+			"kind": kind,
+		}, "Unsupported resource kind in NormalizeKind")
+		return "", fmt.Errorf("unsupported resource kind: %s", kind)
+	}
+	return normalized, nil
 }
