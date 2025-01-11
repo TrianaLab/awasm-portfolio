@@ -1,7 +1,10 @@
 package service
 
 import (
+	"awasm-portfolio/internal/logger"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // SupportedResources returns a map of supported resource kinds.
@@ -31,14 +34,20 @@ func SupportedResources() map[string]string {
 // NormalizeResourceName normalizes a given resource name to its canonical form.
 func NormalizeResourceName(resource string) string {
 	supported := SupportedResources()
-	if canonical, exists := supported[strings.ToLower(resource)]; exists {
-		return canonical
-	}
-	return resource
+	normalized := supported[strings.ToLower(resource)]
+	logger.Trace(logrus.Fields{
+		"input":      resource,
+		"normalized": normalized,
+	}, "NormalizeResourceName called")
+	return normalized
 }
 
 // IsValidResource checks if a given resource kind is supported.
 func IsValidResource(resource string) bool {
 	_, exists := SupportedResources()[strings.ToLower(resource)]
+	logger.Trace(logrus.Fields{
+		"resource": resource,
+		"valid":    exists,
+	}, "IsValidResource called")
 	return exists
 }

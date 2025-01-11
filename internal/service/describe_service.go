@@ -1,6 +1,7 @@
 package service
 
 import (
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
 	"fmt"
@@ -21,26 +22,26 @@ func NewDescribeService(repo *repository.InMemoryRepository) *DescribeService {
 }
 
 func (s *DescribeService) DescribeResource(kind string, name string, namespace string) (string, error) {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
 		"namespace": namespace,
-	}).Trace("DescribeService.DescribeResource called")
+	}, "DescribeService.DescribeResource called")
 
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Failed to describe resource")
+		}, "Failed to describe resource")
 		return "", err
 	}
 
 	details := fmt.Sprintf("Name: %s\nNamespace: %s\nKind: %s\n", resource.GetName(), resource.GetNamespace(), kind)
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Info("Resource described successfully")
+	}, "Resource described successfully")
 	return details, nil
 }

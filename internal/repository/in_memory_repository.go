@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"errors"
 	"fmt"
@@ -21,11 +22,11 @@ func NewInMemoryRepository() *InMemoryRepository {
 }
 
 func (r *InMemoryRepository) Create(resource models.Resource) error {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind":      resource.GetKind(),
 		"name":      resource.GetName(),
 		"namespace": resource.GetNamespace(),
-	}).Trace("InMemoryRepository.Create called")
+	}, "InMemoryRepository.Create called")
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -38,27 +39,27 @@ func (r *InMemoryRepository) Create(resource models.Resource) error {
 	}
 	if _, exists := r.resources[kind][name]; exists {
 		err := fmt.Errorf("%s/%s already exists", kind, name)
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Resource already exists")
+		}, "Resource already exists")
 		return err
 	}
 
 	r.resources[kind][name] = resource
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Info("Resource created successfully")
+	}, "Resource created successfully")
 	return nil
 }
 
 func (r *InMemoryRepository) Get(kind, name string) (models.Resource, error) {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Trace("InMemoryRepository.Get called")
+	}, "InMemoryRepository.Get called")
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -66,37 +67,37 @@ func (r *InMemoryRepository) Get(kind, name string) (models.Resource, error) {
 	resourcesByKind, exists := r.resources[kind]
 	if !exists {
 		err := errors.New("resource kind not found")
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"error": err,
-		}).Error("Resource kind not found")
+		}, "Resource kind not found")
 		return nil, err
 	}
 
 	resource, exists := resourcesByKind[name]
 	if !exists {
 		err := fmt.Errorf("resource %s/%s not found", kind, name)
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Resource not found")
+		}, "Resource not found")
 		return nil, err
 	}
 
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Info("Resource retrieved successfully")
+	}, "Resource retrieved successfully")
 	return resource, nil
 }
 
 func (r *InMemoryRepository) Update(resource models.Resource) error {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind":      resource.GetKind(),
 		"name":      resource.GetName(),
 		"namespace": resource.GetNamespace(),
-	}).Trace("InMemoryRepository.Update called")
+	}, "InMemoryRepository.Update called")
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -107,27 +108,27 @@ func (r *InMemoryRepository) Update(resource models.Resource) error {
 	resourcesByKind, exists := r.resources[kind]
 	if !exists || resourcesByKind[name] == nil {
 		err := fmt.Errorf("resource %s/%s not found", kind, name)
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Resource not found")
+		}, "Resource not found")
 		return err
 	}
 
 	r.resources[kind][name] = resource
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Info("Resource updated successfully")
+	}, "Resource updated successfully")
 	return nil
 }
 
 func (r *InMemoryRepository) Delete(kind, name string) error {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Trace("InMemoryRepository.Delete called")
+	}, "InMemoryRepository.Delete called")
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -135,26 +136,26 @@ func (r *InMemoryRepository) Delete(kind, name string) error {
 	resourcesByKind, exists := r.resources[kind]
 	if !exists || resourcesByKind[name] == nil {
 		err := fmt.Errorf("resource %s/%s not found", kind, name)
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Resource not found")
+		}, "Resource not found")
 		return err
 	}
 
 	delete(resourcesByKind, name)
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Info("Resource deleted successfully")
+	}, "Resource deleted successfully")
 	return nil
 }
 
 func (r *InMemoryRepository) List(kind string) ([]models.Resource, error) {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind": kind,
-	}).Trace("InMemoryRepository.List called")
+	}, "InMemoryRepository.List called")
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -162,10 +163,10 @@ func (r *InMemoryRepository) List(kind string) ([]models.Resource, error) {
 	resourcesByKind, exists := r.resources[kind]
 	if !exists {
 		err := fmt.Errorf("resource kind %s not found", kind)
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"error": err,
-		}).Error("Resource kind not found")
+		}, "Resource kind not found")
 		return nil, err
 	}
 
@@ -174,9 +175,9 @@ func (r *InMemoryRepository) List(kind string) ([]models.Resource, error) {
 		resources = append(resources, res)
 	}
 
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind":  kind,
 		"count": len(resources),
-	}).Info("Resources listed successfully")
+	}, "Resources listed successfully")
 	return resources, nil
 }

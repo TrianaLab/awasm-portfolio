@@ -2,6 +2,7 @@ package main
 
 import (
 	"awasm-portfolio/cmd"
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/preload"
 	"awasm-portfolio/internal/repository"
 	"bytes"
@@ -16,9 +17,7 @@ import (
 
 func main() {
 	// Set trace level
-	var log = logrus.New()
-	log.Formatter = new(logrus.TextFormatter)
-	log.Level = logrus.TraceLevel
+	logger.InitLogger(logrus.TraceLevel)
 
 	// Initialize repository and factory
 	repo := repository.NewInMemoryRepository()

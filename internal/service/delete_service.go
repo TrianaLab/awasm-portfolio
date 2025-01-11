@@ -1,6 +1,7 @@
 package service
 
 import (
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
 	"fmt"
 
@@ -16,30 +17,34 @@ func NewDeleteService(repo *repository.InMemoryRepository) *DeleteService {
 }
 
 func (s *DeleteService) DeleteResource(kind string, name string, namespace string) (string, error) {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
 		"namespace": namespace,
-	}).Trace("DeleteService.DeleteResource called")
+	}, "DeleteService.DeleteResource called")
 
 	if namespace == "" {
-		logrus.Error("Namespace is required")
+		logger.Error(logrus.Fields{
+			"kind":      kind,
+			"name":      name,
+			"namespace": namespace,
+		}, "Namespace is required")
 		return "", fmt.Errorf("namespace is required")
 	}
 
 	err := s.repo.Delete(kind, name)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Failed to delete resource")
+		}, "Failed to delete resource")
 		return "", err
 	}
 
-	logrus.WithFields(logrus.Fields{
+	logger.Info(logrus.Fields{
 		"kind": kind,
 		"name": name,
-	}).Info("Resource deleted successfully")
+	}, "Resource deleted successfully")
 	return fmt.Sprintf("%s/%s deleted successfully", kind, name), nil
 }

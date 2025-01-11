@@ -2,6 +2,7 @@ package service
 
 import (
 	"awasm-portfolio/internal/factory"
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
 	"fmt"
 
@@ -21,14 +22,18 @@ func NewCreateService(repo *repository.InMemoryRepository) *CreateService {
 }
 
 func (s *CreateService) CreateResource(kind string, name string, namespace string) (string, error) {
-	logrus.WithFields(logrus.Fields{
+	logger.Trace(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
 		"namespace": namespace,
-	}).Trace("CreateService.CreateResource called")
+	}, "CreateService.CreateResource called")
 
 	if namespace == "" {
-		logrus.Error("Namespace is required")
+		logger.Error(logrus.Fields{
+			"kind":      kind,
+			"name":      name,
+			"namespace": namespace,
+		}, "Namespace is required")
 		return "", fmt.Errorf("namespace is required")
 	}
 
@@ -37,24 +42,26 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		"namespace": namespace,
 	})
 	if resource == nil {
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind": kind,
-		}).Error("Unsupported resource kind")
+		}, "Unsupported resource kind")
 		return "", fmt.Errorf("unsupported resource kind: %s", kind)
 	}
+
 	err := s.repo.Create(resource)
 	if err != nil {
-		logrus.WithFields(logrus.Fields{
+		logger.Error(logrus.Fields{
 			"kind":  kind,
 			"name":  name,
 			"error": err,
-		}).Error("Failed to create resource")
+		}, "Failed to create resource")
 		return "", err
 	}
 
-	logrus.WithFields(logrus.Fields{
-		"kind": kind,
-		"name": name,
-	}).Info("Resource created successfully")
+	logger.Info(logrus.Fields{
+		"kind":      kind,
+		"name":      name,
+		"namespace": namespace,
+	}, "Resource created successfully")
 	return fmt.Sprintf("%s/%s created successfully in namespace '%s'.", kind, name, namespace), nil
 }
