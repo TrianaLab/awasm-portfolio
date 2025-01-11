@@ -8,6 +8,7 @@ type Resource interface {
 	SetNamespace(namespace string)
 	GetOwnerReference() OwnerReference
 	SetOwnerReference(owner OwnerReference)
+	GetID() string
 }
 
 type OwnerReference struct {

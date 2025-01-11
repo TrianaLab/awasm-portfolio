@@ -3,7 +3,6 @@ package service
 import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/util"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -23,11 +22,6 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		"name":      name,
 		"namespace": namespace,
 	}, "GetService.GetResources called")
-
-	kind = util.NormalizeResourceName(kind)
-	logger.Trace(logrus.Fields{
-		"normalized_kind": kind,
-	}, "Normalized kind for GetService")
 
 	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {

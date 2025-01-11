@@ -3,6 +3,7 @@ package types
 import (
 	"awasm-portfolio/internal/models"
 	"reflect"
+	"strings"
 )
 
 type Skill struct {
@@ -24,3 +25,6 @@ func (s *Skills) GetNamespace() string                          { return s.Names
 func (s *Skills) SetNamespace(namespace string)                 { s.Namespace = namespace }
 func (s *Skills) GetOwnerReference() models.OwnerReference      { return s.OwnerRef }
 func (s *Skills) SetOwnerReference(owner models.OwnerReference) { s.OwnerRef = owner }
+func (s *Skills) GetID() string {
+	return strings.ToLower(s.GetKind() + ":" + s.Name + ":" + s.Namespace)
+}

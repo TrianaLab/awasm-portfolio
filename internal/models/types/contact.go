@@ -3,6 +3,7 @@ package types
 import (
 	"awasm-portfolio/internal/models"
 	"reflect"
+	"strings"
 )
 
 type Contact struct {
@@ -21,3 +22,6 @@ func (c *Contact) GetNamespace() string                          { return c.Name
 func (c *Contact) SetNamespace(namespace string)                 { c.Namespace = namespace }
 func (c *Contact) GetOwnerReference() models.OwnerReference      { return c.OwnerRef }
 func (c *Contact) SetOwnerReference(owner models.OwnerReference) { c.OwnerRef = owner }
+func (c *Contact) GetID() string {
+	return strings.ToLower(c.GetKind() + ":" + c.Name + ":" + c.Namespace)
+}
