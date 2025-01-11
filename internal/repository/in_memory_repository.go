@@ -3,6 +3,7 @@ package repository
 import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
+	"awasm-portfolio/internal/util"
 	"errors"
 	"fmt"
 	"sync"
@@ -22,17 +23,17 @@ func NewInMemoryRepository() *InMemoryRepository {
 }
 
 func (r *InMemoryRepository) Create(resource models.Resource) error {
+	kind := util.NormalizeResourceName(resource.GetKind()) // Normalize kind
+	name := resource.GetName()
+
 	logger.Trace(logrus.Fields{
-		"kind":      resource.GetKind(),
-		"name":      resource.GetName(),
+		"kind":      kind,
+		"name":      name,
 		"namespace": resource.GetNamespace(),
 	}, "InMemoryRepository.Create called")
 
 	r.mu.Lock()
 	defer r.mu.Unlock()
-
-	kind := resource.GetKind()
-	name := resource.GetName()
 
 	if _, exists := r.resources[kind]; !exists {
 		r.resources[kind] = make(map[string]models.Resource)

@@ -4,6 +4,7 @@ import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/repository"
+	"awasm-portfolio/internal/util"
 	"fmt"
 
 	"github.com/sirupsen/logrus"
@@ -24,12 +25,12 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		"namespace": namespace,
 	}, "GetService.GetResources called")
 
-	kind = NormalizeResourceName(kind)
+	kind = util.NormalizeResourceName(kind)
 	logger.Trace(logrus.Fields{
 		"normalized_kind": kind,
 	}, "Normalized kind for GetService")
 
-	if !IsValidResource(kind) {
+	if !util.IsValidResource(kind) {
 		logger.Error(logrus.Fields{
 			"kind": kind,
 		}, "Unsupported resource kind")
