@@ -133,7 +133,7 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 			"id": resourceID,
 		}, "Resource deleted successfully")
 
-		// Step 3: Handle cascade deletions for namespaces
+		// Step 3: Handle cascade deletions
 		if kind == "namespace" {
 			namespaceToDelete := name
 
@@ -159,8 +159,35 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 					"id": cascadeID,
 				}, "Cascade deleted resource in namespace")
 			}
-		}
+		} else {
+			// For non-namespace resources, delete resources with matching OwnerReference
+			cascadeResources, err := r.List("", "", "") // Wildcard for kind, name, and namespace
+			if err != nil {
+				logger.Error(logrus.Fields{
+					"resourceID": resourceID,
+					"error":      err,
+				}, "Failed to list resources for owner reference cascade deletion")
+				continue
+			}
 
+			for _, cascadeRes := range cascadeResources {
+				ownerRef := cascadeRes.GetOwnerReference()
+				if strings.ToLower(ownerRef.Kind) == kind &&
+					strings.ToLower(ownerRef.Name) == strings.ToLower(name) &&
+					strings.ToLower(ownerRef.Namespace) == strings.ToLower(namespace) {
+					cascadeID := cascadeRes.GetID()
+
+					r.mu.Lock()
+					delete(r.resources, cascadeID)
+					r.mu.Unlock()
+
+					deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", cascadeRes.GetKind(), cascadeRes.GetName(), cascadeRes.GetNamespace()))
+					logger.Info(logrus.Fields{
+						"id": cascadeID,
+					}, "Cascade deleted resource with matching owner reference")
+				}
+			}
+		}
 	}
 
 	return fmt.Sprintf("Deleted resources:\n%s", strings.Join(deletedResources, "\n")), nil
