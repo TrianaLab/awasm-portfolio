@@ -9,11 +9,17 @@ import (
 	"strings"
 	"syscall/js"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
 func main() {
+	// Set trace level
+	var log = logrus.New()
+	log.Formatter = new(logrus.TextFormatter)
+	log.Level = logrus.TraceLevel
+
 	// Initialize repository and factory
 	repo := repository.NewInMemoryRepository()
 

@@ -4,6 +4,8 @@ import (
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
 	"fmt"
+
+	"github.com/sirupsen/logrus"
 )
 
 type DescribeService struct {
@@ -18,19 +20,27 @@ func NewDescribeService(repo *repository.InMemoryRepository) *DescribeService {
 	}
 }
 
-func (s *DescribeService) DescribeResource(kind, name, namespace string) (string, error) {
-	if namespace == "" {
-		return "", fmt.Errorf("describe command does not support --all-namespaces")
-	}
+func (s *DescribeService) DescribeResource(kind string, name string, namespace string) (string, error) {
+	logrus.WithFields(logrus.Fields{
+		"kind":      kind,
+		"name":      name,
+		"namespace": namespace,
+	}).Trace("DescribeService.DescribeResource called")
 
 	resource, err := s.repo.Get(kind, name)
 	if err != nil {
+		logrus.WithFields(logrus.Fields{
+			"kind":  kind,
+			"name":  name,
+			"error": err,
+		}).Error("Failed to describe resource")
 		return "", err
 	}
 
-	if resource.GetNamespace() != namespace {
-		return "", fmt.Errorf("resource %s/%s not found in namespace %s", kind, name, namespace)
-	}
-
-	return s.formatter.FormatDetails(resource), nil
+	details := fmt.Sprintf("Name: %s\nNamespace: %s\nKind: %s\n", resource.GetName(), resource.GetNamespace(), kind)
+	logrus.WithFields(logrus.Fields{
+		"kind": kind,
+		"name": name,
+	}).Info("Resource described successfully")
+	return details, nil
 }
