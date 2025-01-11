@@ -39,10 +39,15 @@ func main() {
 func runCLICommand(rootCmd *cobra.Command, command string) string {
 	args := strings.Fields(command)
 
+	// Remove the root command if it's redundantly included
+	if len(args) > 0 && (args[0] == "kubectl" || args[0] == "k") {
+		args = args[1:]
+	}
+
 	// Reset flag values recursively
 	resetFlagValues(rootCmd)
 
-	// Set the command arguments
+	// Set the sanitized arguments
 	rootCmd.SetArgs(args)
 
 	var buf bytes.Buffer
