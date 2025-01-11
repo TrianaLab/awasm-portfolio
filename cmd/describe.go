@@ -2,43 +2,26 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
 
-func NewDescribeCommand(svc *service.ResourceService) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:           "describe [kind] [name]",
-		Short:         "Describe a specific resource",
-		Args:          cobra.ExactArgs(2),
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
-			name := args[1]
+func NewDescribeCommand(service service.ResourceService) *cobra.Command {
+	return &cobra.Command{
+		Use:   "describe [kind] [name] [namespace]",
+		Short: "Describe a specific resource",
+		Args:  cobra.ExactArgs(3),
+		Run: func(cmd *cobra.Command, args []string) {
+			kind, name, namespace := args[0], args[1], args[2]
 
-			// Special case for namespace
-			if kind == "namespace" {
-				resource, err := svc.DescribeResource(kind, name, "")
-				if err != nil {
-					return err
-				}
-				cmd.Println(resource)
-				return nil
-			}
-
-			// Handle other resources
-			namespace, _ := cmd.Flags().GetString("namespace")
-			resource, err := svc.DescribeResource(kind, name, namespace)
+			result, err := service.DescribeResource(kind, name, namespace)
 			if err != nil {
-				return err
+				fmt.Printf("Error: %v\n", err)
+				return
 			}
-			cmd.Println(resource)
-			return nil
+
+			fmt.Println(result)
 		},
 	}
-
-	// Add namespace flag
-	cmd.Flags().StringP("namespace", "n", "default", "Namespace of the resource (default: 'default')")
-	return cmd
 }

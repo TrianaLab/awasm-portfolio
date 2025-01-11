@@ -4,8 +4,6 @@ import (
 	"awasm-portfolio/cmd"
 	"awasm-portfolio/internal/preload"
 	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/service"
-	"awasm-portfolio/internal/ui"
 	"bytes"
 	"fmt"
 	"strings"
@@ -16,20 +14,14 @@ import (
 )
 
 func main() {
-	// Initialize repository
+	// Initialize repository and factory
 	repo := repository.NewInMemoryRepository()
-
-	// Initialize formatter
-	formatter := ui.TextFormatter{}
-
-	// Initialize service with repository and formatter
-	resourceService := service.NewResourceService(repo, formatter)
 
 	// Preload data
 	preload.PreloadData(repo)
 
 	// Initialize commands
-	rootCmd := cmd.NewRootCommand(resourceService)
+	rootCmd := cmd.NewRootCommand(repo)
 
 	// Expose executeCommand to JavaScript
 	js.Global().Set("executeCommand", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
@@ -47,11 +39,6 @@ func main() {
 func runCLICommand(rootCmd *cobra.Command, command string) string {
 	args := strings.Fields(command)
 
-	// Strip "kubectl" or "k" prefix if present
-	if len(args) > 0 && (args[0] == "kubectl" || args[0] == "k") {
-		args = args[1:]
-	}
-
 	// Reset flag values recursively
 	resetFlagValues(rootCmd)
 
@@ -63,11 +50,7 @@ func runCLICommand(rootCmd *cobra.Command, command string) string {
 	rootCmd.SetErr(&buf)
 
 	if err := rootCmd.Execute(); err != nil {
-		if strings.Contains(err.Error(), "unknown command") || strings.Contains(err.Error(), "requires at least") {
-			buf.WriteString(fmt.Sprintf("Error: %s\n", err.Error()))
-		} else {
-			buf.WriteString(err.Error())
-		}
+		buf.WriteString(fmt.Sprintf("Error: %s\n", err.Error()))
 	}
 
 	return strings.TrimSpace(buf.String())

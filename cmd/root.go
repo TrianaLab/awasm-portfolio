@@ -1,22 +1,26 @@
 package cmd
 
 import (
+	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/service"
 
 	"github.com/spf13/cobra"
 )
 
-func NewRootCommand(svc *service.ResourceService) *cobra.Command {
+func NewRootCommand(repo *repository.InMemoryRepository) *cobra.Command {
+	resourceService := service.NewResourceService(repo)
+
 	rootCmd := &cobra.Command{
-		Use:   "kubectl",
-		Short: "A CLI tool for managing resources",
+		Use:           "kubectl",
+		Short:         "A CLI tool for managing resources",
+		SilenceUsage:  true,
+		SilenceErrors: true,
 	}
 
-	// Add subcommands
-	rootCmd.AddCommand(NewCreateCommand(svc))
-	rootCmd.AddCommand(NewDeleteCommand(svc))
-	rootCmd.AddCommand(NewGetCommand(svc))
-	rootCmd.AddCommand(NewDescribeCommand(svc))
+	rootCmd.AddCommand(NewCreateCommand(resourceService))
+	rootCmd.AddCommand(NewDeleteCommand(resourceService))
+	rootCmd.AddCommand(NewGetCommand(resourceService))
+	rootCmd.AddCommand(NewDescribeCommand(resourceService))
 
 	return rootCmd
 }

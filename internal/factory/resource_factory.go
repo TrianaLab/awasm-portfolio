@@ -7,6 +7,10 @@ import (
 
 type ResourceFactory struct{}
 
+func NewResourceFactory() *ResourceFactory {
+	return &ResourceFactory{}
+}
+
 func (f *ResourceFactory) Create(kind string, data map[string]interface{}) models.Resource {
 	switch kind {
 	case "profile":
@@ -26,6 +30,6 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 	case "skills":
 		return &types.Skills{Name: data["name"].(string), Namespace: data["namespace"].(string)}
 	default:
-		panic("Unknown resource kind")
+		return nil
 	}
 }

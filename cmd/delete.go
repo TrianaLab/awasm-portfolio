@@ -2,44 +2,26 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
+	"fmt"
 
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(svc *service.ResourceService) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:           "delete [kind] [name]",
-		Short:         "Delete a specific resource and its child resources",
-		Args:          cobra.MinimumNArgs(2),
-		SilenceUsage:  true,
-		SilenceErrors: true,
-		RunE: func(cmd *cobra.Command, args []string) error {
-			kind := service.NormalizeResourceName(args[0]) // Normalize the kind
-			name := args[1]
+func NewDeleteCommand(service service.ResourceService) *cobra.Command {
+	return &cobra.Command{
+		Use:   "delete [kind] [name] [namespace]",
+		Short: "Delete a resource",
+		Args:  cobra.ExactArgs(3),
+		Run: func(cmd *cobra.Command, args []string) {
+			kind, name, namespace := args[0], args[1], args[2]
 
-			// Handle namespace deletion
-			if kind == "namespace" {
-				message, err := svc.DeleteResourceInNamespace(kind, name, "")
-				if err != nil {
-					return err
-				}
-				cmd.Println(message)
-				return nil
-			}
-
-			// Handle other resources
-			namespace, _ := cmd.Flags().GetString("namespace")
-			message, err := svc.DeleteResourceInNamespace(kind, name, namespace)
+			result, err := service.DeleteResource(kind, name, namespace)
 			if err != nil {
-				return err
+				fmt.Printf("Error: %v\n", err)
+				return
 			}
 
-			cmd.Println(message)
-			return nil
+			fmt.Println(result)
 		},
 	}
-
-	// Add namespace flag
-	cmd.Flags().StringP("namespace", "n", "default", "Namespace of the resource (default: 'default')")
-	return cmd
 }
