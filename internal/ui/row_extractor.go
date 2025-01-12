@@ -76,11 +76,20 @@ func extractRow(resource models.Resource, headers []string) []string {
 					break
 				}
 
+				// Handle array fields with summary
+				if fieldValue.Kind() == reflect.Slice {
+					row[i] = summarizeArray(fieldValue, header)
+					logger.Info(logrus.Fields{
+						"arrayFieldSummary": row[i],
+					}, "Summarized array field")
+					break
+				}
+
 				// Handle fields of type Resource
 				if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
 					if fieldValue.Type().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
 						res := fieldValue.Interface().(models.Resource)
-						row[i] = res.GetName() // Extract only the resource name
+						row[i] = res.GetName()
 						logger.Info(logrus.Fields{
 							"resourceFieldName": res.GetName(),
 						}, "Resolved resource field to name")
@@ -88,10 +97,10 @@ func extractRow(resource models.Resource, headers []string) []string {
 					}
 				}
 
-				// Handle nested structs (e.g., Contact, Contributions)
+				// Handle nested structs
 				if fieldValue.Kind() == reflect.Struct {
 					if nestedResource, ok := fieldValue.Addr().Interface().(models.Resource); ok {
-						row[i] = nestedResource.GetName() // Extract name from the nested resource
+						row[i] = nestedResource.GetName()
 						logger.Info(logrus.Fields{
 							"nestedResourceFieldName": nestedResource.GetName(),
 						}, "Resolved nested struct to resource name")

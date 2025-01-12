@@ -84,3 +84,18 @@ func formatOwnerRef(fieldValue reflect.Value) string {
 	// Format as "kind/name"
 	return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
 }
+
+func summarizeArray(fieldValue reflect.Value, header string) string {
+	count := fieldValue.Len()
+	if count == 0 {
+		return ""
+	}
+
+	// Use the header name to create a meaningful summary
+	label := strings.ToLower(strings.TrimSuffix(header, "S")) // Singular form of header
+	if count > 1 {
+		label += "s" // Pluralize for counts > 1
+	}
+
+	return fmt.Sprintf("%d %s", count, label)
+}
