@@ -1,9 +1,13 @@
 package ui
 
 import (
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"fmt"
+	"reflect"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // capitalizeFieldName capitalizes the first letter of a field name
@@ -59,4 +63,24 @@ func groupResourcesByKind(resources []models.Resource) map[string][]models.Resou
 		grouped[kind] = append(grouped[kind], resource)
 	}
 	return grouped
+}
+
+func formatOwnerRef(fieldValue reflect.Value) string {
+	if fieldValue.Kind() != reflect.Struct {
+		logger.Warn(logrus.Fields{
+			"fieldKind": fieldValue.Kind(),
+		}, "OwnerRef is not a struct")
+		return ""
+	}
+
+	ownerRef, ok := fieldValue.Interface().(models.OwnerReference)
+	if !ok {
+		logger.Warn(logrus.Fields{
+			"fieldType": fieldValue.Type().String(),
+		}, "Failed to cast OwnerRef to models.OwnerReference")
+		return ""
+	}
+
+	// Format as "kind/name"
+	return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
 }

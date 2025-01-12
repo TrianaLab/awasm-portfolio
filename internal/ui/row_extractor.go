@@ -67,6 +67,15 @@ func extractRow(resource models.Resource, headers []string) []string {
 			if strings.ToUpper(field.Name) == header {
 				found = true
 
+				// Special handling for OwnerRef
+				if strings.ToLower(field.Name) == "ownerref" {
+					row[i] = formatOwnerRef(fieldValue)
+					logger.Info(logrus.Fields{
+						"ownerRefFormatted": row[i],
+					}, "Formatted owner reference")
+					break
+				}
+
 				// Handle fields of type Resource
 				if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
 					if fieldValue.Type().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
