@@ -182,11 +182,11 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace: johnDoeProfile.GetNamespace(),
 		},
 		Skills: []types.Skill{
-			{Name: "Go", Proficiency: "Expert"},
-			{Name: "Kubernetes", Proficiency: "Advanced"},
-			{Name: "Docker", Proficiency: "Advanced"},
-			{Name: "Cloud Infrastructure", Proficiency: "Expert"},
-			{Name: "Web Development", Proficiency: "Intermediate"},
+			{Competence: "Go", Proficiency: "Expert"},
+			{Competence: "Kubernetes", Proficiency: "Advanced"},
+			{Competence: "Docker", Proficiency: "Advanced"},
+			{Competence: "Cloud Infrastructure", Proficiency: "Expert"},
+			{Competence: "Web Development", Proficiency: "Intermediate"},
 		},
 	}
 	repo.Create(johnDoeSkills)

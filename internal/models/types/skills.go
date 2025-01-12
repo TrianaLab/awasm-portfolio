@@ -8,7 +8,7 @@ import (
 )
 
 type Skill struct {
-	Name        string
+	Competence  string
 	Proficiency string
 }
 
