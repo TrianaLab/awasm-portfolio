@@ -18,7 +18,7 @@ type Certifications struct {
 	Certifications []Certification
 }
 
-func (c *Certifications) GetKind() string                               { return reflect.TypeOf(*c).Name() }
+func (c *Certifications) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*c).Name()) }
 func (c *Certifications) GetName() string                               { return c.Name }
 func (c *Certifications) SetName(name string)                           { c.Name = name }
 func (c *Certifications) GetNamespace() string                          { return c.Namespace }

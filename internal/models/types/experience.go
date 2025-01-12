@@ -20,7 +20,7 @@ type Experience struct {
 	Jobs      []Job
 }
 
-func (e *Experience) GetKind() string                               { return reflect.TypeOf(*e).Name() }
+func (e *Experience) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*e).Name()) }
 func (e *Experience) GetName() string                               { return e.Name }
 func (e *Experience) SetName(name string)                           { e.Name = name }
 func (e *Experience) GetNamespace() string                          { return e.Namespace }

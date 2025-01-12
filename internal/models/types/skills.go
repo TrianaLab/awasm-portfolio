@@ -18,7 +18,7 @@ type Skills struct {
 	Skills    []Skill
 }
 
-func (s *Skills) GetKind() string                               { return reflect.TypeOf(*s).Name() }
+func (s *Skills) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*s).Name()) }
 func (s *Skills) GetName() string                               { return s.Name }
 func (s *Skills) SetName(name string)                           { s.Name = name }
 func (s *Skills) GetNamespace() string                          { return s.Namespace }

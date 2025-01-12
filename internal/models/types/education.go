@@ -19,7 +19,7 @@ type Education struct {
 	Courses   []Course
 }
 
-func (e *Education) GetKind() string                               { return reflect.TypeOf(*e).Name() }
+func (e *Education) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*e).Name()) }
 func (e *Education) GetName() string                               { return e.Name }
 func (e *Education) SetName(name string)                           { e.Name = name }
 func (e *Education) GetNamespace() string                          { return e.Namespace }

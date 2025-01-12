@@ -15,7 +15,7 @@ type Contact struct {
 	GitHub    string
 }
 
-func (c *Contact) GetKind() string                               { return reflect.TypeOf(*c).Name() }
+func (c *Contact) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*c).Name()) }
 func (c *Contact) GetName() string                               { return c.Name }
 func (c *Contact) SetName(name string)                           { c.Name = name }
 func (c *Contact) GetNamespace() string                          { return c.Namespace }

@@ -12,7 +12,7 @@ type Namespace struct {
 	OwnerRef  models.OwnerReference
 }
 
-func (ns *Namespace) GetKind() string                               { return reflect.TypeOf(*ns).Name() }
+func (ns *Namespace) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*ns).Name()) }
 func (ns *Namespace) GetName() string                               { return ns.Name }
 func (ns *Namespace) SetName(name string)                           { ns.Name = name }
 func (ns *Namespace) GetNamespace() string                          { return "" }

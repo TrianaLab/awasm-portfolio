@@ -18,7 +18,7 @@ type Profile struct {
 	Skills         Skills
 }
 
-func (p *Profile) GetKind() string                                { return reflect.TypeOf(*p).Name() }
+func (p *Profile) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*p).Name()) }
 func (p *Profile) GetName() string                                { return p.Name }
 func (p *Profile) SetName(name string)                            { p.Name = name }
 func (p *Profile) GetNamespace() string                           { return p.Namespace }

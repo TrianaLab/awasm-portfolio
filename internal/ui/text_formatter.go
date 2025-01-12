@@ -24,9 +24,31 @@ func (f TextFormatter) FormatTable(resources []models.Resource) string {
 	var sb strings.Builder
 
 	// Iterate over each group
-	for _, group := range grouped {
-		sb.WriteString(f.formatTable(group))
+	for kind, group := range grouped {
+		// Check if the group is for "namespace" kind
+		if kind == "namespace" {
+			sb.WriteString(f.formatNamespaceTable(group)) // Call the special formatting method
+		} else {
+			sb.WriteString(f.formatTable(group)) // Default formatting for other kinds
+		}
 		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+func (f TextFormatter) formatNamespaceTable(resources []models.Resource) string {
+	if len(resources) == 0 {
+		return "No resources found."
+	}
+
+	// Start with a header for the "NAME" column only
+	var sb strings.Builder
+	sb.WriteString(fmt.Sprintf("%-30s\n", "NAME"))
+
+	// Print only the "Name" column for each namespace
+	for _, resource := range resources {
+		sb.WriteString(fmt.Sprintf("%-30s\n", resource.GetName()))
 	}
 
 	return sb.String()
@@ -87,7 +109,7 @@ func (f TextFormatter) formatTable(resources []models.Resource) string {
 
 // Extract headers from the first resource, excluding OwnerRef and arrays
 func (f TextFormatter) extractHeaders(resource models.Resource) []string {
-	headers := []string{"NAME", "NAMESPACE"}
+	headers := []string{"NAME", "NAMESPACE"} // Only add these once
 	value := reflect.ValueOf(resource).Elem()
 	typ := value.Type()
 
@@ -100,19 +122,34 @@ func (f TextFormatter) extractHeaders(resource models.Resource) []string {
 			continue
 		}
 
-		// Add other fields to headers
-		headers = append(headers, capitalizeTableFieldName(field.Name))
+		// Skip Name and Namespace fields since they're already included
+		if strings.ToLower(field.Name) == "name" || strings.ToLower(field.Name) == "namespace" {
+			continue
+		}
+
+		// Add the other fields to headers, ensuring the name is uppercase
+		headers = append(headers, strings.ToUpper(field.Name))
 	}
 
 	return headers
 }
 
 func (f TextFormatter) extractRow(resource models.Resource, headers []string) []string {
-	row := []string{resource.GetName(), resource.GetNamespace()}
+	// If the resource is of kind "namespace", only include the "Name" column
+	if resource.GetKind() == "namespace" {
+		return []string{resource.GetName()}
+	}
+
+	row := make([]string, len(headers))
+
+	// Extract the Name and Namespace at the beginning and skip them in the loop
+	row[0] = resource.GetName()
+	row[1] = resource.GetNamespace()
+
 	value := reflect.ValueOf(resource).Elem()
 	typ := value.Type()
 
-	for i := 2; i < len(headers); i++ {
+	for i := 2; i < len(headers); i++ { // Start from index 2 to skip Name and Namespace
 		header := headers[i]
 		found := false
 
@@ -120,58 +157,42 @@ func (f TextFormatter) extractRow(resource models.Resource, headers []string) []
 			field := typ.Field(j)
 			fieldValue := value.Field(j)
 
-			fmt.Printf("Looking for header: %s\n", header)
-			fmt.Printf("Checking field: %s, Type: %s\n", field.Name, fieldValue.Kind())
-
-			if capitalizeTableFieldName(field.Name) == header {
+			// Check if the current field matches the header
+			if strings.ToUpper(field.Name) == header {
 				found = true
 
-				// Check if the field is a resource (implements Resource interface)
+				// Check if the field is a nested resource (implements Resource interface)
 				if fieldValue.Kind() == reflect.Struct && fieldValue.Addr().Type().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
-					// Check the kind of field
-					fmt.Printf("Field: %s is a resource type\n", field.Name)
-
-					// Dereference based on whether it's a pointer or not
 					var nestedResourcePtr models.Resource
 					if fieldValue.Kind() == reflect.Ptr {
 						nestedResourcePtr = fieldValue.Interface().(models.Resource)
-						fmt.Printf("Dereferenced pointer: %v\n", nestedResourcePtr)
 					} else {
 						nestedResourcePtr = fieldValue.Addr().Interface().(models.Resource)
-						fmt.Printf("Dereferenced struct: %v\n", nestedResourcePtr)
 					}
 
 					// Extract the name of the nested resource
-					name := nestedResourcePtr.GetName()
-					fmt.Printf("Extracted nested resource name: %s for field: %s\n", name, header)
-					row = append(row, name)
-				} else if !fieldValue.IsZero() { // Scalar fields
-					fmt.Printf("Extracted scalar value: %v for field: %s\n", fieldValue.Interface(), header)
-					row = append(row, fmt.Sprintf("%v", fieldValue.Interface()))
-				} else { // Empty field
-					fmt.Printf("Field: %s is empty\n", header)
-					row = append(row, "")
+					row[i] = nestedResourcePtr.GetName()
+				} else if !fieldValue.IsZero() { // Handle scalar values
+					row[i] = fmt.Sprintf("%v", fieldValue.Interface())
+				} else { // Handle empty fields
+					row[i] = ""
 				}
 				break
 			}
 		}
 
-		// If not found in the resource, append empty value
+		// If not found, append empty value
 		if !found {
-			fmt.Printf("Header: %s not found in the resource\n", header)
-			row = append(row, "")
+			row[i] = ""
 		}
 	}
-
-	// Log the final row constructed for this resource
-	fmt.Printf("Final row: %v\n", row)
 
 	return row
 }
 
-// Capitalize the first letter of a field name
+// Capitalize the field name fully
 func capitalizeTableFieldName(fieldName string) string {
-	return strings.ToUpper(fieldName[:1]) + fieldName[1:]
+	return strings.ToUpper(fieldName) // Capitalize the whole name
 }
 
 // FormatDetails formats a resource into a clean YAML-like structure.

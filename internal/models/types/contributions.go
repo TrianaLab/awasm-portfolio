@@ -19,7 +19,7 @@ type Contributions struct {
 	Contributions []Contribution
 }
 
-func (c *Contributions) GetKind() string                               { return reflect.TypeOf(*c).Name() }
+func (c *Contributions) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*c).Name()) }
 func (c *Contributions) GetName() string                               { return c.Name }
 func (c *Contributions) SetName(name string)                           { c.Name = name }
 func (c *Contributions) GetNamespace() string                          { return c.Namespace }
