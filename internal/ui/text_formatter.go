@@ -2,70 +2,48 @@ package ui
 
 import (
 	"awasm-portfolio/internal/models"
+	"bytes"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
 type TextFormatter struct{}
 
-func (f TextFormatter) FormatTable(data map[string]models.ResourceBase) string {
-	var headers []string
-	rows := [][]string{}
-
-	// Determine if the data represents namespaces
-	isNamespace := false
-	for _, resource := range data {
-		if resource.Namespace == "" {
-			isNamespace = true
-			break
-		}
+func (f TextFormatter) FormatTable(resources []models.Resource) string {
+	if len(resources) == 0 {
+		return "No resources found."
 	}
 
-	// Set headers based on the resource type
-	if isNamespace {
-		headers = []string{"Name"} // Only "Name" for namespaces
-	} else {
-		headers = []string{"Name", "Namespace"} // Default headers for non-namespace resources
-		headerSet := map[string]bool{"Name": true, "Namespace": true}
-
-		// Dynamically collect additional headers
-		for _, resource := range data {
-			fields := resource.GetFields()
-			for key, val := range fields {
-				if key != "Name" && key != "Namespace" && val != "" && !headerSet[key] {
-					headerSet[key] = true
-					headers = append(headers, strings.Title(key)) // Capitalize header
-				}
-			}
-		}
+	// Group resources by kind
+	grouped := make(map[string][]models.Resource)
+	for _, resource := range resources {
+		grouped[resource.GetKind()] = append(grouped[resource.GetKind()], resource)
 	}
 
-	// Collect rows
-	for _, resource := range data {
-		fields := resource.GetFields()
-		var row []string
+	var sb strings.Builder
 
-		if isNamespace {
-			// For namespaces, only include the "Name" field
-			row = []string{fields["Name"]}
-		} else {
-			// For non-namespace resources, ensure "Name" and "Namespace" are always included
-			row = []string{
-				fields["Name"],      // Include Name
-				fields["Namespace"], // Include Namespace
-			}
+	// Iterate over each group
+	for _, group := range grouped {
+		sb.WriteString(f.formatTable(group))
+		sb.WriteString("\n")
+	}
 
-			// Include additional headers dynamically
-			for _, header := range headers[2:] { // Skip Name and Namespace headers
-				fieldKey := strings.ToLower(header) // Match header to field key
-				if val, exists := fields[fieldKey]; exists {
-					row = append(row, val)
-				} else {
-					row = append(row, "") // Ensure alignment for missing fields
-				}
-			}
-		}
+	return sb.String()
+}
 
+// Helper function to format a single table of resources
+func (f TextFormatter) formatTable(resources []models.Resource) string {
+	if len(resources) == 0 {
+		return "No resources found."
+	}
+
+	// Extract column headers
+	headers := []string{"NAME", "NAMESPACE"}
+	var rows [][]string
+
+	for _, resource := range resources {
+		row := []string{resource.GetName(), resource.GetNamespace()}
 		rows = append(rows, row)
 	}
 
@@ -75,42 +53,95 @@ func (f TextFormatter) FormatTable(data map[string]models.ResourceBase) string {
 		colWidths[i] = len(header)
 	}
 	for _, row := range rows {
-		for i, field := range row {
-			if len(field) > colWidths[i] {
-				colWidths[i] = len(field)
+		for i, cell := range row {
+			if len(cell) > colWidths[i] {
+				colWidths[i] = len(cell)
 			}
 		}
 	}
 
-	// Build the table output
-	var output strings.Builder
+	// Build the table
+	var sb strings.Builder
+
+	// Print headers
 	for i, header := range headers {
-		output.WriteString(fmt.Sprintf("%-*s  ", colWidths[i], header))
-	}
-	output.WriteString("\r\n") // Add newline after headers
-
-	for _, row := range rows {
-		for i, field := range row {
-			output.WriteString(fmt.Sprintf("%-*s  ", colWidths[i], field))
+		sb.WriteString(fmt.Sprintf("%-*s", colWidths[i], header))
+		if i < len(headers)-1 {
+			sb.WriteString("  ")
 		}
-		output.WriteString("\r\n")
+	}
+	sb.WriteString("\n")
+
+	// Print rows
+	for _, row := range rows {
+		for i, cell := range row {
+			sb.WriteString(fmt.Sprintf("%-*s", colWidths[i], cell))
+			if i < len(headers)-1 {
+				sb.WriteString("  ")
+			}
+		}
+		sb.WriteString("\n")
 	}
 
-	return strings.TrimSuffix(output.String(), "\n")
+	return sb.String()
 }
 
-func (f TextFormatter) FormatDetails(data map[string]string) string {
-	var output strings.Builder
-	for key, value := range data {
-		output.WriteString(fmt.Sprintf("%s: %s\n", key, value))
+// FormatDetails formats a resource into a clean YAML-like structure.
+func FormatDetails(resource interface{}) string {
+	var buffer bytes.Buffer
+	formatResource(&buffer, resource, 0, true)
+	return buffer.String()
+}
+
+// formatResource handles formatting for a single resource, including nested resources and arrays.
+func formatResource(buffer *bytes.Buffer, resource interface{}, indent int, includeMeta bool) {
+	value := reflect.ValueOf(resource).Elem()
+	typ := value.Type()
+
+	indentation := func(level int) string {
+		return strings.Repeat("  ", level)
 	}
-	return strings.TrimSuffix(output.String(), "\n")
+
+	for i := 0; i < value.NumField(); i++ {
+		field := typ.Field(i)
+		fieldValue := value.Field(i)
+		fieldName := capitalizeFieldName(field.Name)
+
+		// Skip metadata fields for nested resources
+		if !includeMeta && (strings.ToLower(fieldName) == "name" || strings.ToLower(fieldName) == "namespace" || strings.ToLower(fieldName) == "ownerref") {
+			continue
+		}
+
+		// Check if the field is a resource (implements Resource interface)
+		if fieldValue.Kind() == reflect.Struct && fieldValue.Addr().Type().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
+			resourceName := fieldValue.FieldByName("Name").String()
+			buffer.WriteString(fmt.Sprintf("%s%s: %s\n", indentation(indent), fieldName, resourceName))
+			formatResource(buffer, fieldValue.Addr().Interface(), indent+1, false)
+			continue
+		}
+
+		// Handle slices
+		if fieldValue.Kind() == reflect.Slice && fieldValue.Len() > 0 {
+			for j := 0; j < fieldValue.Len(); j++ {
+				element := fieldValue.Index(j).Interface()
+				buffer.WriteString(fmt.Sprintf("%s- ", indentation(indent)))
+				if reflect.ValueOf(element).Kind() == reflect.Struct {
+					formatResource(buffer, fieldValue.Index(j).Addr().Interface(), indent+1, true)
+				} else {
+					buffer.WriteString(fmt.Sprintf("%v\n", element))
+				}
+			}
+			continue
+		}
+
+		// Print scalar fields
+		if !fieldValue.IsZero() {
+			buffer.WriteString(fmt.Sprintf("%s%s: %v\n", indentation(indent), fieldName, fieldValue.Interface()))
+		}
+	}
 }
 
-func (f TextFormatter) Error(message string) string {
-	return fmt.Sprintf("Error: %s", message)
-}
-
-func (f TextFormatter) Success(message string) string {
-	return fmt.Sprintf("Success: %s", message)
+// capitalizeFieldName capitalizes the first letter of a field name.
+func capitalizeFieldName(fieldName string) string {
+	return strings.ToUpper(fieldName[:1]) + strings.ToLower(fieldName[1:])
 }
