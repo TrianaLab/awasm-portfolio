@@ -22,7 +22,7 @@ func (f TableFormatter) FormatTable(resources []models.Resource) string {
 		if kind == "namespace" {
 			sb.WriteString(f.formatNamespaceTable(group))
 		} else {
-			sb.WriteString(f.formatTable(group))
+			sb.WriteString(f.formatGenericTable(group))
 		}
 		sb.WriteString("\n")
 	}
@@ -32,25 +32,16 @@ func (f TableFormatter) FormatTable(resources []models.Resource) string {
 
 // formatNamespaceTable formats namespace resources as a single-column table
 func (f TableFormatter) formatNamespaceTable(resources []models.Resource) string {
-	if len(resources) == 0 {
-		return "No resources found."
-	}
-
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("%-30s\n", "NAME"))
 	for _, resource := range resources {
 		sb.WriteString(fmt.Sprintf("%-30s\n", resource.GetName()))
 	}
-
 	return sb.String()
 }
 
-// formatTable formats a generic table for resources
-func (f TableFormatter) formatTable(resources []models.Resource) string {
-	if len(resources) == 0 {
-		return "No resources found."
-	}
-
+// formatGenericTable formats a generic table for resources
+func (f TableFormatter) formatGenericTable(resources []models.Resource) string {
 	headers := extractHeaders(resources[0])
 	rows := extractRows(resources, headers)
 	colWidths := calculateColumnWidths(headers, rows)
@@ -58,6 +49,5 @@ func (f TableFormatter) formatTable(resources []models.Resource) string {
 	var sb strings.Builder
 	formatHeaders(&sb, headers, colWidths)
 	formatRows(&sb, rows, colWidths)
-
 	return sb.String()
 }

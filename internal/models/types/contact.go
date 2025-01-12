@@ -4,15 +4,17 @@ import (
 	"awasm-portfolio/internal/models"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Contact struct {
-	Name      string
-	Namespace string
-	OwnerRef  models.OwnerReference
-	Email     string
-	LinkedIn  string
-	GitHub    string
+	Name              string
+	Namespace         string
+	OwnerRef          models.OwnerReference
+	Email             string
+	LinkedIn          string
+	GitHub            string
+	CreationTimestamp time.Time
 }
 
 func (c *Contact) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*c).Name()) }
@@ -25,3 +27,5 @@ func (c *Contact) SetOwnerReference(owner models.OwnerReference) { c.OwnerRef = 
 func (c *Contact) GetID() string {
 	return strings.ToLower(c.GetKind() + ":" + c.Name + ":" + c.Namespace)
 }
+func (c *Contact) GetCreationTimestamp() time.Time          { return c.CreationTimestamp }
+func (c *Contact) SetCreationTimestamp(timestamp time.Time) { c.CreationTimestamp = timestamp }

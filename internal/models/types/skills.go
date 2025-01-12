@@ -4,6 +4,7 @@ import (
 	"awasm-portfolio/internal/models"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Skill struct {
@@ -12,10 +13,11 @@ type Skill struct {
 }
 
 type Skills struct {
-	Name      string
-	Namespace string
-	OwnerRef  models.OwnerReference
-	Skills    []Skill
+	Name              string
+	Namespace         string
+	OwnerRef          models.OwnerReference
+	Skills            []Skill
+	CreationTimestamp time.Time
 }
 
 func (s *Skills) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*s).Name()) }
@@ -28,3 +30,5 @@ func (s *Skills) SetOwnerReference(owner models.OwnerReference) { s.OwnerRef = o
 func (s *Skills) GetID() string {
 	return strings.ToLower(s.GetKind() + ":" + s.Name + ":" + s.Namespace)
 }
+func (s *Skills) GetCreationTimestamp() time.Time          { return s.CreationTimestamp }
+func (s *Skills) SetCreationTimestamp(timestamp time.Time) { s.CreationTimestamp = timestamp }

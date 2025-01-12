@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -61,59 +62,65 @@ func groupResourcesByKind(resources []models.Resource) map[string][]models.Resou
 	for _, resource := range resources {
 		kind := resource.GetKind()
 		grouped[kind] = append(grouped[kind], resource)
+		logrus.WithFields(logrus.Fields{
+			"kind":      kind,
+			"resource":  resource.GetName(),
+			"namespace": resource.GetNamespace(),
+		}).Trace("Grouped resource by kind")
 	}
 	return grouped
 }
 
-func summarizeArray(fieldValue reflect.Value, header string) string {
-	count := fieldValue.Len()
-	if count == 0 {
+// calculateAge calculates the age of a resource
+func calculateAge(timestamp time.Time) string {
+	if timestamp.IsZero() {
+		return ""
+	}
+	duration := time.Since(timestamp)
+	switch {
+	case duration.Hours() >= 24:
+		return fmt.Sprintf("%dd", int(duration.Hours()/24))
+	case duration.Hours() >= 1:
+		return fmt.Sprintf("%dh", int(duration.Hours()))
+	case duration.Minutes() >= 1:
+		return fmt.Sprintf("%dm", int(duration.Minutes()))
+	default:
+		return fmt.Sprintf("%ds", int(duration.Seconds()))
+	}
+}
+
+// summarizeArray returns a summary of the array or slice
+func summarizeArray(fieldValue reflect.Value) string {
+	length := fieldValue.Len()
+	if length > 0 {
+		return fmt.Sprintf("%d items", length)
+	}
+	return "0 items"
+}
+
+// formatNestedField formats a nested field as "kind/name" if applicable
+func formatNestedField(fieldValue reflect.Value) string {
+	if !fieldValue.IsValid() || (fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil()) {
+		logger.Trace(logrus.Fields{"fieldValue": fieldValue}, "Field value is invalid or nil")
 		return ""
 	}
 
-	// Use the header name to create a meaningful summary
-	label := strings.ToLower(strings.TrimSuffix(header, "S")) // Singular form of header
-	if count > 1 {
-		label += "s" // Pluralize for counts > 1
+	if resource, ok := fieldValue.Interface().(models.Resource); ok {
+		formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+		logger.Trace(logrus.Fields{"formatted": formatted}, "Formatted resource as kind/name")
+		return formatted
 	}
 
-	return fmt.Sprintf("%d %s", count, label)
-}
-
-func formatKindResource(fieldValue reflect.Value) string {
-	// Handle pointers
-	if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
-		if resource, ok := fieldValue.Interface().(models.Resource); ok {
-			if resource.GetKind() != "" && resource.GetName() != "" {
-				return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
-			}
-			return "" // Return empty string for incomplete resource
-		}
-	}
-
-	// Handle structs
 	if fieldValue.Kind() == reflect.Struct {
-		// Check if the field is an OwnerReference
-		if ownerRef, ok := fieldValue.Interface().(models.OwnerReference); ok {
-			if ownerRef.Kind != "" && ownerRef.Name != "" {
-				return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
+		if nestedField := fieldValue.Addr(); nestedField.IsValid() {
+			if resource, ok := nestedField.Interface().(models.Resource); ok {
+				formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+				logger.Trace(logrus.Fields{"formatted": formatted}, "Formatted nested resource struct")
+				return formatted
 			}
-			return "" // Return empty string for incomplete OwnerReference
-		}
-
-		// Check if the field implements the Resource interface
-		if resource, ok := fieldValue.Addr().Interface().(models.Resource); ok {
-			if resource.GetKind() != "" && resource.GetName() != "" {
-				return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
-			}
-			return "" // Return empty string for incomplete resource
 		}
 	}
 
-	// Log a warning if the field cannot be formatted
-	logger.Warn(logrus.Fields{
-		"fieldKind": fieldValue.Kind(),
-		"fieldType": fieldValue.Type().String(),
-	}, "Unable to format field as kind/name")
-	return ""
+	logger.Warn(logrus.Fields{"fieldValue": fieldValue}, "Field is not a resource")
+	return fmt.Sprintf("%v", fieldValue.Interface())
 }

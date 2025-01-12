@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -95,6 +96,11 @@ func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
 			Kind: "namespace",
 			Name: resource.GetNamespace(),
 		})
+	}
+
+	// Set the creation timestamp here
+	if resource.GetCreationTimestamp().IsZero() {
+		resource.SetCreationTimestamp(time.Now())
 	}
 
 	r.resources[resourceID] = resource

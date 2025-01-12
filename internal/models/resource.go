@@ -1,6 +1,9 @@
 package models
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 type Resource interface {
 	GetKind() string
@@ -11,6 +14,8 @@ type Resource interface {
 	GetOwnerReference() OwnerReference
 	SetOwnerReference(owner OwnerReference)
 	GetID() string
+	GetCreationTimestamp() time.Time
+	SetCreationTimestamp(timestamp time.Time)
 }
 
 type OwnerReference struct {
