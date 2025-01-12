@@ -65,26 +65,6 @@ func groupResourcesByKind(resources []models.Resource) map[string][]models.Resou
 	return grouped
 }
 
-func formatOwnerRef(fieldValue reflect.Value) string {
-	if fieldValue.Kind() != reflect.Struct {
-		logger.Warn(logrus.Fields{
-			"fieldKind": fieldValue.Kind(),
-		}, "OwnerRef is not a struct")
-		return ""
-	}
-
-	ownerRef, ok := fieldValue.Interface().(models.OwnerReference)
-	if !ok {
-		logger.Warn(logrus.Fields{
-			"fieldType": fieldValue.Type().String(),
-		}, "Failed to cast OwnerRef to models.OwnerReference")
-		return ""
-	}
-
-	// Format as "kind/name"
-	return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
-}
-
 func summarizeArray(fieldValue reflect.Value, header string) string {
 	count := fieldValue.Len()
 	if count == 0 {
@@ -98,4 +78,37 @@ func summarizeArray(fieldValue reflect.Value, header string) string {
 	}
 
 	return fmt.Sprintf("%d %s", count, label)
+}
+
+func formatKindResource(fieldValue reflect.Value) string {
+	// Handle pointers
+	if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
+		if resource, ok := fieldValue.Interface().(models.Resource); ok {
+			return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+		}
+	}
+
+	// Handle structs
+	if fieldValue.Kind() == reflect.Struct {
+		// Check if the field is an OwnerReference
+		if ownerRef, ok := fieldValue.Interface().(models.OwnerReference); ok {
+			// Return "kind/name" for OwnerReference
+			if ownerRef.Kind != "" && ownerRef.Name != "" {
+				return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
+			}
+			return "" // If the kind or name is missing, return an empty string
+		}
+
+		// Check if the field implements the Resource interface
+		if resource, ok := fieldValue.Addr().Interface().(models.Resource); ok {
+			return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+		}
+	}
+
+	// Log a warning if the field cannot be formatted
+	logger.Warn(logrus.Fields{
+		"fieldKind": fieldValue.Kind(),
+		"fieldType": fieldValue.Type().String(),
+	}, "Unable to format field as kind/name")
+	return ""
 }
