@@ -92,9 +92,8 @@ func formatResource(buffer *bytes.Buffer, resource interface{}, indent int, isTo
 			buffer.WriteString(fmt.Sprintf("%s%s:\n", indentation, field.Name))
 
 			for j := 0; j < fieldValue.Len(); j++ {
-				// Indent items correctly and omit the key
-				buffer.WriteString(fmt.Sprintf("%s- ", strings.Repeat("  ", indent+1)))
-				formatResource(buffer, fieldValue.Index(j).Addr().Interface(), indent+2, false)
+				// Pass the child element directly with increased indentation
+				formatResource(buffer, fieldValue.Index(j).Addr().Interface(), indent+1, false)
 			}
 			logger.Trace(logrus.Fields{"field": field.Name, "length": fieldValue.Len()}, "Processed slice field")
 		} else if !fieldValue.IsZero() {
