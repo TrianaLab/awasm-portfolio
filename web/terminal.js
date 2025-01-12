@@ -15,6 +15,14 @@
 
     let executeCommand = null;
 
+    // Polyfill for older browsers
+    if (!WebAssembly.instantiateStreaming) {
+        WebAssembly.instantiateStreaming = async (resp, importObject) => {
+            const source = await (await resp).arrayBuffer();
+            return await WebAssembly.instantiate(source, importObject);
+        };
+    }
+
     // Load the WebAssembly module
     const wasmLoaded = new Promise((resolve, reject) => {
         const go = new Go();
