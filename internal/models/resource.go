@@ -1,6 +1,9 @@
 package models
 
-import "strings"
+import (
+	"strings"
+	"time"
+)
 
 type Resource interface {
 	GetKind() string
@@ -11,14 +14,24 @@ type Resource interface {
 	GetOwnerReference() OwnerReference
 	SetOwnerReference(owner OwnerReference)
 	GetID() string
+	GetCreationTimestamp() time.Time
+	SetCreationTimestamp(timestamp time.Time)
 }
 
 type OwnerReference struct {
 	Kind      string
 	Name      string
 	Namespace string
+	Owner     Resource
 }
 
 func (o OwnerReference) GetID() string {
 	return strings.ToLower(o.Kind + ":" + o.Name + ":" + o.Namespace)
+}
+
+func (o *OwnerReference) GetName() string {
+	if o.Owner != nil {
+		return o.Owner.GetName()
+	}
+	return o.Name
 }

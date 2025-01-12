@@ -18,17 +18,21 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Namespace: "default",
 	}
 	repo.Create(johnDoeProfile)
-	repo.Create(&types.Profile{
+
+	janeDoeProfile := &types.Profile{
 		Name:      "jane-doe",
 		Namespace: "dev",
-	})
-	repo.Create(&types.Profile{
+	}
+	repo.Create(janeDoeProfile)
+
+	testUserProfile := &types.Profile{
 		Name:      "test-user",
 		Namespace: "test",
-	})
+	}
+	repo.Create(testUserProfile)
 
 	// Preload certifications
-	repo.Create(&types.Certifications{
+	johnDoeCertifications := &types.Certifications{
 		Name:      "john-doe-certifications",
 		Namespace: "default",
 		OwnerRef: models.OwnerReference{
@@ -41,27 +45,35 @@ func PreloadData(repo *repository.InMemoryRepository) {
 				Description: "AWS Certified Solutions Architect",
 				Link:        "https://aws.amazon.com/certification/",
 			},
+			{
+				Description: "Certified Kubernetes Administrator",
+				Link:        "https://www.cncf.io/certification/cka/",
+			},
 		},
-	})
+	}
+	repo.Create(johnDoeCertifications)
+	johnDoeProfile.Certifications = *johnDoeCertifications
 
-	repo.Create(&types.Certifications{
+	janeDoeCertifications := &types.Certifications{
 		Name:      "jane-doe-certifications",
 		Namespace: "dev",
 		OwnerRef: models.OwnerReference{
-			Kind:      "profile",
-			Name:      "jane-doe",
-			Namespace: "dev",
+			Kind:      janeDoeProfile.GetKind(),
+			Name:      janeDoeProfile.GetName(),
+			Namespace: janeDoeProfile.GetNamespace(),
 		},
 		Certifications: []types.Certification{
 			{
-				Description: "Google Cloud Certified Professional Cloud Architect",
+				Description: "Google Cloud Professional Cloud Architect",
 				Link:        "https://cloud.google.com/certification/",
 			},
 		},
-	})
+	}
+	repo.Create(janeDoeCertifications)
+	janeDoeProfile.Certifications = *janeDoeCertifications
 
 	// Preload contacts
-	repo.Create(&types.Contact{
+	johnDoeContact := &types.Contact{
 		Name:      "john-doe-contact",
 		Namespace: "default",
 		OwnerRef: models.OwnerReference{
@@ -70,25 +82,29 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace: johnDoeProfile.GetNamespace(),
 		},
 		Email:    "john.doe@example.com",
-		LinkedIn: "https://linkedin.com/in/johndoe",
-		GitHub:   "https://github.com/johndoe",
-	})
+		Linkedin: "https://linkedin.com/in/johndoe",
+		Github:   "https://github.com/johndoe",
+	}
+	repo.Create(johnDoeContact)
+	johnDoeProfile.Contact = *johnDoeContact
 
-	repo.Create(&types.Contact{
+	janeDoeContact := &types.Contact{
 		Name:      "jane-doe-contact",
 		Namespace: "dev",
 		OwnerRef: models.OwnerReference{
-			Kind:      "profile",
-			Name:      "jane-doe",
-			Namespace: "dev",
+			Kind:      janeDoeProfile.GetKind(),
+			Name:      janeDoeProfile.GetName(),
+			Namespace: janeDoeProfile.GetNamespace(),
 		},
 		Email:    "jane.doe@example.com",
-		LinkedIn: "https://linkedin.com/in/janedoe",
-		GitHub:   "https://github.com/janedoe",
-	})
+		Linkedin: "https://linkedin.com/in/janedoe",
+		Github:   "https://github.com/janedoe",
+	}
+	repo.Create(janeDoeContact)
+	janeDoeProfile.Contact = *janeDoeContact
 
-	// Preload additional resources as needed
-	repo.Create(&types.Contributions{
+	// Preload contributions
+	johnDoeContributions := &types.Contributions{
 		Name:      "john-doe-contributions",
 		Namespace: "default",
 		OwnerRef: models.OwnerReference{
@@ -102,23 +118,109 @@ func PreloadData(repo *repository.InMemoryRepository) {
 				Description: "Built a CLI tool for Kubernetes management.",
 				Link:        "https://github.com/johndoe/cli-tool",
 			},
+			{
+				Project:     "Dashboard for Kubernetes",
+				Description: "Developed a web dashboard for visualizing Kubernetes clusters.",
+				Link:        "https://github.com/johndoe/k8s-dashboard",
+			},
 		},
-	})
+	}
+	repo.Create(johnDoeContributions)
+	johnDoeProfile.Contributions = *johnDoeContributions
 
-	repo.Create(&types.Education{
-		Name:      "jane-doe-education",
+	janeDoeContributions := &types.Contributions{
+		Name:      "jane-doe-contributions",
 		Namespace: "dev",
 		OwnerRef: models.OwnerReference{
-			Kind:      "profile",
-			Name:      "jane-doe",
-			Namespace: "dev",
+			Kind:      janeDoeProfile.GetKind(),
+			Name:      janeDoeProfile.GetName(),
+			Namespace: janeDoeProfile.GetNamespace(),
+		},
+		Contributions: []types.Contribution{
+			{
+				Project:     "Cloud Monitoring Tool",
+				Description: "Created a monitoring tool for cloud infrastructure.",
+				Link:        "https://github.com/janedoe/cloud-monitor",
+			},
+		},
+	}
+	repo.Create(janeDoeContributions)
+	janeDoeProfile.Contributions = *janeDoeContributions
+
+	// Preload education
+	johnDoeEducation := &types.Education{
+		Name:      "john-doe-education",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
 		},
 		Courses: []types.Course{
 			{
 				Title:       "Computer Science",
-				Institution: "Stanford",
+				Institution: "MIT",
 				Duration:    "2010-2014",
 			},
+			{
+				Title:       "Data Science",
+				Institution: "Harvard",
+				Duration:    "2015-2016",
+			},
 		},
-	})
+	}
+	repo.Create(johnDoeEducation)
+	johnDoeProfile.Education = *johnDoeEducation
+
+	// Preload skills
+	johnDoeSkills := &types.Skills{
+		Name:      "john-doe-skills",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
+		},
+		Skills: []types.Skill{
+			{Competence: "Go", Proficiency: "Expert"},
+			{Competence: "Kubernetes", Proficiency: "Advanced"},
+			{Competence: "Docker", Proficiency: "Advanced"},
+			{Competence: "Cloud Infrastructure", Proficiency: "Expert"},
+			{Competence: "Web Development", Proficiency: "Intermediate"},
+		},
+	}
+	repo.Create(johnDoeSkills)
+	johnDoeProfile.Skills = *johnDoeSkills
+
+	// Preload experiences
+	johnDoeExperience := &types.Experience{
+		Name:      "john-doe-experience",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
+		},
+		Jobs: []types.Job{
+			{
+				Title:       "Software Engineer",
+				Company:     "TechCorp",
+				Description: "Worked on cloud infrastructure tools.",
+				Duration:    "2015-2020",
+			},
+			{
+				Title:       "Lead Developer",
+				Company:     "Innovatech",
+				Description: "Led a team building AI-driven solutions.",
+				Duration:    "2020-Present",
+			},
+		},
+	}
+	repo.Create(johnDoeExperience)
+	johnDoeProfile.Experience = *johnDoeExperience
+
+	// Save profiles with linked resources
+	repo.Create(johnDoeProfile)
+	repo.Create(janeDoeProfile)
+	repo.Create(testUserProfile)
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"awasm-portfolio/internal/logger"
+	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
 	"awasm-portfolio/internal/util"
@@ -24,6 +25,8 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		"namespace": namespace,
 	}, "GetService.GetResources called")
 
+	// Preserve the original kind to handle "all" explicitly
+	originalKind := kind
 	kind, err := util.NormalizeKind(kind)
 	if err != nil {
 		logger.Error(logrus.Fields{
@@ -32,6 +35,7 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		return "", err
 	}
 
+	// Retrieve resources from the repository
 	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {
 		logger.Error(logrus.Fields{
@@ -43,6 +47,19 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		return "", err
 	}
 
+	// Apply namespace-specific logic when "all" is requested
+	if originalKind == "all" && namespace != "" {
+		filteredResources := []models.Resource{}
+		for _, res := range resources {
+			if res.GetKind() == "namespace" && res.GetName() == namespace {
+				filteredResources = append(filteredResources, res)
+			} else if res.GetNamespace() == namespace {
+				filteredResources = append(filteredResources, res)
+			}
+		}
+		resources = filteredResources
+	}
+
 	if len(resources) == 0 {
 		logger.Info(logrus.Fields{
 			"kind":      kind,
@@ -52,9 +69,7 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		return "No resources found.", nil
 	}
 
-	// Use TextFormatter to format the resources into a table
-	formatter := ui.TextFormatter{}
-	output := formatter.FormatTable(resources)
-
-	return output, nil
+	// Instantiate the UnifiedFormatter and format the table
+	formatter := ui.NewUnifiedFormatter()
+	return formatter.FormatTable(resources), nil
 }

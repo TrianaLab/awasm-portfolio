@@ -4,18 +4,20 @@ import (
 	"awasm-portfolio/internal/models"
 	"reflect"
 	"strings"
+	"time"
 )
 
 type Profile struct {
-	Name           string
-	Namespace      string
-	OwnerRef       models.OwnerReference
-	Certifications Certifications
-	Contact        Contact
-	Contributions  Contributions
-	Education      Education
-	Experience     Experience
-	Skills         Skills
+	Name              string
+	Namespace         string
+	OwnerRef          models.OwnerReference
+	Certifications    Certifications
+	Contact           Contact
+	Contributions     Contributions
+	Education         Education
+	Experience        Experience
+	Skills            Skills
+	CreationTimestamp time.Time
 }
 
 func (p *Profile) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*p).Name()) }
@@ -28,3 +30,5 @@ func (p *Profile) SetOwnerReference(owners models.OwnerReference) { p.OwnerRef =
 func (p *Profile) GetID() string {
 	return strings.ToLower(p.GetKind() + ":" + p.Name + ":" + p.Namespace)
 }
+func (p *Profile) GetCreationTimestamp() time.Time          { return p.CreationTimestamp }
+func (p *Profile) SetCreationTimestamp(timestamp time.Time) { p.CreationTimestamp = timestamp }

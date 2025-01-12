@@ -10,7 +10,11 @@ func NewDescribeCommand(service service.ResourceService) *cobra.Command {
 	return &cobra.Command{
 		Use:   "describe [kind] [name]",
 		Short: "Describe a specific resource",
-		Args:  cobra.RangeArgs(1, 2), // Accept 1 or 2 arguments
+		Args:  cobra.RangeArgs(1, 2),
+		Example: `
+# Describe the profile jane-doe in the dev namespace
+kubectl describe profile jane-doe -n dev
+		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			kind := args[0]
 			name := ""

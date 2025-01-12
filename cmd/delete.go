@@ -10,7 +10,14 @@ func NewDeleteCommand(service service.ResourceService) *cobra.Command {
 	return &cobra.Command{
 		Use:   "delete [kind] [name]",
 		Short: "Delete a resource",
-		Args:  cobra.ExactArgs(2), // Require exactly 2 arguments: kind and name
+		Args:  cobra.ExactArgs(2),
+		Example: `
+# Delete the profile jane-doe in the dev namespace
+kubectl delete profile jane-doe -n dev
+
+# Delete a namespace
+kubectl delete namespace test
+		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			kind, name := args[0], args[1]
 			namespace, _ := cmd.Flags().GetString("namespace")

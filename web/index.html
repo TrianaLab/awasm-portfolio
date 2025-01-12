@@ -3,44 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio Terminal</title>
+    <title>awasm portfolio!</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #1e1e1e;
-            color: #ffffff;
-        }
-
-        #terminal {
-            width: 80%;
-            height: 70%;
-            border: 1px solid #ccc;
-        }
-    </style>
+    <link rel="stylesheet" href="theme.css">
+    <link rel="icon" href="https://avatars.githubusercontent.com/u/189871621?s=400&u=dc0a1c86e01f49e950053d75bbf5c1c0c9e9cf93&v=4" type="image/png">
 </head>
 <body>
+    <div id="theme-toggle" title="Toggle theme">🌙</div>
     <div id="terminal"></div>
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
     <script src="wasm_exec.js"></script>
     <script src="terminal.js"></script>
-    <script>
-        if (!WebAssembly.instantiateStreaming) { // Polyfill for older browsers
-            WebAssembly.instantiateStreaming = async (resp, importObject) => {
-                const source = await (await resp).arrayBuffer();
-                return await WebAssembly.instantiate(source, importObject);
-            };
-        }
-        const go = new Go();
-        WebAssembly.instantiateStreaming(fetch("app.wasm"), go.importObject).then((result) => {
-            go.run(result.instance);
-        }).catch(console.error);
-    </script>
+    <script src="theme.js"></script>
 </body>
 </html>

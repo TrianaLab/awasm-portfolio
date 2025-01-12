@@ -1,12 +1,27 @@
 (function () {
+    // Check if the terminal is already initialized
+    if (window.term) {
+        console.warn("Terminal is already initialized.");
+        return;
+    }
+
+    // Create a global terminal instance
     const term = new Terminal({
         cursorBlink: true,
+        theme: {
+            background: '#1e1e1e',
+            foreground: '#ffffff',
+        },
     });
+    window.term = term; // Save the terminal instance globally
     term.open(document.getElementById("terminal"));
 
     const fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
     fitAddon.fit();
+
+    // Terminal initialization is complete
+    window.termInitialized = true;
 
     let commandHistory = [];
     let historyIndex = -1;
@@ -14,6 +29,14 @@
     let cursorPosition = 0;
 
     let executeCommand = null;
+
+    // Polyfill for older browsers
+    if (!WebAssembly.instantiateStreaming) {
+        WebAssembly.instantiateStreaming = async (resp, importObject) => {
+            const source = await (await resp).arrayBuffer();
+            return await WebAssembly.instantiate(source, importObject);
+        };
+    }
 
     // Load the WebAssembly module
     const wasmLoaded = new Promise((resolve, reject) => {
@@ -46,12 +69,16 @@
             return;
         }
 
-        await wasmLoaded; // Ensure WASM is loaded
-        if (typeof executeCommand === "function") {
-            const output = executeCommand(command.trim());
-            term.write(output.replace(/\n/g, "\r\n") + "\r\n");
+        if (command.trim().toLowerCase() === "triana") {
+            term.write("💃🏻\r\n");
         } else {
-            term.write("Error: executeCommand is not available.\r\n");
+            await wasmLoaded; // Ensure WASM is loaded
+            if (typeof executeCommand === "function") {
+                const output = executeCommand(command.trim());
+                term.write(output.replace(/\n/g, "\r\n") + "\r\n");
+            } else {
+                term.write("Error: executeCommand is not available.\r\n");
+            }
         }
 
         writePrompt();
