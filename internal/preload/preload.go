@@ -18,14 +18,16 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Namespace: "default",
 	}
 	repo.Create(johnDoeProfile)
-	repo.Create(&types.Profile{
+	janeDoeProfile := &types.Profile{
 		Name:      "jane-doe",
 		Namespace: "dev",
-	})
-	repo.Create(&types.Profile{
+	}
+	repo.Create(janeDoeProfile)
+	testUserProfile := &types.Profile{
 		Name:      "test-user",
 		Namespace: "test",
-	})
+	}
+	repo.Create(testUserProfile)
 
 	// Preload certifications
 	repo.Create(&types.Certifications{
@@ -61,7 +63,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	})
 
 	// Preload contacts
-	repo.Create(&types.Contact{
+	johnDoeContact := &types.Contact{
 		Name:      "john-doe-contact",
 		Namespace: "default",
 		OwnerRef: models.OwnerReference{
@@ -72,23 +74,25 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Email:    "john.doe@example.com",
 		LinkedIn: "https://linkedin.com/in/johndoe",
 		GitHub:   "https://github.com/johndoe",
-	})
+	}
+	repo.Create(johnDoeContact)
+	johnDoeProfile.Contact = *johnDoeContact // Link contact resource
 
 	repo.Create(&types.Contact{
 		Name:      "jane-doe-contact",
 		Namespace: "dev",
 		OwnerRef: models.OwnerReference{
-			Kind:      "profile",
-			Name:      "jane-doe",
-			Namespace: "dev",
+			Kind:      janeDoeProfile.GetKind(),
+			Name:      janeDoeProfile.GetName(),
+			Namespace: janeDoeProfile.GetNamespace(),
 		},
 		Email:    "jane.doe@example.com",
 		LinkedIn: "https://linkedin.com/in/janedoe",
 		GitHub:   "https://github.com/janedoe",
 	})
 
-	// Preload additional resources as needed
-	repo.Create(&types.Contributions{
+	// Preload contributions
+	johnDoeContributions := &types.Contributions{
 		Name:      "john-doe-contributions",
 		Namespace: "default",
 		OwnerRef: models.OwnerReference{
@@ -103,15 +107,18 @@ func PreloadData(repo *repository.InMemoryRepository) {
 				Link:        "https://github.com/johndoe/cli-tool",
 			},
 		},
-	})
+	}
+	repo.Create(johnDoeContributions)
+	johnDoeProfile.Contributions = *johnDoeContributions // Link contributions resource
 
-	repo.Create(&types.Education{
+	// Preload education
+	janeDoeEducation := &types.Education{
 		Name:      "jane-doe-education",
 		Namespace: "dev",
 		OwnerRef: models.OwnerReference{
-			Kind:      "profile",
-			Name:      "jane-doe",
-			Namespace: "dev",
+			Kind:      janeDoeProfile.GetKind(),
+			Name:      janeDoeProfile.GetName(),
+			Namespace: janeDoeProfile.GetNamespace(),
 		},
 		Courses: []types.Course{
 			{
@@ -120,5 +127,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 				Duration:    "2010-2014",
 			},
 		},
-	})
+	}
+	repo.Create(janeDoeEducation)
+	janeDoeProfile.Education = *janeDoeEducation // Link education resource
 }

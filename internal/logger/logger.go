@@ -25,6 +25,10 @@ func Trace(fields logrus.Fields, msg string) {
 	GetLogger().WithFields(fields).Trace(msg)
 }
 
+func Warn(fields logrus.Fields, msg string) {
+	GetLogger().WithFields(fields).Warn(msg)
+}
+
 func Info(fields logrus.Fields, msg string) {
 	GetLogger().WithFields(fields).Info(msg)
 }
