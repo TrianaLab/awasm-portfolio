@@ -172,6 +172,26 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	repo.Create(johnDoeEducation)
 	johnDoeProfile.Education = *johnDoeEducation
 
+	// Preload skills
+	johnDoeSkills := &types.Skills{
+		Name:      "john-doe-skills",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
+		},
+		Skills: []types.Skill{
+			{Name: "Go", Proficiency: "Expert"},
+			{Name: "Kubernetes", Proficiency: "Advanced"},
+			{Name: "Docker", Proficiency: "Advanced"},
+			{Name: "Cloud Infrastructure", Proficiency: "Expert"},
+			{Name: "Web Development", Proficiency: "Intermediate"},
+		},
+	}
+	repo.Create(johnDoeSkills)
+	johnDoeProfile.Skills = *johnDoeSkills
+
 	// Preload experiences
 	johnDoeExperience := &types.Experience{
 		Name:      "john-doe-experience",
