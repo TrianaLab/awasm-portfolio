@@ -10,8 +10,23 @@ func NewGetCommand(service service.ResourceService) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get [kind] [name]",
 		Short: "Get resources of a specific kind or a specific resource",
-		Args:  cobra.RangeArgs(1, 2), // Accept 1 or 2 arguments
+		Args:  cobra.RangeArgs(0, 2),
+		Example: `
+# Get all profiles in the default namespace
+kubectl get profile
+
+# Get a specific profile by name
+kubectl get profile john-doe
+
+# Get all resources of any kind across all namespaces
+kubectl get all -A
+		`,
 		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) == 0 {
+				cmd.Help()
+				return
+			}
+
 			kind := args[0]
 			name := ""
 			if len(args) > 1 {
