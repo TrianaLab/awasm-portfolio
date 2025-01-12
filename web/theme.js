@@ -25,24 +25,20 @@
             console.error("Terminal is not initialized.");
             return;
         }
-    
-        const term = window.term; // Access the global terminal instance
-        if (theme === "light-theme") {
-            term.options.theme = {
-                background: '#f5f5f5',
-                foreground: '#000000',
-                cursor: '#000000',
-                cursorAccent: '#ffffff',
-                selection: '#c7c7c7',
-            };
-        } else {
-            term.options.theme = {
-                background: '#1e1e1e',
-                foreground: '#ffffff',
-                cursor: '#ffffff',
-                cursorAccent: '#000000',
-                selection: '#555555',
-            };
-        }
-    }    
+
+        const term = window.term;
+        term.options.theme = theme === "light-theme" ? {
+            background: '#ffffff', // Light background
+            foreground: '#000000', // Black text
+            cursor: '#000000',
+            cursorAccent: '#ffffff',
+            selection: '#c7c7c7', // Light gray for selection
+        } : {
+            background: '#1e1e1e', // Dark background
+            foreground: '#ffffff', // White text
+            cursor: '#ffffff',
+            cursorAccent: '#000000',
+            selection: '#555555', // Dark gray for selection
+        };
+    }
 })();

@@ -1,8 +1,10 @@
 :root {
     --background-color-light: #ffffff;
     --text-color-light: #000000;
+
     --background-color-dark: #1e1e1e;
     --text-color-dark: #ffffff;
+
     --transition-duration: 0.3s;
 }
 
@@ -22,20 +24,17 @@ body.light-theme {
     color: var(--text-color-light);
 }
 
+/* Terminal Container */
 #terminal {
     width: 80%;
     height: 70%;
-    background-color: var(--background-color-dark);
-    color: var(--text-color-dark);
     border: 1px solid #ccc;
-    transition: background-color var(--transition-duration), color var(--transition-duration);
+    border-radius: 10px;
+    padding: 20px;
+    overflow-y: auto;
 }
 
-body.light-theme #terminal {
-    background-color: var(--background-color-light);
-    color: var(--text-color-light);
-}
-
+/* Theme Toggle Button */
 #theme-toggle {
     position: absolute;
     top: 10px;
@@ -52,7 +51,6 @@ body.light-theme #terminal {
     font-size: 20px;
     cursor: pointer;
     transition: transform var(--transition-duration), background-color var(--transition-duration);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
 }
 
 #theme-toggle:hover {
