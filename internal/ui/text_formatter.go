@@ -15,16 +15,36 @@ func (f TextFormatter) FormatTable(resources []models.Resource) string {
 		return "No resources found."
 	}
 
-	// Extract column headers based on the Resource interface
-	headers := []string{"NAME", "NAMESPACE", "KIND"}
-
-	var rows [][]string
+	// Group resources by kind
+	grouped := make(map[string][]models.Resource)
 	for _, resource := range resources {
-		rows = append(rows, []string{
-			resource.GetName(),
-			resource.GetNamespace(),
-			resource.GetKind(),
-		})
+		grouped[resource.GetKind()] = append(grouped[resource.GetKind()], resource)
+	}
+
+	var sb strings.Builder
+
+	// Iterate over each group
+	for _, group := range grouped {
+		sb.WriteString(f.formatTable(group))
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+// Helper function to format a single table of resources
+func (f TextFormatter) formatTable(resources []models.Resource) string {
+	if len(resources) == 0 {
+		return "No resources found."
+	}
+
+	// Extract column headers
+	headers := []string{"NAME", "NAMESPACE"}
+	var rows [][]string
+
+	for _, resource := range resources {
+		row := []string{resource.GetName(), resource.GetNamespace()}
+		rows = append(rows, row)
 	}
 
 	// Determine column widths
@@ -46,15 +66,6 @@ func (f TextFormatter) FormatTable(resources []models.Resource) string {
 	// Print headers
 	for i, header := range headers {
 		sb.WriteString(fmt.Sprintf("%-*s", colWidths[i], header))
-		if i < len(headers)-1 {
-			sb.WriteString("  ")
-		}
-	}
-	sb.WriteString("\n")
-
-	// Print separator
-	for i, width := range colWidths {
-		sb.WriteString(strings.Repeat("-", width))
 		if i < len(headers)-1 {
 			sb.WriteString("  ")
 		}

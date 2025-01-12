@@ -3,8 +3,8 @@ package service
 import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
+	"awasm-portfolio/internal/ui"
 	"awasm-portfolio/internal/util"
-	"fmt"
 
 	"github.com/sirupsen/logrus"
 )
@@ -52,15 +52,9 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		return "No resources found.", nil
 	}
 
-	var result string
-	for _, res := range resources {
-		result += fmt.Sprintf("- %s/%s in namespace '%s'\n", res.GetKind(), res.GetName(), res.GetNamespace())
-	}
+	// Use TextFormatter to format the resources into a table
+	formatter := ui.TextFormatter{}
+	output := formatter.FormatTable(resources)
 
-	logger.Info(logrus.Fields{
-		"kind":      kind,
-		"namespace": namespace,
-		"count":     len(resources),
-	}, "Resources retrieved successfully")
-	return result, nil
+	return output, nil
 }

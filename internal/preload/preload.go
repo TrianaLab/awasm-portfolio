@@ -8,82 +8,117 @@ import (
 
 func PreloadData(repo *repository.InMemoryRepository) {
 	// Preload namespaces
-	namespaces := []types.Namespace{
-		{Name: "default"},
-		{Name: "dev"},
-		{Name: "test"},
-	}
-	for _, ns := range namespaces {
-		_, _ = repo.Create(&ns)
-	}
+	repo.Create(&types.Namespace{Name: "default"})
+	repo.Create(&types.Namespace{Name: "dev"})
+	repo.Create(&types.Namespace{Name: "test"})
 
-	// Preload a profile and child resources
-	profile := &types.Profile{
+	// Preload profiles
+	johnDoeProfile := &types.Profile{
 		Name:      "john-doe",
 		Namespace: "default",
-		OwnerRef:  models.OwnerReference{Kind: "namespace", Name: "default"},
-		Certifications: types.Certifications{
-			Name:      "john-doe-certifications",
-			Namespace: "default",
-			OwnerRef:  models.OwnerReference{Kind: "profile", Name: "john-doe", Namespace: "default"},
-			Certifications: []types.Certification{
-				{Description: "AWS Certified Solutions Architect", Link: "https://aws.amazon.com/certification/"},
-			},
-		},
-		Contact: types.Contact{
-			Name:      "john-doe-contact",
-			Namespace: "default",
-			OwnerRef:  models.OwnerReference{Kind: "profile", Name: "john-doe", Namespace: "default"},
-			Email:     "john.doe@example.com",
-			LinkedIn:  "https://linkedin.com/in/johndoe",
-			GitHub:    "https://github.com/johndoe",
-		},
-		Contributions: types.Contributions{
-			Name:      "john-doe-contributions",
-			Namespace: "default",
-			OwnerRef:  models.OwnerReference{Kind: "profile", Name: "john-doe", Namespace: "default"},
-			Contributions: []types.Contribution{
-				{Project: "Open Source CLI Tool", Description: "Built a CLI tool for Kubernetes management.", Link: "https://github.com/johndoe/cli-tool"},
-			},
-		},
-		Education: types.Education{
-			Name:      "john-doe-education",
-			Namespace: "default",
-			OwnerRef:  models.OwnerReference{Kind: "profile", Name: "john-doe", Namespace: "default"},
-			Courses: []types.Course{
-				{Title: "Computer Science", Institution: "MIT", Duration: "2015-2019"},
-			},
-		},
-		Experience: types.Experience{
-			Name:      "john-doe-experience",
-			Namespace: "default",
-			OwnerRef:  models.OwnerReference{Kind: "profile", Name: "john-doe", Namespace: "default"},
-			Jobs: []types.Job{
-				{
-					Title:       "Senior Software Engineer",
-					Company:     "TechCorp",
-					Duration:    "2020-2023",
-					Description: "Led the development of scalable cloud applications.",
-				},
-			},
-		},
-		Skills: types.Skills{
-			Name:      "john-doe-skills",
-			Namespace: "default",
-			OwnerRef:  models.OwnerReference{Kind: "profile", Name: "john-doe", Namespace: "default"},
-			Skills: []types.Skill{
-				{Name: "Go", Proficiency: "Expert"},
-				{Name: "Kubernetes", Proficiency: "Advanced"},
-			},
-		},
 	}
+	repo.Create(johnDoeProfile)
+	repo.Create(&types.Profile{
+		Name:      "jane-doe",
+		Namespace: "dev",
+	})
+	repo.Create(&types.Profile{
+		Name:      "test-user",
+		Namespace: "test",
+	})
 
-	// Create the profile and child resources
-	_, _ = repo.Create(profile)
-	_, _ = repo.Create(&profile.Certifications)
-	_, _ = repo.Create(&profile.Contact)
-	_, _ = repo.Create(&profile.Contributions)
-	_, _ = repo.Create(&profile.Education)
-	_, _ = repo.Create(&profile.Experience)
-	_, _ = repo.Create(&profile.Skills)
+	// Preload certifications
+	repo.Create(&types.Certifications{
+		Name:      "john-doe-certifications",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
+		},
+		Certifications: []types.Certification{
+			{
+				Description: "AWS Certified Solutions Architect",
+				Link:        "https://aws.amazon.com/certification/",
+			},
+		},
+	})
+
+	repo.Create(&types.Certifications{
+		Name:      "jane-doe-certifications",
+		Namespace: "dev",
+		OwnerRef: models.OwnerReference{
+			Kind:      "profile",
+			Name:      "jane-doe",
+			Namespace: "dev",
+		},
+		Certifications: []types.Certification{
+			{
+				Description: "Google Cloud Certified Professional Cloud Architect",
+				Link:        "https://cloud.google.com/certification/",
+			},
+		},
+	})
+
+	// Preload contacts
+	repo.Create(&types.Contact{
+		Name:      "john-doe-contact",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
+		},
+		Email:    "john.doe@example.com",
+		LinkedIn: "https://linkedin.com/in/johndoe",
+		GitHub:   "https://github.com/johndoe",
+	})
+
+	repo.Create(&types.Contact{
+		Name:      "jane-doe-contact",
+		Namespace: "dev",
+		OwnerRef: models.OwnerReference{
+			Kind:      "profile",
+			Name:      "jane-doe",
+			Namespace: "dev",
+		},
+		Email:    "jane.doe@example.com",
+		LinkedIn: "https://linkedin.com/in/janedoe",
+		GitHub:   "https://github.com/janedoe",
+	})
+
+	// Preload additional resources as needed
+	repo.Create(&types.Contributions{
+		Name:      "john-doe-contributions",
+		Namespace: "default",
+		OwnerRef: models.OwnerReference{
+			Kind:      johnDoeProfile.GetKind(),
+			Name:      johnDoeProfile.GetName(),
+			Namespace: johnDoeProfile.GetNamespace(),
+		},
+		Contributions: []types.Contribution{
+			{
+				Project:     "Open Source CLI Tool",
+				Description: "Built a CLI tool for Kubernetes management.",
+				Link:        "https://github.com/johndoe/cli-tool",
+			},
+		},
+	})
+
+	repo.Create(&types.Education{
+		Name:      "jane-doe-education",
+		Namespace: "dev",
+		OwnerRef: models.OwnerReference{
+			Kind:      "profile",
+			Name:      "jane-doe",
+			Namespace: "dev",
+		},
+		Courses: []types.Course{
+			{
+				Title:       "Computer Science",
+				Institution: "Stanford",
+				Duration:    "2010-2014",
+			},
+		},
+	})
 }
