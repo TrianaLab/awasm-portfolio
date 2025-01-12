@@ -58,6 +58,39 @@ body.light-theme {
     background-color: #555;
 }
 
+/* Default scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px; /* Adjust width */
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-color-dark); /* Match the terminal background */
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #555; /* Dark gray */
+    border-radius: 10px;
+    border: 2px solid var(--background-color-dark); /* Matches the track background */
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: #777; /* Lighter gray on hover */
+}
+
+/* Light theme scrollbar */
+body.light-theme ::-webkit-scrollbar-track {
+    background: var(--background-color-light);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb {
+    background-color: #bbb;
+    border: 2px solid var(--background-color-light);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+}
+
 body.light-theme #theme-toggle {
     background-color: #ddd;
     color: #000;
