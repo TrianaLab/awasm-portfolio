@@ -1,15 +1,18 @@
 package ui
 
 import (
+	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // extractHeaders extracts column headers from a resource
 func extractHeaders(resource models.Resource) []string {
-	headers := []string{"NAME", "NAMESPACE", "OWNERREF"} // Base headers
+	headers := []string{"NAME", "NAMESPACE", "OWNER"} // Base headers
 	value := reflect.ValueOf(resource).Elem()
 	typ := value.Type()
 
@@ -45,6 +48,18 @@ func extractRow(resource models.Resource, headers []string) []string {
 			row[i] = age
 		case "creationtimestamp":
 			row[i] = "" // Ensure CREATIONTIMESTAMP is always empty
+		case "owner":
+			// Retrieve and format OwnerReference
+			ownerRef := resource.GetOwnerReference()
+			if ownerRef.Name != "" {
+				row[i] = fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
+			} else {
+				row[i] = ""
+				logger.Warn(logrus.Fields{
+					"resource":  resource.GetName(),
+					"namespace": resource.GetNamespace(),
+				}, "Missing OwnerReference for resource")
+			}
 		default:
 			fieldName := strings.Title(strings.ToLower(header))
 			fieldValue := reflect.ValueOf(resource).Elem().FieldByName(fieldName)

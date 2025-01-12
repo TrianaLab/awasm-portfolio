@@ -105,6 +105,12 @@ func formatNestedField(fieldValue reflect.Value) string {
 		return ""
 	}
 
+	if ownerRef, ok := fieldValue.Interface().(models.OwnerReference); ok {
+		if ownerRef.Name != "" {
+			return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
+		}
+	}
+
 	if resource, ok := fieldValue.Interface().(models.Resource); ok {
 		formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
 		logger.Trace(logrus.Fields{"formatted": formatted}, "Formatted resource as kind/name")
