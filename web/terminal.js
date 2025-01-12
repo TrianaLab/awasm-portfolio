@@ -58,6 +58,14 @@
         term.write("$ ");
     }
 
+    function showWelcomeMessage() {
+        const welcomeMessage = `
+Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
+        `;
+        term.write(welcomeMessage + "\r\n\r\n");
+    }
+
+    showWelcomeMessage();
     writePrompt();
 
     async function processCommand(command) {
