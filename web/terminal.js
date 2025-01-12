@@ -1,12 +1,27 @@
 (function () {
+    // Check if the terminal is already initialized
+    if (window.term) {
+        console.warn("Terminal is already initialized.");
+        return;
+    }
+
+    // Create a global terminal instance
     const term = new Terminal({
         cursorBlink: true,
+        theme: {
+            background: '#1e1e1e',
+            foreground: '#ffffff',
+        },
     });
+    window.term = term; // Save the terminal instance globally
     term.open(document.getElementById("terminal"));
 
     const fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
     fitAddon.fit();
+
+    // Terminal initialization is complete
+    window.termInitialized = true;
 
     let commandHistory = [];
     let historyIndex = -1;

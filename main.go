@@ -17,7 +17,7 @@ import (
 
 func main() {
 	// Set trace level
-	logger.InitLogger(logrus.TraceLevel)
+	logger.InitLogger(logrus.InfoLevel)
 
 	// Initialize repository and factory
 	repo := repository.NewInMemoryRepository()
@@ -44,13 +44,18 @@ func main() {
 func runCLICommand(rootCmd *cobra.Command, command string) string {
 	args := strings.Fields(command)
 
-	// Remove the root command if it's redundantly included
-	if len(args) > 0 && (args[0] == "kubectl" || args[0] == "k") {
-		args = args[1:]
+	// Enforce the root command prefix
+	if len(args) == 0 || (args[0] != "kubectl" && args[0] != "k") {
+		return "Error: Commands must start with 'kubectl' or 'k'"
 	}
 
+	// Remove the root command prefix
+	args = args[1:]
+
+	// Reset flag values
 	resetFlagValues(rootCmd)
 
+	// Set the command arguments
 	rootCmd.SetArgs(args)
 
 	var buf bytes.Buffer
