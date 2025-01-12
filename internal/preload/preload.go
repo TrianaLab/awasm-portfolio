@@ -82,8 +82,8 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace: johnDoeProfile.GetNamespace(),
 		},
 		Email:    "john.doe@example.com",
-		LinkedIn: "https://linkedin.com/in/johndoe",
-		GitHub:   "https://github.com/johndoe",
+		Linkedin: "https://linkedin.com/in/johndoe",
+		Github:   "https://github.com/johndoe",
 	}
 	repo.Create(johnDoeContact)
 	johnDoeProfile.Contact = *johnDoeContact
@@ -97,8 +97,8 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace: janeDoeProfile.GetNamespace(),
 		},
 		Email:    "jane.doe@example.com",
-		LinkedIn: "https://linkedin.com/in/janedoe",
-		GitHub:   "https://github.com/janedoe",
+		Linkedin: "https://linkedin.com/in/janedoe",
+		Github:   "https://github.com/janedoe",
 	}
 	repo.Create(janeDoeContact)
 	janeDoeProfile.Contact = *janeDoeContact

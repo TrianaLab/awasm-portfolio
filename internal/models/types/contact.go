@@ -12,8 +12,8 @@ type Contact struct {
 	Namespace         string
 	OwnerRef          models.OwnerReference
 	Email             string
-	LinkedIn          string
-	GitHub            string
+	Linkedin          string
+	Github            string
 	CreationTimestamp time.Time
 }
 
