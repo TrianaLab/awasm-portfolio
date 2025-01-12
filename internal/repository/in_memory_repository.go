@@ -126,6 +126,46 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 		"namespace": namespace,
 	}, "InMemoryRepository.Delete called")
 
+	var deletedResources []string
+
+	// If the resource to be deleted is a namespace
+	if kind == "namespace" {
+		r.mu.RLock()
+		allResources, err := r.List("", "", name) // Get all objects in the namespace
+		r.mu.RUnlock()
+		if err != nil {
+			return "", fmt.Errorf("failed to list resources in namespace '%s': %v", name, err)
+		}
+
+		// Filter out namespaces except the one being deleted
+		resourcesToDelete := []models.Resource{}
+		for _, res := range allResources {
+			resKind, _ := util.NormalizeKind(res.GetKind())
+			if resKind != "namespace" || res.GetName() == name {
+				resourcesToDelete = append(resourcesToDelete, res)
+			}
+		}
+
+		// Delete the filtered resources
+		for _, res := range resourcesToDelete {
+			resourceID := res.GetID() // Use unique ID for deletion
+
+			r.mu.Lock()
+			if _, exists := r.resources[resourceID]; exists {
+				delete(r.resources, resourceID) // Correct deletion
+				deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s'", res.GetKind(), res.GetName(), name))
+			}
+			r.mu.Unlock()
+
+			logger.Info(logrus.Fields{
+				"kind": res.GetKind(),
+				"name": res.GetName(),
+			}, "Resource deleted in namespace cleanup")
+		}
+
+		return fmt.Sprintf("Deleted resources in namespace '%s':\n%s", name, strings.Join(deletedResources, "\n")), nil
+	}
+
 	// Step 1: List resources to delete
 	r.mu.RLock()
 	resourcesToDelete, err := r.List(kind, name, namespace)
@@ -133,8 +173,6 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 	if err != nil || len(resourcesToDelete) == 0 {
 		return "", fmt.Errorf("no resources found to delete")
 	}
-
-	deletedResources := []string{}
 
 	// Step 2: Delete resources and cascade to owner references
 	for _, res := range resourcesToDelete {
@@ -163,8 +201,7 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 		}
 
 		for _, ownedRes := range ownedResources {
-			// Match using the correct field in OwnerReference
-			if ownedRes.GetOwnerReference().GetID() == resourceID { // Adjust field as necessary
+			if ownedRes.GetOwnerReference().GetID() == resourceID { // Match owner references
 				r.mu.Lock()
 				delete(r.resources, ownedRes.GetID())
 				r.mu.Unlock()
