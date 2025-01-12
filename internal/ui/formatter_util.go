@@ -84,7 +84,10 @@ func formatKindResource(fieldValue reflect.Value) string {
 	// Handle pointers
 	if fieldValue.Kind() == reflect.Ptr && !fieldValue.IsNil() {
 		if resource, ok := fieldValue.Interface().(models.Resource); ok {
-			return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+			if resource.GetKind() != "" && resource.GetName() != "" {
+				return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+			}
+			return "" // Return empty string for incomplete resource
 		}
 	}
 
@@ -92,16 +95,18 @@ func formatKindResource(fieldValue reflect.Value) string {
 	if fieldValue.Kind() == reflect.Struct {
 		// Check if the field is an OwnerReference
 		if ownerRef, ok := fieldValue.Interface().(models.OwnerReference); ok {
-			// Return "kind/name" for OwnerReference
 			if ownerRef.Kind != "" && ownerRef.Name != "" {
 				return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
 			}
-			return "" // If the kind or name is missing, return an empty string
+			return "" // Return empty string for incomplete OwnerReference
 		}
 
 		// Check if the field implements the Resource interface
 		if resource, ok := fieldValue.Addr().Interface().(models.Resource); ok {
-			return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+			if resource.GetKind() != "" && resource.GetName() != "" {
+				return fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
+			}
+			return "" // Return empty string for incomplete resource
 		}
 	}
 
