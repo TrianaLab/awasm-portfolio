@@ -40,6 +40,16 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 		}
 	}
 
+	if len(resources) == 0 {
+		err := fmt.Errorf("%s/%s was not found in '%s' namespace", kind, name, namespace)
+		logger.Error(logrus.Fields{
+			"kind":      kind,
+			"name":      name,
+			"namespace": namespace,
+		}, "No resources found")
+		return nil, err
+	}
+
 	logger.Info(logrus.Fields{
 		"kind":      kind,
 		"name":      name,
@@ -183,4 +193,29 @@ func matchResource(res models.Resource, kind, name, namespace string) bool {
 	}, "Matching resource")
 
 	return matchKind && matchName && matchNamespace
+}
+
+func (r *InMemoryRepository) Exists(kind, name, namespace string) bool {
+	// Normalize and validate the kind
+	normalizedKind, err := util.NormalizeKind(kind)
+	if err != nil {
+		logger.Error(logrus.Fields{
+			"kind": kind,
+		}, "Unsupported resource kind in Exists")
+		return false
+	}
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	for _, res := range r.resources {
+		matchKind := normalizedKind == "" || strings.ToLower(res.GetKind()) == normalizedKind
+		matchName := name == "" || strings.ToLower(res.GetName()) == strings.ToLower(name)
+		matchNamespace := namespace == "" || strings.ToLower(res.GetNamespace()) == strings.ToLower(namespace)
+
+		if matchKind && matchName && matchNamespace {
+			return true
+		}
+	}
+	return false
 }
