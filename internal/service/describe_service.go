@@ -37,9 +37,12 @@ func (s *DescribeService) DescribeResource(kind, name, namespace string) (string
 		return "No resources found.", nil
 	}
 
+	// Instantiate the UnifiedFormatter for formatting details
+	formatter := ui.NewUnifiedFormatter()
+
 	var detailsBuilder strings.Builder
 	for _, resource := range resources {
-		detailsBuilder.WriteString(ui.FormatDetails(resource))
+		detailsBuilder.WriteString(formatter.FormatDetails(resource))
 		detailsBuilder.WriteString("\n---\n")
 	}
 

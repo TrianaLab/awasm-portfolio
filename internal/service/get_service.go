@@ -52,9 +52,7 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		return "No resources found.", nil
 	}
 
-	// Use TextFormatter to format the resources into a table
-	formatter := ui.TextFormatter{}
-	output := formatter.FormatTable(resources)
-
-	return output, nil
+	// Instantiate the UnifiedFormatter and format the table
+	formatter := ui.NewUnifiedFormatter()
+	return formatter.FormatTable(resources), nil
 }
