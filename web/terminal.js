@@ -69,12 +69,16 @@
             return;
         }
 
-        await wasmLoaded; // Ensure WASM is loaded
-        if (typeof executeCommand === "function") {
-            const output = executeCommand(command.trim());
-            term.write(output.replace(/\n/g, "\r\n") + "\r\n");
+        if (command.trim().toLowerCase() === "triana") {
+            term.write("💃🏻\r\n");
         } else {
-            term.write("Error: executeCommand is not available.\r\n");
+            await wasmLoaded; // Ensure WASM is loaded
+            if (typeof executeCommand === "function") {
+                const output = executeCommand(command.trim());
+                term.write(output.replace(/\n/g, "\r\n") + "\r\n");
+            } else {
+                term.write("Error: executeCommand is not available.\r\n");
+            }
         }
 
         writePrompt();
