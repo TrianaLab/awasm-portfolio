@@ -4,52 +4,44 @@ import (
 	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
+	"awasm-portfolio/internal/util"
+	"fmt"
+	"strings"
 
 	"github.com/sirupsen/logrus"
 )
 
 type DescribeService struct {
-	repo      *repository.InMemoryRepository
-	formatter ui.Formatter
+	repo *repository.InMemoryRepository
 }
 
 func NewDescribeService(repo *repository.InMemoryRepository) *DescribeService {
-	return &DescribeService{
-		repo:      repo,
-		formatter: ui.TextFormatter{},
-	}
+	return &DescribeService{repo: repo}
 }
 
-func (s *DescribeService) DescribeResource(kind string, name string, namespace string) (string, error) {
-	logger.Trace(logrus.Fields{
-		"kind":      kind,
-		"name":      name,
-		"namespace": namespace,
-	}, "DescribeService.DescribeResource called")
-
-	resources, err := s.repo.List(kind, name, namespace)
+func (s *DescribeService) DescribeResource(kind, name, namespace string) (string, error) {
+	kind, err := util.NormalizeKind(kind)
 	if err != nil {
 		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"name":  name,
-			"error": err,
-		}, "Failed to describe resource")
+			"kind": kind,
+		}, "Unsupported resource kind in List")
 		return "", err
 	}
 
+	resources, err := s.repo.List(kind, name, namespace)
+	if err != nil {
+		return "", fmt.Errorf("failed to retrieve resources: %w", err)
+	}
+
 	if len(resources) == 0 {
-		logger.Info(logrus.Fields{
-			"kind":      kind,
-			"name":      name,
-			"namespace": namespace,
-		}, "No resources found for description")
 		return "No resources found.", nil
 	}
 
-	details := s.formatter.FormatDetails(resources[0])
-	logger.Info(logrus.Fields{
-		"kind": kind,
-		"name": name,
-	}, "Resource described successfully")
-	return details, nil
+	var detailsBuilder strings.Builder
+	for _, resource := range resources {
+		detailsBuilder.WriteString(ui.FormatDetails(resource))
+		detailsBuilder.WriteString("\n---\n")
+	}
+
+	return detailsBuilder.String(), nil
 }

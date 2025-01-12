@@ -2,6 +2,7 @@ package ui
 
 import (
 	"awasm-portfolio/internal/models"
+	"bytes"
 	"fmt"
 	"reflect"
 	"strings"
@@ -74,45 +75,62 @@ func (f TextFormatter) FormatTable(resources []models.Resource) string {
 	return sb.String()
 }
 
-func (f TextFormatter) FormatDetails(resource models.Resource) string {
-	// Extract all fields and values using reflection
-	v := reflect.ValueOf(resource).Elem()
-	t := v.Type()
+// FormatDetails formats a resource into a clean YAML-like structure.
+func FormatDetails(resource interface{}) string {
+	var buffer bytes.Buffer
+	formatResource(&buffer, resource, 0, true)
+	return buffer.String()
+}
 
-	sb := strings.Builder{}
-	sb.WriteString(fmt.Sprintf("Kind: %s\n", resource.GetKind()))
-	sb.WriteString(fmt.Sprintf("Name: %s\n", resource.GetName()))
-	sb.WriteString(fmt.Sprintf("Namespace: %s\n", resource.GetNamespace()))
+// formatResource handles formatting for a single resource, including nested resources and arrays.
+func formatResource(buffer *bytes.Buffer, resource interface{}, indent int, includeMeta bool) {
+	value := reflect.ValueOf(resource).Elem()
+	typ := value.Type()
 
-	for i := 0; i < v.NumField(); i++ {
-		field := t.Field(i)
-		value := v.Field(i)
+	indentation := func(level int) string {
+		return strings.Repeat("  ", level)
+	}
 
-		// Skip unexported fields
-		if !value.CanInterface() {
+	for i := 0; i < value.NumField(); i++ {
+		field := typ.Field(i)
+		fieldValue := value.Field(i)
+		fieldName := capitalizeFieldName(field.Name)
+
+		// Skip metadata fields for nested resources
+		if !includeMeta && (strings.ToLower(fieldName) == "name" || strings.ToLower(fieldName) == "namespace" || strings.ToLower(fieldName) == "ownerref") {
 			continue
 		}
 
-		fieldName := field.Name
-		fieldValue := value.Interface()
+		// Check if the field is a resource (implements Resource interface)
+		if fieldValue.Kind() == reflect.Struct && fieldValue.Addr().Type().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
+			resourceName := fieldValue.FieldByName("Name").String()
+			buffer.WriteString(fmt.Sprintf("%s%s: %s\n", indentation(indent), fieldName, resourceName))
+			formatResource(buffer, fieldValue.Addr().Interface(), indent+1, false)
+			continue
+		}
 
-		// Format nested structs and slices as YAML-like
-		switch value.Kind() {
-		case reflect.Slice:
-			sb.WriteString(fmt.Sprintf("%s:\n", fieldName))
-			for j := 0; j < value.Len(); j++ {
-				sb.WriteString(fmt.Sprintf("  - %v\n", value.Index(j).Interface()))
+		// Handle slices
+		if fieldValue.Kind() == reflect.Slice && fieldValue.Len() > 0 {
+			for j := 0; j < fieldValue.Len(); j++ {
+				element := fieldValue.Index(j).Interface()
+				buffer.WriteString(fmt.Sprintf("%s- ", indentation(indent)))
+				if reflect.ValueOf(element).Kind() == reflect.Struct {
+					formatResource(buffer, fieldValue.Index(j).Addr().Interface(), indent+1, true)
+				} else {
+					buffer.WriteString(fmt.Sprintf("%v\n", element))
+				}
 			}
-		case reflect.Struct:
-			sb.WriteString(fmt.Sprintf("%s:\n", fieldName))
-			nestedValue := reflect.ValueOf(fieldValue)
-			for k := 0; k < nestedValue.NumField(); k++ {
-				sb.WriteString(fmt.Sprintf("  %s: %v\n", nestedValue.Type().Field(k).Name, nestedValue.Field(k).Interface()))
-			}
-		default:
-			sb.WriteString(fmt.Sprintf("%s: %v\n", fieldName, fieldValue))
+			continue
+		}
+
+		// Print scalar fields
+		if !fieldValue.IsZero() {
+			buffer.WriteString(fmt.Sprintf("%s%s: %v\n", indentation(indent), fieldName, fieldValue.Interface()))
 		}
 	}
+}
 
-	return sb.String()
+// capitalizeFieldName capitalizes the first letter of a field name.
+func capitalizeFieldName(fieldName string) string {
+	return strings.ToUpper(fieldName[:1]) + strings.ToLower(fieldName[1:])
 }
