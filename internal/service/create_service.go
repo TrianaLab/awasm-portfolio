@@ -2,11 +2,10 @@ package service
 
 import (
 	"awasm-portfolio/internal/factory"
-	"awasm-portfolio/internal/logger"
+	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/repository"
+	"awasm-portfolio/internal/util"
 	"fmt"
-
-	"github.com/sirupsen/logrus"
 )
 
 type CreateService struct {
@@ -22,46 +21,37 @@ func NewCreateService(repo *repository.InMemoryRepository) *CreateService {
 }
 
 func (s *CreateService) CreateResource(kind string, name string, namespace string) (string, error) {
-	logger.Trace(logrus.Fields{
-		"kind":      kind,
-		"name":      name,
-		"namespace": namespace,
-	}, "CreateService.CreateResource called")
+	kind, err := util.NormalizeKind(kind)
+	if err != nil {
+		return "", err
+	}
 
-	if kind != "namespace" && !s.repo.Exists("namespace", namespace, "") {
-		logger.Error(logrus.Fields{
-			"kind":      kind,
-			"name":      name,
-			"namespace": namespace,
-		}, "Namespace does not exist")
-		return "", fmt.Errorf("namespace '%s' does not exist", namespace)
+	if kind != "namespace" {
+		resources, err := s.repo.List("namespace", namespace, "")
+		if err != nil {
+			return "", err
+		}
+		if len(resources) == 0 {
+			return "", fmt.Errorf("failed to create %s: namespace '%s' not found", name, namespace)
+		}
 	}
 
 	resource := s.factory.Create(kind, map[string]interface{}{
 		"name":      name,
 		"namespace": namespace,
 	})
-	if resource == nil {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Unsupported resource kind")
-		return "", fmt.Errorf("unsupported resource kind: %s", kind)
+
+	if kind != "namespace" && resource.GetOwnerReference().Kind == "" {
+		resource.SetOwnerReference(models.OwnerReference{
+			Kind: "namespace",
+			Name: resource.GetNamespace(),
+		})
 	}
 
 	msg, err := s.repo.Create(resource)
 	if err != nil {
-		logger.Error(logrus.Fields{
-			"kind":  kind,
-			"name":  name,
-			"error": err,
-		}, "Failed to create resource")
 		return "", err
 	}
 
-	logger.Info(logrus.Fields{
-		"kind":      kind,
-		"name":      name,
-		"namespace": namespace,
-	}, "Resource created successfully")
 	return msg, nil
 }

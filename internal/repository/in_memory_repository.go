@@ -1,15 +1,12 @@
 package repository
 
 import (
-	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/util"
 	"fmt"
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 type InMemoryRepository struct {
@@ -23,8 +20,6 @@ func NewInMemoryRepository() *InMemoryRepository {
 	}
 }
 
-// Returns a list of resources matching the kind, name, and namespace criteria.
-// In case of e
 func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resource, error) {
 	kind, err := util.NormalizeKind(kind)
 	if err != nil {
@@ -50,54 +45,20 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 	return resources, nil
 }
 
-// Create adds a new resource to the repository.
 func (r *InMemoryRepository) Create(resource models.Resource) (string, error) {
-	kind, err := util.NormalizeKind(resource.GetKind())
-	if err != nil {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Unsupported resource kind in Create")
-		return "", err
-	}
-
-	resourceID := resource.GetID()
-
-	logger.Trace(logrus.Fields{
-		"id":        resourceID,
-		"kind":      kind,
-		"name":      resource.GetName(),
-		"namespace": resource.GetNamespace(),
-	}, "InMemoryRepository.Create called")
-
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if _, exists := r.resources[resourceID]; exists {
-		err := fmt.Errorf("resource %s already exists", resourceID)
-		logger.Error(logrus.Fields{
-			"id":    resourceID,
-			"error": err,
-		}, "Failed to create resource")
-		return "", err
+	if _, exists := r.resources[resource.GetID()]; exists {
+		return "", fmt.Errorf("failed to create %s: '%s' already exists", resource.GetKind(), resource.GetName())
 	}
 
-	if kind != "namespace" && resource.GetOwnerReference().Kind == "" {
-		resource.SetOwnerReference(models.OwnerReference{
-			Kind: "namespace",
-			Name: resource.GetNamespace(),
-		})
-	}
-
-	// Set the creation timestamp here
 	if resource.GetCreationTimestamp().IsZero() {
 		resource.SetCreationTimestamp(time.Now())
 	}
 
-	r.resources[resourceID] = resource
-	logger.Info(logrus.Fields{
-		"id": resourceID,
-	}, "Resource created successfully")
-	return fmt.Sprintf("%s/%s created successfully in namespace '%s'", kind, resource.GetName(), resource.GetNamespace()), nil
+	r.resources[resource.GetID()] = resource
+	return fmt.Sprintf("%s/%s created", resource.GetKind(), resource.GetName()), nil
 }
 
 func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error) {
@@ -118,29 +79,4 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 		}
 	}
 	return fmt.Sprintf("%s", strings.Join(deletedResources, "\n")), nil
-}
-
-func (r *InMemoryRepository) Exists(kind, name, namespace string) bool {
-	// Normalize and validate the kind
-	normalizedKind, err := util.NormalizeKind(kind)
-	if err != nil {
-		logger.Error(logrus.Fields{
-			"kind": kind,
-		}, "Unsupported resource kind in Exists")
-		return false
-	}
-
-	r.mu.RLock()
-	defer r.mu.RUnlock()
-
-	for _, res := range r.resources {
-		matchKind := normalizedKind == "" || strings.ToLower(res.GetKind()) == normalizedKind
-		matchName := name == "" || strings.ToLower(res.GetName()) == strings.ToLower(name)
-		matchNamespace := namespace == "" || strings.ToLower(res.GetNamespace()) == strings.ToLower(namespace)
-
-		if matchKind && matchName && matchNamespace {
-			return true
-		}
-	}
-	return false
 }
