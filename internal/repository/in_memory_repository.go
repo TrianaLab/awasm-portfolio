@@ -25,11 +25,10 @@ func NewInMemoryRepository() *InMemoryRepository {
 
 // List retrieves resources matching the kind, name, and namespace criteria.
 func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resource, error) {
-	logger.Trace(logrus.Fields{
-		"kind":      kind,
-		"name":      name,
-		"namespace": namespace,
-	}, "InMemoryRepository.List called")
+	kind, err := util.NormalizeKind(kind)
+	if err != nil {
+		return nil, err
+	}
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -43,20 +42,9 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 
 	if len(resources) == 0 {
 		err := fmt.Errorf("%s/%s was not found in '%s' namespace", kind, name, namespace)
-		logger.Error(logrus.Fields{
-			"kind":      kind,
-			"name":      name,
-			"namespace": namespace,
-		}, "No resources found")
 		return nil, err
 	}
 
-	logger.Info(logrus.Fields{
-		"kind":      kind,
-		"name":      name,
-		"namespace": namespace,
-		"count":     len(resources),
-	}, "Resources listed successfully")
 	return resources, nil
 }
 
