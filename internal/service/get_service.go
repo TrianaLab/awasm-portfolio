@@ -1,7 +1,6 @@
 package service
 
 import (
-	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
 	"strings"
@@ -16,28 +15,20 @@ func NewGetService(repo *repository.InMemoryRepository) *GetService {
 }
 
 func (s *GetService) GetResources(kind string, name string, namespace string) (string, error) {
-	all := strings.ToLower(kind) == "all"
-	// Retrieve resources from the repository
 	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {
 		return "", err
 	}
 
 	// Apply namespace-specific logic when "all" is requested
-	if all && namespace != "" {
-		filteredResources := []models.Resource{}
-		for _, res := range resources {
-			if res.GetKind() == "namespace" && res.GetName() == namespace {
-				filteredResources = append(filteredResources, res)
-			} else if res.GetNamespace() == namespace {
-				filteredResources = append(filteredResources, res)
+	if strings.ToLower(kind) == "all" && namespace != "" {
+		for i := 0; i < len(resources); {
+			if resources[i].GetKind() == "namespace" && resources[i].GetName() != namespace {
+				resources = append(resources[:i], resources[i+1:]...)
+			} else {
+				i++
 			}
 		}
-		resources = filteredResources
-	}
-
-	if len(resources) == 0 {
-		return "No resources found.", nil
 	}
 
 	// Instantiate the UnifiedFormatter and format the table
