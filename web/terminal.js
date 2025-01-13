@@ -78,6 +78,8 @@ Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
 
         if (command.trim().toLowerCase() === "triana") {
             term.write("💃🏻\r\n");
+            writePrompt();
+            return;
         }
 
         if (!wasmReady) {
