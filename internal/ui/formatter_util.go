@@ -120,6 +120,9 @@ func formatNestedField(fieldValue reflect.Value) string {
 	if fieldValue.Kind() == reflect.Struct {
 		if nestedField := fieldValue.Addr(); nestedField.IsValid() {
 			if resource, ok := nestedField.Interface().(models.Resource); ok {
+				if resource.GetName() == "" {
+					return ""
+				}
 				formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
 				logger.Trace(logrus.Fields{"formatted": formatted}, "Formatted nested resource struct")
 				return formatted

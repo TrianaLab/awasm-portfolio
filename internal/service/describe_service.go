@@ -3,6 +3,7 @@ package service
 import (
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/ui"
+	"fmt"
 	"strings"
 )
 
@@ -15,6 +16,10 @@ func NewDescribeService(repo *repository.InMemoryRepository) *DescribeService {
 }
 
 func (s *DescribeService) DescribeResource(kind, name, namespace string) (string, error) {
+	if name != "" && namespace == "" {
+		return "", fmt.Errorf("a resource cannot be retrieved by name across all namespaces")
+	}
+
 	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {
 		return "", err

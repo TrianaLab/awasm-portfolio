@@ -28,31 +28,30 @@
     let currentInput = "";
     let cursorPosition = 0;
 
-    let executeCommand = null;
+    // Initialize the worker
+    const worker = new Worker("wasm_worker.js");
+    let wasmReady = false;
 
-    // Polyfill for older browsers
-    if (!WebAssembly.instantiateStreaming) {
-        WebAssembly.instantiateStreaming = async (resp, importObject) => {
-            const source = await (await resp).arrayBuffer();
-            return await WebAssembly.instantiate(source, importObject);
-        };
-    }
+    worker.onmessage = (event) => {
+        const { output, error, status } = event.data;
 
-    // Load the WebAssembly module
-    const wasmLoaded = new Promise((resolve, reject) => {
-        const go = new Go();
-        WebAssembly.instantiateStreaming(fetch("app.wasm"), go.importObject)
-            .then((result) => {
-                go.run(result.instance);
-                executeCommand = window.executeCommand; // Set global function
-                if (typeof executeCommand === "function") {
-                    resolve();
-                } else {
-                    reject(new Error("executeCommand not found after WASM initialization"));
-                }
-            })
-            .catch(reject);
-    });
+        if (status === "wasm-ready") {
+            wasmReady = true;
+            term.write("WebAssembly module initialized.\r\n");
+            writePrompt();
+            return;
+        }
+
+        if (error) {
+            term.write(`Error: ${error}\r\n`);
+        } else if (output) {
+            term.write(output.replace(/\n/g, "\r\n") + "\r\n");
+        }
+
+        writePrompt();
+    };
+
+    worker.postMessage({ type: "initialize" }); // Trigger WASM initialization in the worker
 
     function writePrompt() {
         term.write("$ ");
@@ -77,21 +76,19 @@ Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
             return;
         }
 
-        if (command.trim().toLowerCase() === "triana") {
-            term.write("💃🏻\r\n");
-        } else {
-            await wasmLoaded; // Ensure WASM is loaded
-            if (typeof executeCommand === "function") {
-                const output = executeCommand(command.trim());
-                term.write(output.replace(/\n/g, "\r\n") + "\r\n");
-            } else {
-                term.write("Error: executeCommand is not available.\r\n");
-            }
+        if (!wasmReady) {
+            term.write("Initializing WebAssembly module...\r\n");
+            await new Promise((resolve) => {
+                const interval = setInterval(() => {
+                    if (wasmReady) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 50);
+            });
         }
 
-        writePrompt();
-        currentInput = "";
-        cursorPosition = 0;
+        worker.postMessage({ type: "command", command });
     }
 
     function updateInput() {

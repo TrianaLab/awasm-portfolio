@@ -13,6 +13,7 @@ func SupportedResources() map[string]string {
 		"profiles":       "profile",
 		"namespace":      "namespace",
 		"namespaces":     "namespace",
+		"ns":             "namespace",
 		"education":      "education",
 		"educations":     "education",
 		"experience":     "experience",
@@ -25,7 +26,6 @@ func SupportedResources() map[string]string {
 		"contributions":  "contributions",
 		"skill":          "skills",
 		"skills":         "skills",
-		"ns":             "namespace", // Alias for namespace
 	}
 }
 
