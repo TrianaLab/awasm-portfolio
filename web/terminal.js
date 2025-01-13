@@ -76,6 +76,10 @@ Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
             return;
         }
 
+        if (command.trim().toLowerCase() === "triana") {
+            term.write("💃🏻\r\n");
+        }
+
         if (!wasmReady) {
             term.write("Initializing WebAssembly module...\r\n");
             await new Promise((resolve) => {

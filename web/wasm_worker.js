@@ -1,3 +1,6 @@
+// Load the wasm_exec.js file into the worker context
+importScripts("wasm_exec.js");
+
 let wasmLoaded = false;
 let executeCommand = null;
 
@@ -9,13 +12,13 @@ async function initializeWasm() {
         };
     }
 
-    const go = new Go();
+    const go = new Go(); // Go runtime is now defined because wasm_exec.js is loaded
     const result = await WebAssembly.instantiateStreaming(fetch("app.wasm"), go.importObject);
     go.run(result.instance);
 
     executeCommand = self.executeCommand; // Cache the executeCommand function
     wasmLoaded = true; // Mark WASM as loaded
-    self.postMessage({ status: "wasm-ready" }); // Notify main thread
+    self.postMessage({ status: "wasm-ready" }); // Notify the main thread
 }
 
 self.onmessage = async (event) => {
