@@ -1,0 +1,21 @@
+Code
+- [ ] Business logic
+- [ ] Loggers
+- [ ] Dynamic tarces on each func 
+- [ ] Error handling 
+- [ ] Add Languages model
+- [ ] Reliable preload data
+Deployment
+- [ ] Dockerfile
+- [ ] Helm chart
+- [ ] Terraform module
+Docs
+- [ ] License
+- [ ] Features
+- [ ] Citacions
+- [ ] Deployment
+- [ ] Customization
+CICD
+- [ ] Run terraform
+- [ ] Deploy image
+- [ ] Deploy helm chart
