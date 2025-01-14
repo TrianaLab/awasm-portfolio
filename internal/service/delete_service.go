@@ -47,8 +47,8 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 
 	deletedResources = append(deletedResources, r)
 	for _, res := range resources {
-		if res.GetOwnerReference().GetID() == "" {
-			deleted, err := s.repo.Delete(res.GetKind(), res.GetName(), res.GetName())
+		if res.GetOwnerReference().GetID() == fmt.Sprintf("%s:%s:%s", nKind, name, namespace) {
+			deleted, err := s.repo.Delete(res.GetKind(), res.GetName(), res.GetNamespace())
 			if err != nil {
 				return "", err
 			}
