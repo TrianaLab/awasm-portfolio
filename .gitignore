@@ -1,27 +1,40 @@
-# Ignore the portfolio binary
-portfolio
+# Ignore build artifacts and generated files
+web/assets/app.wasm
+web/scripts/wasm_exec.js
 
-# Ignore the WebAssembly file
-web/app.wasm
-web/wasm_exec.js
-
-# Ignore build artifacts and temporary files
+# Ignore temporary files and logs
 *.exe
 *.out
 *.log
+*.tmp
+*.swp
+*.swo
 
-# Ignore system files
-.DS_Store
-Thumbs.db
-
-# Ignore Go build cache and files
+# Ignore Go build cache and test files
 *.test
 *.cover
 *.prof
 *.a
 
-# Ignore IDE and editor files
+# Ignore system-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE and editor-specific files
 .vscode/
 .idea/
-*.swp
-*.swo
+*.iml
+*.sublime-workspace
+*.sublime-project
+*.pyc
+*.pyo
+
+# Node.js-related (if applicable)
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Ignore build tools output (if any future additions)
+dist/
+build/
