@@ -1,8 +1,4 @@
 Code
-- [ ] Business logic
-- [ ] Loggers
-- [ ] Dynamic tarces on each func 
-- [ ] Error handling 
 - [ ] Add Languages model
 - [ ] Reliable preload data
 Deployment

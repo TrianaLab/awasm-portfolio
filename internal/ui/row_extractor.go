@@ -1,13 +1,10 @@
 package ui
 
 import (
-	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"fmt"
 	"reflect"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 // extractHeaders extracts column headers from a resource
@@ -55,10 +52,6 @@ func extractRow(resource models.Resource, headers []string) []string {
 				row[i] = fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
 			} else {
 				row[i] = ""
-				logger.Warn(logrus.Fields{
-					"resource":  resource.GetName(),
-					"namespace": resource.GetNamespace(),
-				}, "Missing OwnerReference for resource")
 			}
 		default:
 			fieldName := strings.Title(strings.ToLower(header))
