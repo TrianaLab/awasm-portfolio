@@ -1,108 +1,180 @@
-document.addEventListener("DOMContentLoaded", () => {
-    // Theme Toggle Functionality
-    (function () {
-        const toggleButton = document.getElementById("theme-toggle");
-        const body = document.body;
-
-        if (!toggleButton) {
-            console.error("Theme toggle button not found!");
-            return;
-        }
-
-        // Apply saved theme
-        const savedTheme = localStorage.getItem("theme");
-        if (savedTheme) {
-            body.classList.add(savedTheme);
-            updateTheme(savedTheme);
-        }
-
-        // Toggle theme
-        toggleButton.addEventListener("click", () => {
-            body.classList.toggle("light-theme");
-            const newTheme = body.classList.contains("light-theme") ? "light-theme" : "dark-theme";
-            updateTheme(newTheme);
-            localStorage.setItem("theme", newTheme);
-        });
-
-        function updateTheme(theme) {
-            const term = window.term;
-            const uiCanvas = document.getElementById("ui-canvas");
-
-            if (term) {
-                term.options.theme = theme === "light-theme" ? {
-                    background: '#ffffff',
-                    foreground: '#000000',
-                    cursor: '#000000',
-                    cursorAccent: '#ffffff',
-                    selection: '#c7c7c7',
-                } : {
-                    background: '#1e1e1e',
-                    foreground: '#ffffff',
-                    cursor: '#ffffff',
-                    cursorAccent: '#000000',
-                    selection: '#555555',
-                };
-                term.refresh(0, term.rows - 1);
-            }
-
-            if (uiCanvas) {
-                uiCanvas.style.backgroundColor = theme === "light-theme" ? "#ffffff" : "#1e1e1e";
-                uiCanvas.style.color = theme === "light-theme" ? "#000000" : "#ffffff";
-            }
-        }
-    })();
-
-    // Mode Toggle Functionality
-    const modeToggle = document.getElementById("mode-toggle");
-    const modeLabel = document.getElementById("mode-label");
-    const terminal = document.getElementById("terminal");
-    const uiCanvas = document.getElementById("ui-canvas");
-
-    if (!modeToggle || !modeLabel || !terminal || !uiCanvas) {
-        console.error("One or more elements for mode toggle not found!");
+(function () {
+    // Check if the terminal is already initialized
+    if (window.term) {
+        console.warn("Terminal is already initialized.");
         return;
     }
 
-    // Set initial states
-    uiCanvas.style.transform = "translateY(100%)";
-    uiCanvas.style.opacity = "0";
-    uiCanvas.style.visibility = "hidden";
+    // Create a global terminal instance
+    const term = new Terminal({
+        cursorBlink: true,
+        theme: {
+            background: '#1e1e1e',
+            foreground: '#ffffff',
+        },
+    });
+    window.term = term; // Save the terminal instance globally
+    term.open(document.getElementById("terminal"));
 
-    modeToggle.addEventListener("click", () => {
-        const isCLI = modeLabel.textContent === "CLI";
+    const fitAddon = new FitAddon.FitAddon();
+    term.loadAddon(fitAddon);
+    fitAddon.fit();
 
-        if (isCLI) {
-            // Switch to UI mode
-            modeLabel.textContent = "UI";
+    // Terminal initialization is complete
+    window.termInitialized = true;
 
-            terminal.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
-            terminal.style.transform = "translateY(-100%)";
-            terminal.style.opacity = "0";
+    let commandHistory = [];
+    let historyIndex = -1;
+    let currentInput = "";
+    let cursorPosition = 0;
 
-            setTimeout(() => {
-                terminal.style.visibility = "hidden";
-                uiCanvas.style.visibility = "visible";
-                uiCanvas.style.display = "flex";
-                uiCanvas.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
-                uiCanvas.style.transform = "translateY(0)";
-                uiCanvas.style.opacity = "1";
-            }, 300); // Match animation duration
-        } else {
-            // Switch to CLI mode
-            modeLabel.textContent = "CLI";
+    // Initialize the worker
+    const worker = new Worker("wasm_worker.js");
+    let wasmReady = false;
 
-            uiCanvas.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
-            uiCanvas.style.transform = "translateY(100%)";
-            uiCanvas.style.opacity = "0";
+    worker.onmessage = (event) => {
+        const { output, error, status } = event.data;
 
-            setTimeout(() => {
-                uiCanvas.style.visibility = "hidden";
-                terminal.style.visibility = "visible";
-                terminal.style.display = "block";
-                terminal.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
-                terminal.style.transform = "translateY(0)";
-                terminal.style.opacity = "1";
-            }, 300); // Match animation duration
+        if (status === "wasm-ready") {
+            wasmReady = true;
+            term.write("WebAssembly module initialized.\r\n");
+            writePrompt();
+            return;
+        }
+
+        if (error) {
+            term.write(`Error: ${error}\r\n`);
+        } else if (output) {
+            term.write(output.replace(/\n/g, "\r\n") + "\r\n");
+        }
+
+        writePrompt();
+    };
+
+    worker.postMessage({ type: "initialize" }); // Trigger WASM initialization in the worker
+
+    function writePrompt() {
+        term.write("$ ");
+    }
+
+    function showWelcomeMessage() {
+        const welcomeMessage = `
+Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
+        `;
+        term.write(welcomeMessage + "\r\n\r\n");
+    }
+
+    showWelcomeMessage();
+    writePrompt();
+
+    async function processCommand(command) {
+        if (command.trim() === "clear") {
+            term.clear();
+            writePrompt();
+            currentInput = "";
+            cursorPosition = 0;
+            return;
+        }
+
+        if (command.trim().toLowerCase() === "triana") {
+            term.write("💃🏻\r\n");
+            writePrompt();
+            return;
+        }
+
+        if (!wasmReady) {
+            term.write("Initializing WebAssembly module...\r\n");
+            await new Promise((resolve) => {
+                const interval = setInterval(() => {
+                    if (wasmReady) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 50);
+            });
+        }
+
+        worker.postMessage({ type: "command", command });
+    }
+
+    function updateInput() {
+        term.write("\u001b[2K\r"); // Clear the current line
+        writePrompt();
+        term.write(currentInput);
+        if (cursorPosition < currentInput.length) {
+            term.write(`\u001b[${currentInput.length - cursorPosition}D`); // Move cursor back
+        }
+    }
+
+    term.onKey(function (e) {
+        const char = e.key;
+
+        if (char === "\r") { // Enter key
+            if (currentInput.trim() === "") {
+                term.write("\r\n");
+                writePrompt();
+            } else {
+                if (commandHistory.length === 0 || commandHistory[commandHistory.length - 1] !== currentInput.trim()) {
+                    commandHistory.push(currentInput.trim());
+                }
+                historyIndex = commandHistory.length;
+                term.write("\r\n");
+                processCommand(currentInput.trim());
+            }
+            currentInput = "";
+            cursorPosition = 0;
+        } else if (char === "\u007F") { // Backspace key
+            if (cursorPosition > 0) {
+                currentInput = currentInput.slice(0, cursorPosition - 1) + currentInput.slice(cursorPosition);
+                cursorPosition--;
+                updateInput();
+            }
+        } else if (char === "\u001b[A") { // Up arrow (history)
+            if (historyIndex > 0) {
+                historyIndex--;
+                currentInput = commandHistory[historyIndex];
+                cursorPosition = currentInput.length;
+                updateInput();
+            }
+        } else if (char === "\u001b[B") { // Down arrow (history)
+            if (historyIndex < commandHistory.length - 1) {
+                historyIndex++;
+                currentInput = commandHistory[historyIndex];
+                cursorPosition = currentInput.length;
+                updateInput();
+            } else if (historyIndex === commandHistory.length - 1) {
+                historyIndex++;
+                currentInput = "";
+                cursorPosition = 0;
+                updateInput();
+            }
+        } else if (char === "\u001b[D") { // Left arrow
+            if (cursorPosition > 0) {
+                cursorPosition--;
+                term.write("\u001b[D");
+            }
+        } else if (char === "\u001b[C") { // Right arrow
+            if (cursorPosition < currentInput.length) {
+                cursorPosition++;
+                term.write("\u001b[C");
+            }
+        } else if (char === '\u0003') { // Ctrl+C
+            term.write("^C\r\n"); // Display "^C" and move to a new line
+            currentInput = ""; // Clear the current input
+            cursorPosition = 0; // Reset cursor position
+            writePrompt(); // Display a new prompt
+        } else if (char.length === 1) { // Regular character input
+            currentInput = currentInput.slice(0, cursorPosition) + char + currentInput.slice(cursorPosition);
+            cursorPosition++;
+            updateInput();
         }
     });
-});
+
+    term.textarea.addEventListener("paste", function (event) {
+        const pasteText = event.clipboardData.getData("text");
+        currentInput = currentInput.slice(0, cursorPosition) + pasteText + currentInput.slice(cursorPosition);
+        cursorPosition += pasteText.length;
+        updateInput();
+        event.preventDefault();
+    });
+})();
