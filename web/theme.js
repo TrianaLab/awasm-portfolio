@@ -63,6 +63,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Set initial states
+    uiCanvas.style.transform = "translateY(100%)";
+    uiCanvas.style.opacity = "0";
+    uiCanvas.style.visibility = "hidden";
+
     modeToggle.addEventListener("click", () => {
         const isCLI = modeLabel.textContent === "CLI";
 
@@ -70,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             // Switch to UI mode
             modeLabel.textContent = "UI";
 
-            terminal.style.transition = "transform 0.5s ease-in-out, opacity 0.5s";
+            terminal.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
             terminal.style.transform = "translateY(-100%)";
             terminal.style.opacity = "0";
 
@@ -78,15 +83,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 terminal.style.visibility = "hidden";
                 uiCanvas.style.visibility = "visible";
                 uiCanvas.style.display = "flex";
-                uiCanvas.style.transition = "transform 0.5s ease-in-out, opacity 0.5s";
+                uiCanvas.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
                 uiCanvas.style.transform = "translateY(0)";
                 uiCanvas.style.opacity = "1";
-            }, 500);
+            }, 300); // Match animation duration
         } else {
             // Switch to CLI mode
             modeLabel.textContent = "CLI";
 
-            uiCanvas.style.transition = "transform 0.5s ease-in-out, opacity 0.5s";
+            uiCanvas.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
             uiCanvas.style.transform = "translateY(100%)";
             uiCanvas.style.opacity = "0";
 
@@ -94,10 +99,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 uiCanvas.style.visibility = "hidden";
                 terminal.style.visibility = "visible";
                 terminal.style.display = "block";
-                terminal.style.transition = "transform 0.5s ease-in-out, opacity 0.5s";
+                terminal.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
                 terminal.style.transform = "translateY(0)";
                 terminal.style.opacity = "1";
-            }, 500);
+            }, 300); // Match animation duration
         }
     });
 });

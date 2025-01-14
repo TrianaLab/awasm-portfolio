@@ -5,7 +5,7 @@
     --background-color-dark: #1e1e1e;
     --text-color-dark: #ffffff;
 
-    --transition-duration: 0.5s;
+    --transition-duration: 0.3s; /* Faster animations */
     --font-family: 'Roboto', 'Open Sans', sans-serif;
 }
 
@@ -37,7 +37,7 @@ body.light-theme {
     overflow-y: auto;
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
-    transition: transform 0.5s ease-in-out, opacity 0.5s;
+    transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
     box-sizing: border-box;
     transform: translateY(0); /* Default position */
     opacity: 1;
@@ -64,7 +64,7 @@ body.light-theme #terminal {
     visibility: hidden; /* Hidden by default */
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
-    transition: transform 0.5s ease-in-out, opacity 0.5s;
+    transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
     z-index: 2; /* UI Canvas slides in on top */
 }
 
