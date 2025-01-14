@@ -6,15 +6,18 @@
     --text-color-dark: #ffffff;
 
     --transition-duration: 0.3s;
+    --font-family: 'Roboto', 'Open Sans', sans-serif;
 }
 
 body {
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
+    font-family: var(--font-family);
     transition: background-color var(--transition-duration), color var(--transition-duration);
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: center; /* Center vertically */
     height: 100vh;
     margin: 0;
 }
@@ -35,11 +38,46 @@ body.light-theme {
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
     transition: background-color var(--transition-duration), color var(--transition-duration);
+    margin: 0; /* Remove extra margin */
+    box-sizing: border-box;
 }
 
 body.light-theme #terminal {
     background-color: var(--background-color-light);
     color: var(--text-color-light);
+}
+
+/* UI Canvas */
+#ui-canvas {
+    width: 80%;
+    height: 70%;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center; /* Center content vertically */
+    opacity: 0;
+    transform: scale(0.9);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Dynamic theme updates for UI Canvas */
+body.light-theme #ui-canvas {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+body.dark-theme #ui-canvas {
+    background-color: #1e1e1e;
+    color: #ffffff;
+}
+
+/* Center "Coming Soon" message */
+#ui-canvas p {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    text-align: center;
+    margin: 0;
 }
 
 /* Header Container */
@@ -49,7 +87,7 @@ body.light-theme #terminal {
     right: 10px;
     display: flex;
     align-items: center;
-    gap: 15px; /* Space between icons */
+    gap: 15px;
 }
 
 /* Toggle Buttons */
@@ -59,12 +97,13 @@ body.light-theme #terminal {
     justify-content: center;
     width: 50px;
     height: 50px;
-    font-size: 20px;
+    font-size: 16px;
     background-color: #333;
     color: #fff;
     border-radius: 50%;
     cursor: pointer;
     transition: transform 0.3s, background-color 0.3s, color 0.3s;
+    text-align: center;
 }
 
 body.light-theme #theme-toggle, 
@@ -103,45 +142,4 @@ body.light-theme #theme-toggle:hover,
 body.light-theme #mode-toggle:hover, 
 body.light-theme #github-link:hover {
     background-color: #bbb;
-}
-
-/* Toggle Switch */
-#mode-toggle {
-    gap: 5px;
-}
-
-#mode-toggle .toggle-switch {
-    width: 50px;
-    height: 25px;
-    background-color: #555;
-    border-radius: 25px;
-    position: relative;
-    transition: background-color 0.3s ease;
-}
-
-body.light-theme #mode-toggle .toggle-switch {
-    background-color: #bbb;
-}
-
-#mode-toggle .toggle-switch .toggle-thumb {
-    width: 21px;
-    height: 21px;
-    background-color: white;
-    border-radius: 50%;
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s ease;
-}
-
-#mode-toggle .toggle-switch.active {
-    background-color: #4caf50;
-}
-
-body.light-theme #mode-toggle .toggle-switch.active {
-    background-color: #76c893;
-}
-
-#mode-toggle .toggle-switch.active .toggle-thumb {
-    transform: translateX(25px);
 }
