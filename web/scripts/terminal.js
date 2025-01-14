@@ -29,7 +29,7 @@
     let cursorPosition = 0;
 
     // Initialize the worker
-    const worker = new Worker("wasm_worker.js");
+    const worker = new Worker("scripts/wasm_worker.js");
     let wasmReady = false;
 
     worker.onmessage = (event) => {

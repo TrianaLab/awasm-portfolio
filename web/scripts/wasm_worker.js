@@ -13,7 +13,7 @@ async function initializeWasm() {
     }
 
     const go = new Go(); // Go runtime is now defined because wasm_exec.js is loaded
-    const result = await WebAssembly.instantiateStreaming(fetch("app.wasm"), go.importObject);
+    const result = await WebAssembly.instantiateStreaming(fetch("../assets/app.wasm"), go.importObject);
     go.run(result.instance);
 
     executeCommand = self.executeCommand; // Cache the executeCommand function

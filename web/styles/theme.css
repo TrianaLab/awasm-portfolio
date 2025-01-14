@@ -23,6 +23,7 @@ body {
     height: 100vh;
     margin: 0;
     position: relative;
+    overflow: hidden;
 }
 
 body.light-theme {
@@ -36,7 +37,7 @@ body.light-theme {
     height: 70%;
     border-radius: 10px;
     padding: 20px;
-    overflow-y: auto; /* Enable scrolling if needed */
+    overflow-y: visible; /* Enable scrolling if needed */
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
     transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
