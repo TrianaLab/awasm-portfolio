@@ -5,7 +5,7 @@
     --background-color-dark: #1e1e1e;
     --text-color-dark: #ffffff;
 
-    --transition-duration: 0.3s;
+    --transition-duration: 0.5s;
     --font-family: 'Roboto', 'Open Sans', sans-serif;
 }
 
@@ -20,6 +20,7 @@ body {
     justify-content: center; /* Center vertically */
     height: 100vh;
     margin: 0;
+    position: relative;
 }
 
 body.light-theme {
@@ -31,15 +32,15 @@ body.light-theme {
 #terminal {
     width: 80%;
     height: 70%;
-    border: 1px solid #ccc;
     border-radius: 10px;
     padding: 20px;
     overflow-y: auto;
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
-    transition: background-color var(--transition-duration), color var(--transition-duration);
-    margin: 0; /* Remove extra margin */
+    transition: transform 0.5s ease-in-out, opacity 0.3s;
     box-sizing: border-box;
+    transform: translateY(0); /* Default position */
+    opacity: 1;
 }
 
 body.light-theme #terminal {
@@ -49,27 +50,25 @@ body.light-theme #terminal {
 
 /* UI Canvas */
 #ui-canvas {
-    width: 80%;
-    height: 70%;
-    border: 1px solid #ccc;
-    border-radius: 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
     display: flex;
-    justify-content: center;
-    align-items: center; /* Center content vertically */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    transform: translateY(-100%); /* Start hidden above */
     opacity: 0;
-    transform: scale(0.9);
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+    transition: transform 0.5s ease-in-out, opacity 0.3s;
+    z-index: 1; /* Ensure it appears below the header */
 }
 
-/* Dynamic theme updates for UI Canvas */
 body.light-theme #ui-canvas {
-    background-color: #ffffff;
-    color: #000000;
-}
-
-body.dark-theme #ui-canvas {
-    background-color: #1e1e1e;
-    color: #ffffff;
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
 }
 
 /* Center "Coming Soon" message */
@@ -88,6 +87,7 @@ body.dark-theme #ui-canvas {
     display: flex;
     align-items: center;
     gap: 15px;
+    z-index: 2; /* Keep it on top of all content */
 }
 
 /* Toggle Buttons */

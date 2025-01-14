@@ -25,40 +25,30 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         function updateTheme(theme) {
-            if (!window.termInitialized || !window.term) {
-                console.error("Terminal is not initialized.");
-                return;
-            }
-
             const term = window.term;
             const uiCanvas = document.getElementById("ui-canvas");
 
-            term.options.theme = theme === "light-theme" ? {
-                background: '#ffffff',
-                foreground: '#000000',
-                cursor: '#000000',
-                cursorAccent: '#ffffff',
-                selection: '#c7c7c7',
-            } : {
-                background: '#1e1e1e',
-                foreground: '#ffffff',
-                cursor: '#ffffff',
-                cursorAccent: '#000000',
-                selection: '#555555',
-            };
-
-            // Update UI Canvas styles
-            if (uiCanvas) {
-                if (theme === "light-theme") {
-                    uiCanvas.style.backgroundColor = "#ffffff";
-                    uiCanvas.style.color = "#000000";
-                } else {
-                    uiCanvas.style.backgroundColor = "#1e1e1e";
-                    uiCanvas.style.color = "#ffffff";
-                }
+            if (term) {
+                term.options.theme = theme === "light-theme" ? {
+                    background: '#ffffff',
+                    foreground: '#000000',
+                    cursor: '#000000',
+                    cursorAccent: '#ffffff',
+                    selection: '#c7c7c7',
+                } : {
+                    background: '#1e1e1e',
+                    foreground: '#ffffff',
+                    cursor: '#ffffff',
+                    cursorAccent: '#000000',
+                    selection: '#555555',
+                };
+                term.refresh(0, term.rows - 1);
             }
 
-            term.refresh(0, term.rows - 1);
+            if (uiCanvas) {
+                uiCanvas.style.backgroundColor = theme === "light-theme" ? "#ffffff" : "#1e1e1e";
+                uiCanvas.style.color = theme === "light-theme" ? "#000000" : "#ffffff";
+            }
         }
     })();
 
@@ -79,41 +69,33 @@ document.addEventListener("DOMContentLoaded", () => {
         if (isCLI) {
             // Switch to UI mode
             modeLabel.textContent = "UI";
-            terminal.style.transition = "transform 0.3s, opacity 0.3s";
-            terminal.style.transform = "translateY(100%)";
+
+            terminal.style.transition = "transform 0.5s ease-in-out, opacity 0.3s";
+            terminal.style.transform = "translateY(-100%)";
             terminal.style.opacity = "0";
 
             setTimeout(() => {
                 terminal.style.display = "none";
                 uiCanvas.style.display = "flex";
-                uiCanvas.style.transform = "scale(0.9)";
-                uiCanvas.style.opacity = "0";
-
-                setTimeout(() => {
-                    uiCanvas.style.transition = "transform 0.3s, opacity 0.3s";
-                    uiCanvas.style.transform = "scale(1)";
-                    uiCanvas.style.opacity = "1";
-                }, 50);
-            }, 300);
+                uiCanvas.style.transition = "transform 0.5s ease-in-out, opacity 0.3s";
+                uiCanvas.style.transform = "translateY(0)";
+                uiCanvas.style.opacity = "1";
+            }, 500);
         } else {
             // Switch to CLI mode
             modeLabel.textContent = "CLI";
-            uiCanvas.style.transition = "transform 0.3s, opacity 0.3s";
-            uiCanvas.style.transform = "scale(0.9)";
+
+            uiCanvas.style.transition = "transform 0.5s ease-in-out, opacity 0.3s";
+            uiCanvas.style.transform = "translateY(-100%)";
             uiCanvas.style.opacity = "0";
 
             setTimeout(() => {
                 uiCanvas.style.display = "none";
                 terminal.style.display = "block";
-                terminal.style.transition = "transform 0.3s, opacity 0.3s";
-                terminal.style.transform = "translateY(100%)";
-                terminal.style.opacity = "0";
-
-                setTimeout(() => {
-                    terminal.style.transform = "translateY(0)";
-                    terminal.style.opacity = "1";
-                }, 50);
-            }, 300);
+                terminal.style.transition = "transform 0.5s ease-in-out, opacity 0.3s";
+                terminal.style.transform = "translateY(0)";
+                terminal.style.opacity = "1";
+            }, 500);
         }
     });
 });
