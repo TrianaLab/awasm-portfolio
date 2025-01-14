@@ -37,10 +37,11 @@ body.light-theme {
     overflow-y: auto;
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
-    transition: transform 0.5s ease-in-out, opacity 0.3s;
+    transition: transform 0.5s ease-in-out, opacity 0.5s;
     box-sizing: border-box;
     transform: translateY(0); /* Default position */
     opacity: 1;
+    z-index: 1; /* Terminal is below by default */
 }
 
 body.light-theme #terminal {
@@ -58,12 +59,13 @@ body.light-theme #terminal {
     display: flex;
     justify-content: center; /* Center horizontally */
     align-items: center; /* Center vertically */
-    transform: translateY(-100%); /* Start hidden above */
+    transform: translateY(100%); /* Start hidden below */
     opacity: 0;
+    visibility: hidden; /* Hidden by default */
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
-    transition: transform 0.5s ease-in-out, opacity 0.3s;
-    z-index: 1; /* Ensure it appears below the header */
+    transition: transform 0.5s ease-in-out, opacity 0.5s;
+    z-index: 2; /* UI Canvas slides in on top */
 }
 
 body.light-theme #ui-canvas {
@@ -87,7 +89,7 @@ body.light-theme #ui-canvas {
     display: flex;
     align-items: center;
     gap: 15px;
-    z-index: 2; /* Keep it on top of all content */
+    z-index: 3; /* Ensure buttons are always visible */
 }
 
 /* Toggle Buttons */
