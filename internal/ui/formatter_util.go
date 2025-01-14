@@ -1,14 +1,11 @@
 package ui
 
 import (
-	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"fmt"
 	"reflect"
 	"strings"
 	"time"
-
-	"github.com/sirupsen/logrus"
 )
 
 // capitalizeFieldName capitalizes the first letter of a field name
@@ -62,11 +59,6 @@ func groupResourcesByKind(resources []models.Resource) map[string][]models.Resou
 	for _, resource := range resources {
 		kind := resource.GetKind()
 		grouped[kind] = append(grouped[kind], resource)
-		logrus.WithFields(logrus.Fields{
-			"kind":      kind,
-			"resource":  resource.GetName(),
-			"namespace": resource.GetNamespace(),
-		}).Trace("Grouped resource by kind")
 	}
 	return grouped
 }
@@ -101,7 +93,6 @@ func summarizeArray(fieldValue reflect.Value) string {
 // formatNestedField formats a nested field as "kind/name" if applicable
 func formatNestedField(fieldValue reflect.Value) string {
 	if !fieldValue.IsValid() || (fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil()) {
-		logger.Trace(logrus.Fields{"fieldValue": fieldValue}, "Field value is invalid or nil")
 		return ""
 	}
 
@@ -113,7 +104,6 @@ func formatNestedField(fieldValue reflect.Value) string {
 
 	if resource, ok := fieldValue.Interface().(models.Resource); ok {
 		formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
-		logger.Trace(logrus.Fields{"formatted": formatted}, "Formatted resource as kind/name")
 		return formatted
 	}
 
@@ -124,12 +114,10 @@ func formatNestedField(fieldValue reflect.Value) string {
 					return ""
 				}
 				formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
-				logger.Trace(logrus.Fields{"formatted": formatted}, "Formatted nested resource struct")
 				return formatted
 			}
 		}
 	}
 
-	logger.Warn(logrus.Fields{"fieldValue": fieldValue}, "Field is not a resource")
 	return fmt.Sprintf("%v", fieldValue.Interface())
 }

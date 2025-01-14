@@ -2,7 +2,6 @@ package main
 
 import (
 	"awasm-portfolio/cmd"
-	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/preload"
 	"awasm-portfolio/internal/repository"
 	"bytes"
@@ -10,14 +9,11 @@ import (
 	"strings"
 	"syscall/js"
 
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
 func main() {
-	// Set trace level
-	logger.InitLogger(logrus.InfoLevel)
 
 	// Initialize repository and factory
 	repo := repository.NewInMemoryRepository()

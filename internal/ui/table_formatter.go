@@ -1,11 +1,8 @@
 package ui
 
 import (
-	"awasm-portfolio/internal/logger"
 	"awasm-portfolio/internal/models"
 	"strings"
-
-	"github.com/sirupsen/logrus"
 )
 
 // TableFormatter formats resources into tables
@@ -43,10 +40,6 @@ func (f TableFormatter) formatNamespaceTable(resources []models.Resource) string
 		name := resource.GetName()
 		age := calculateAge(resource.GetCreationTimestamp())
 		rows = append(rows, []string{name, age})
-		logger.Trace(logrus.Fields{
-			"name": name,
-			"age":  age,
-		}, "Processed namespace resource")
 	}
 
 	colWidths := calculateColumnWidths(headers, rows)

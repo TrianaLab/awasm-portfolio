@@ -53,3 +53,50 @@
         };
     }
 })();
+
+document.addEventListener("DOMContentLoaded", () => {
+    const modeToggle = document.getElementById("mode-toggle");
+    const modeLabel = document.getElementById("mode-label");
+    const modeIcon = modeToggle.querySelector("i");
+    const terminal = document.getElementById("terminal");
+    const uiCanvas = document.getElementById("ui-canvas");
+
+    if (!modeToggle) {
+        console.error("Toggle button not found!");
+        return;
+    }
+
+    modeToggle.addEventListener("click", () => {
+        const isCLI = modeLabel.textContent === "CLI";
+        if (isCLI) {
+            // Switch to UI mode
+            modeLabel.textContent = "UI";
+            modeIcon.classList.replace("fa-toggle-on", "fa-toggle-off");
+            terminal.style.transition = "transform 0.5s, opacity 0.5s";
+            terminal.style.transform = "translateY(100%)";
+            terminal.style.opacity = "0";
+
+            setTimeout(() => {
+                terminal.style.display = "none";
+                uiCanvas.style.display = "flex";
+                uiCanvas.style.opacity = "1";
+                uiCanvas.style.transform = "translateY(0)";
+            }, 500);
+        } else {
+            // Switch to CLI mode
+            modeLabel.textContent = "CLI";
+            modeIcon.classList.replace("fa-toggle-off", "fa-toggle-on");
+            uiCanvas.style.transition = "transform 0.5s, opacity 0.5s";
+            uiCanvas.style.opacity = "0";
+            uiCanvas.style.transform = "translateY(100%)";
+
+            setTimeout(() => {
+                uiCanvas.style.display = "none";
+                terminal.style.display = "block";
+                terminal.style.transform = "translateY(0)";
+                terminal.style.opacity = "1";
+            }, 500);
+        }
+    });
+});
+

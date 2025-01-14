@@ -10,15 +10,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
 </head>
 <body>
-    <div id="icon-container">
-        <div id="theme-toggle" title="Toggle theme">
-            <i class="fa-solid fa-circle-half-stroke"></i>
-        </div>
-        <a id="github-link" href="https://github.com/TrianaLab/awasm-portfolio" target="_blank" title="GitHub Repository">
-            <i class="fa-brands fa-github"></i>
-        </a>
+    <div id="mode-toggle" title="Switch Mode">
+        <i class="fa-solid fa-toggle-on"></i>
+        <span id="mode-label">CLI</span>
     </div>
-      
+    <div id="ui-canvas" style="display: none;">
+        <p style="font-family: 'Courier New', monospace; font-size: 24px; text-align: center; margin-top: 20%;">Coming Soon</p>
+    </div> 
     <div id="terminal"></div>
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
