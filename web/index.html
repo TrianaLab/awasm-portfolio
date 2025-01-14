@@ -3,21 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>awasm portfolio!</title>
+    <title>AWASM Portfolio</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css">
     <link rel="stylesheet" href="theme.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;charset=UTF-8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64' fill='none'><rect width='64' height='64' rx='8' fill='%23212121'/><path d='M16 20L28 32L16 44' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/><line x1='36' y1='32' x2='48' y2='32' stroke='%23FFFFFF' stroke-width='4' stroke-linecap='round'/></svg>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
 </head>
 <body>
-    <div id="mode-toggle" title="Switch Mode">
-        <i class="fa-solid fa-toggle-on"></i>
-        <span id="mode-label">CLI</span>
+    <!-- Header with Icons -->
+    <div id="icon-container">
+        <!-- Theme Toggle -->
+        <div id="theme-toggle" title="Toggle Theme">
+            <i class="fa-solid fa-circle-half-stroke"></i>
+        </div>
+        <!-- Mode Toggle -->
+        <div id="mode-toggle" title="Switch Mode">
+            <span id="mode-label">CLI</span>
+            <div class="toggle-switch">
+                <div class="toggle-thumb"></div>
+            </div>
+        </div>
+        <!-- GitHub Link -->
+        <a id="github-link" href="https://github.com/TrianaLab/awasm-portfolio" target="_blank" title="GitHub Repository">
+            <i class="fa-brands fa-github"></i>
+        </a>
     </div>
+
+    <!-- UI Canvas -->
     <div id="ui-canvas" style="display: none;">
         <p style="font-family: 'Courier New', monospace; font-size: 24px; text-align: center; margin-top: 20%;">Coming Soon</p>
-    </div> 
+    </div>    
+
+    <!-- Terminal -->
     <div id="terminal"></div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/xterm@5.3.0/lib/xterm.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
     <script src="wasm_exec.js"></script>
