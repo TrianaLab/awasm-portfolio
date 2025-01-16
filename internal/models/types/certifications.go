@@ -13,6 +13,7 @@ type Certification struct {
 }
 
 type Certifications struct {
+	Kind              string
 	Name              string
 	Namespace         string
 	OwnerRef          models.OwnerReference

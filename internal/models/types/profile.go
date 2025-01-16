@@ -8,6 +8,7 @@ import (
 )
 
 type Profile struct {
+	Kind              string
 	Name              string
 	Namespace         string
 	OwnerRef          models.OwnerReference

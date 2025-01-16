@@ -14,6 +14,7 @@ type Course struct {
 }
 
 type Education struct {
+	Kind              string
 	Name              string
 	Namespace         string
 	OwnerRef          models.OwnerReference
