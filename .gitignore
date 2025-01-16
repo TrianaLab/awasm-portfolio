@@ -1,6 +1,6 @@
 # Ignore build artifacts and generated files
-web/assets/app.wasm
-web/scripts/wasm_exec.js
+**/app.wasm
+**/wasm_exec.js
 
 # Ignore temporary files and logs
 *.exe

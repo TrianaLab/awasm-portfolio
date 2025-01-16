@@ -2,7 +2,6 @@ package service
 
 import (
 	"awasm-portfolio/internal/factory"
-	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/repository"
 	"awasm-portfolio/internal/util"
 	"fmt"
@@ -40,13 +39,6 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		"name":      name,
 		"namespace": namespace,
 	})
-
-	if kind != "namespace" && resource.GetOwnerReference().Kind == "" {
-		resource.SetOwnerReference(models.OwnerReference{
-			Kind: "namespace",
-			Name: resource.GetNamespace(),
-		})
-	}
 
 	msg, err := s.repo.Create(resource)
 	if err != nil {
