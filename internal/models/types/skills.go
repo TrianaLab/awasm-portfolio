@@ -8,16 +8,18 @@ import (
 )
 
 type Skill struct {
-	Competence  string
-	Proficiency string
+	Category    string `yaml:"Category,omitempty"`
+	Competence  string `yaml:"Competence,omitempty"`
+	Proficiency string `yaml:"Proficiency,omitempty"`
 }
 
 type Skills struct {
-	Name              string
-	Namespace         string
-	OwnerRef          models.OwnerReference
-	Skills            []Skill
-	CreationTimestamp time.Time
+	Kind              string                `yaml:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
+	Skills            []Skill               `yaml:"Skills,omitempty"`
 }
 
 func (s *Skills) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*s).Name()) }

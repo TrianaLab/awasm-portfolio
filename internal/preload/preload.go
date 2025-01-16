@@ -10,14 +10,15 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	name := "eduardo"
 	namespace := &types.Namespace{
 		Kind: "namespace",
-		Name: name + "-namespace",
+		Name: "default",
 	}
 	ownerRef := models.OwnerReference{
-		Kind:      (&types.Profile{}).GetKind(),
+		Kind:      "profile",
 		Name:      name + "-profile",
 		Namespace: namespace.Name,
 	}
 	certifications := &types.Certifications{
+		Kind:      "certifications",
 		Name:      name + "-certifications",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
@@ -33,6 +34,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		},
 	}
 	contact := &types.Contact{
+		Kind:      "contact",
 		Name:      name + "-contact",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
@@ -41,6 +43,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Github:    "https://github.com/edu-diaz",
 	}
 	contributions := &types.Contributions{
+		Kind:      "contributions",
 		Name:      name + "-contributions",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
@@ -68,6 +71,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		},
 	}
 	education := &types.Education{
+		Kind:      "education",
 		Name:      name + "-education",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
@@ -85,6 +89,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		},
 	}
 	experience := &types.Experience{
+		Kind:      "experience",
 		Name:      name + "-experience",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
@@ -127,14 +132,68 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			},
 		},
 	}
+	skills := &types.Skills{
+		Kind:      "skills",
+		Name:      name + "-skills",
+		Namespace: namespace.Name,
+		OwnerRef:  ownerRef,
+		Skills: []types.Skill{
+			// DevOps Tools
+			{Category: "DevOps Tools", Competence: "Jenkins", Proficiency: "Advanced"},
+			{Category: "DevOps Tools", Competence: "GitHub Actions", Proficiency: "Expert"},
+			{Category: "DevOps Tools", Competence: "ArgoCD", Proficiency: "Expert"},
+			{Category: "DevOps Tools", Competence: "Crossplane", Proficiency: "Expert"},
+			{Category: "DevOps Tools", Competence: "Ansible", Proficiency: "Advanced"},
+			{Category: "DevOps Tools", Competence: "Helm", Proficiency: "Expert"},
+
+			// Cloud Platforms
+			{Category: "Cloud Platforms", Competence: "GCP", Proficiency: "Expert"},
+			{Category: "Cloud Platforms", Competence: "AWS", Proficiency: "Advanced"},
+			{Category: "Cloud Platforms", Competence: "Cloudflares", Proficiency: "Advanced"},
+
+			// Containerization and Orchestration
+			{Category: "Containerization", Competence: "Kubernetes", Proficiency: "Expert"},
+			{Category: "Containerization", Competence: "Docker", Proficiency: "Expert"},
+			{Category: "Containerization", Competence: "Operators", Proficiency: "Advanced"},
+
+			// Service Mesh and Observability
+			{Category: "Service Mesh", Competence: "Istio", Proficiency: "Advanced"},
+			{Category: "Observability", Competence: "Prometheus", Proficiency: "Advanced"},
+			{Category: "Observability", Competence: "Grafana", Proficiency: "Advanced"},
+
+			// Programming Languages
+			{Category: "Programming Languages", Competence: "Go", Proficiency: "Advanced"},
+			{Category: "Programming Languages", Competence: "Java", Proficiency: "Advanced"},
+			{Category: "Programming Languages", Competence: "C", Proficiency: "Intemediate"},
+			{Category: "Programming Languages", Competence: "Bash", Proficiency: "Expert"},
+			{Category: "Programming Languages", Competence: "WebAssembly (Wasm)", Proficiency: "Intermediate"},
+
+			// Networking
+			{Category: "Networking", Competence: "Networking Fundamentals", Proficiency: "Expert"},
+			{Category: "Networking", Competence: "Network Security", Proficiency: "Advanced"},
+
+			// Other Skills
+			{Category: "Other Skills", Competence: "Observability", Proficiency: "Advanced"},
+			{Category: "Other Skills", Competence: "Infrastructure as Code", Proficiency: "Expert"},
+			{Category: "Other Skills", Competence: "CI/CD Pipelines", Proficiency: "Expert"},
+			{Category: "Other Skills", Competence: "Microservices Architecture", Proficiency: "Advanced"},
+
+			// Languages
+			{Category: "Languages", Competence: "Spanish", Proficiency: "Native"},
+			{Category: "Languages", Competence: "English", Proficiency: "Fluent"},
+			{Category: "Languages", Competence: "Chinese", Proficiency: "Basic"},
+		},
+	}
+
 	profile := &types.Profile{
-		Name:           name + "-profile",
+		Name:           name,
 		Namespace:      namespace.Name,
 		Contributions:  *contributions,
 		Contact:        *contact,
 		Certifications: *certifications,
 		Education:      *education,
 		Experience:     *experience,
+		Skills:         *skills,
 	}
 
 	resources := []models.Resource{
