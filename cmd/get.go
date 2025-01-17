@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"awasm-portfolio/internal/service"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -35,6 +36,12 @@ kubectl get all -A
 
 			namespace, _ := cmd.Flags().GetString("namespace")
 			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
+			formatOutput, _ := cmd.Flags().GetString("output")
+
+			if formatOutput != "" && strings.ToLower(formatOutput) != "json" && strings.ToLower(formatOutput) != "yaml" {
+				cmd.Printf("Error: wrong format '%s', valid ones are 'json' or 'yaml'\n", formatOutput)
+				return
+			}
 
 			if allNamespaces {
 				namespace = ""

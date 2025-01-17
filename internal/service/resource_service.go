@@ -2,6 +2,8 @@ package service
 
 import (
 	"awasm-portfolio/internal/repository"
+
+	"github.com/spf13/cobra"
 )
 
 type ResourceService interface {
@@ -18,12 +20,12 @@ type ResourceServiceImpl struct {
 	describeService *DescribeService
 }
 
-func NewResourceService(repo *repository.InMemoryRepository) ResourceService {
+func NewResourceService(repo *repository.InMemoryRepository, cmd *cobra.Command) ResourceService {
 	return &ResourceServiceImpl{
-		createService:   NewCreateService(repo),
-		deleteService:   NewDeleteService(repo),
-		getService:      NewGetService(repo),
-		describeService: NewDescribeService(repo),
+		createService:   NewCreateService(repo, cmd),
+		deleteService:   NewDeleteService(repo, cmd),
+		getService:      NewGetService(repo, cmd),
+		describeService: NewDescribeService(repo, cmd),
 	}
 }
 

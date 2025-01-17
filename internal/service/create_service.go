@@ -9,17 +9,21 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 type CreateService struct {
 	repo    *repository.InMemoryRepository
 	factory *factory.ResourceFactory
+	cmd     *cobra.Command
 }
 
-func NewCreateService(repo *repository.InMemoryRepository) *CreateService {
+func NewCreateService(repo *repository.InMemoryRepository, cmd *cobra.Command) *CreateService {
 	return &CreateService{
 		repo:    repo,
 		factory: factory.NewResourceFactory(),
+		cmd:     cmd,
 	}
 }
 

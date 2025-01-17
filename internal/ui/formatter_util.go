@@ -2,9 +2,12 @@ package ui
 
 import (
 	"awasm-portfolio/internal/models"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 // calculateColumnWidths calculates the width for each column
@@ -86,4 +89,51 @@ func extractRowsFromSchema(resources []models.Resource, schema Schema) [][]strin
 		rows[i] = row
 	}
 	return rows
+}
+
+// formatAsTable formats resources as a table
+func formatAsTable(resources []models.Resource, schemas map[string]Schema) string {
+	if len(resources) == 0 {
+		return "No resources found."
+	}
+
+	grouped := groupResourcesByKind(resources)
+	var sb strings.Builder
+
+	for kind, group := range grouped {
+		// Get schema for the resource kind
+		schema, exists := schemas[kind]
+		if !exists {
+			schema = schemas["default"]
+		}
+
+		headers := schema.Headers
+		rows := extractRowsFromSchema(group, schema)
+		colWidths := calculateColumnWidths(headers, rows)
+
+		// Format headers and rows
+		formatHeaders(&sb, headers, colWidths)
+		formatRows(&sb, rows, colWidths)
+		sb.WriteString("\n")
+	}
+
+	return sb.String()
+}
+
+// formatAsJSON marshals resources into JSON
+func formatAsJSON(resources []models.Resource) string {
+	data, err := json.MarshalIndent(resources, "", "  ")
+	if err != nil {
+		return "Error formatting resources as JSON: " + err.Error()
+	}
+	return string(data)
+}
+
+// formatAsYAML marshals resources into YAML
+func formatAsYAML(resources []models.Resource) string {
+	data, err := yaml.Marshal(resources)
+	if err != nil {
+		return "Error formatting resources as YAML: " + err.Error()
+	}
+	return string(data)
 }

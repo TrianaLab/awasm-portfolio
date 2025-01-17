@@ -71,9 +71,11 @@ func runCLICommand(rootCmd *cobra.Command, command string) string {
 func resetFlagValues(cmd *cobra.Command) {
 	cmd.Flags().VisitAll(func(flag *pflag.Flag) {
 		flag.Value.Set(flag.DefValue)
+		flag.Changed = false
 	})
 	cmd.PersistentFlags().VisitAll(func(flag *pflag.Flag) {
 		flag.Value.Set(flag.DefValue)
+		flag.Changed = false
 	})
 	for _, subCmd := range cmd.Commands() {
 		resetFlagValues(subCmd)
