@@ -5,14 +5,20 @@ import (
 	"awasm-portfolio/internal/ui"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 type DescribeService struct {
 	repo *repository.InMemoryRepository
+	cmd  *cobra.Command
 }
 
-func NewDescribeService(repo *repository.InMemoryRepository) *DescribeService {
-	return &DescribeService{repo: repo}
+func NewDescribeService(repo *repository.InMemoryRepository, cmd *cobra.Command) *DescribeService {
+	return &DescribeService{
+		repo: repo,
+		cmd:  cmd,
+	}
 }
 
 func (s *DescribeService) DescribeResource(kind, name, namespace string) (string, error) {
@@ -36,13 +42,5 @@ func (s *DescribeService) DescribeResource(kind, name, namespace string) (string
 		}
 	}
 
-	formatter := ui.NewDetailsFormatter()
-
-	var detailsBuilder strings.Builder
-	for _, resource := range resources {
-		detailsBuilder.WriteString(formatter.FormatDetails(resource))
-		detailsBuilder.WriteString("---\n")
-	}
-
-	return detailsBuilder.String(), nil
+	return ui.FormatDetails(resources), nil
 }

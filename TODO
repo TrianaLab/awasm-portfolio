@@ -1,5 +1,8 @@
 Code
 - [ ] Tests
+- [ ] Compress wasm
+- [ ] Output flag
+- [ ] On UI, get all in json format
 Deployment
 - [ ] Dockerfile
 - [ ] Helm chart

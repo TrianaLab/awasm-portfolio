@@ -5,14 +5,20 @@ import (
 	"awasm-portfolio/internal/util"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 type DeleteService struct {
 	repo *repository.InMemoryRepository
+	cmd  *cobra.Command
 }
 
-func NewDeleteService(repo *repository.InMemoryRepository) *DeleteService {
-	return &DeleteService{repo: repo}
+func NewDeleteService(repo *repository.InMemoryRepository, cmd *cobra.Command) *DeleteService {
+	return &DeleteService{
+		repo: repo,
+		cmd:  cmd,
+	}
 }
 
 func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, error) {

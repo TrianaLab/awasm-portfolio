@@ -5,20 +5,30 @@ import (
 	"awasm-portfolio/internal/ui"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/cobra"
 )
 
 type GetService struct {
 	repo *repository.InMemoryRepository
+	cmd  *cobra.Command
 }
 
-func NewGetService(repo *repository.InMemoryRepository) *GetService {
-	return &GetService{repo: repo}
+func NewGetService(repo *repository.InMemoryRepository, cmd *cobra.Command) *GetService {
+	return &GetService{
+		repo: repo,
+		cmd:  cmd,
+	}
 }
 
 func (s *GetService) GetResources(kind string, name string, namespace string) (string, error) {
 	if name != "" && namespace == "" {
 		return "", fmt.Errorf("a resource cannot be retrieved by name across all namespaces")
 	}
+
+	// Retrieve the output format from the command flags
+	outputFormat, _ := s.cmd.Flags().GetString("output")
+	outputFormat = strings.ToLower(outputFormat)
 
 	// Retrieve resources from the repository
 	resources, err := s.repo.List(kind, name, namespace)
@@ -37,7 +47,5 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		}
 	}
 
-	// Instantiate and use the new TableFormatter
-	formatter := ui.NewTableFormatter()
-	return formatter.FormatTable(resources), nil
+	return ui.FormatTable(resources, outputFormat), nil
 }

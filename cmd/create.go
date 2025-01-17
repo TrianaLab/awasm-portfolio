@@ -23,6 +23,12 @@ kubectl create namespace dev
 			kind, name := args[0], args[1]
 			namespace, _ := cmd.Flags().GetString("namespace")
 			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
+			formatOutput, _ := cmd.Flags().GetString("output")
+
+			if formatOutput != "" {
+				cmd.Println("Error: output flag is not supported in this command")
+				return
+			}
 
 			if allNamespaces {
 				namespace = ""
