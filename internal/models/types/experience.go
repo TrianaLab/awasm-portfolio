@@ -2,27 +2,27 @@ package types
 
 import (
 	"awasm-portfolio/internal/models"
-	"reflect"
 	"strings"
 	"time"
 )
 
 type Job struct {
-	Title       string
-	Description string
-	Company     string
-	Duration    string
+	Title       string `yaml:"Title,omitempty"`
+	Description string `yaml:"Description,omitempty"`
+	Company     string `yaml:"Company,omitempty"`
+	Duration    string `yaml:"Duration,omitempty"`
 }
 
 type Experience struct {
-	Name              string
-	Namespace         string
-	OwnerRef          models.OwnerReference
-	Jobs              []Job
-	CreationTimestamp time.Time
+	Kind              string                `yaml:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
+	Jobs              []Job                 `yaml:"Jobs,omitempty"`
 }
 
-func (e *Experience) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*e).Name()) }
+func (e *Experience) GetKind() string                               { return "experience" }
 func (e *Experience) GetName() string                               { return e.Name }
 func (e *Experience) SetName(name string)                           { e.Name = name }
 func (e *Experience) GetNamespace() string                          { return e.Namespace }

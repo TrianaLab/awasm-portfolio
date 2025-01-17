@@ -2,19 +2,19 @@ package types
 
 import (
 	"awasm-portfolio/internal/models"
-	"reflect"
 	"strings"
 	"time"
 )
 
 type Namespace struct {
-	Name              string
-	Namespace         string
-	OwnerRef          models.OwnerReference
-	CreationTimestamp time.Time
+	Kind              string                `yaml:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
 }
 
-func (ns *Namespace) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*ns).Name()) }
+func (ns *Namespace) GetKind() string                               { return "namespace" }
 func (ns *Namespace) GetName() string                               { return ns.Name }
 func (ns *Namespace) SetName(name string)                           { ns.Name = name }
 func (ns *Namespace) GetNamespace() string                          { return "" }

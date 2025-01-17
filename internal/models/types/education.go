@@ -2,26 +2,26 @@ package types
 
 import (
 	"awasm-portfolio/internal/models"
-	"reflect"
 	"strings"
 	"time"
 )
 
 type Course struct {
-	Title       string
-	Institution string
-	Duration    string
+	Title       string `yaml:"Title,omitempty"`
+	Institution string `yaml:"Institution,omitempty"`
+	Duration    string `yaml:"Duration,omitempty"`
 }
 
 type Education struct {
-	Name              string
-	Namespace         string
-	OwnerRef          models.OwnerReference
-	Courses           []Course
-	CreationTimestamp time.Time
+	Kind              string                `yaml:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
+	Courses           []Course              `yaml:"Courses,omitempty"`
 }
 
-func (e *Education) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*e).Name()) }
+func (e *Education) GetKind() string                               { return "education" }
 func (e *Education) GetName() string                               { return e.Name }
 func (e *Education) SetName(name string)                           { e.Name = name }
 func (e *Education) GetNamespace() string                          { return e.Namespace }

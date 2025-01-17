@@ -8,16 +8,17 @@ import (
 )
 
 type Profile struct {
-	Name              string
-	Namespace         string
-	OwnerRef          models.OwnerReference
-	Certifications    Certifications
-	Contact           Contact
-	Contributions     Contributions
-	Education         Education
-	Experience        Experience
-	Skills            Skills
-	CreationTimestamp time.Time
+	Kind              string                `yaml:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
+	Contributions     Contributions         `yaml:"Contributions,omitempty"`
+	Experience        Experience            `yaml:"Experience,omitempty"`
+	Certifications    Certifications        `yaml:"Certifications,omitempty"`
+	Education         Education             `yaml:"Education,omitempty"`
+	Skills            Skills                `yaml:"Skills,omitempty"`
+	Contact           Contact               `yaml:"Contact,omitempty"`
 }
 
 func (p *Profile) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*p).Name()) }

@@ -2,22 +2,22 @@ package types
 
 import (
 	"awasm-portfolio/internal/models"
-	"reflect"
 	"strings"
 	"time"
 )
 
 type Contact struct {
-	Name              string
-	Namespace         string
-	OwnerRef          models.OwnerReference
-	Email             string
-	Linkedin          string
-	Github            string
-	CreationTimestamp time.Time
+	Kind              string                `yaml:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
+	Email             string                `yaml:"Email,omitempty"`
+	Linkedin          string                `yaml:"LinkedIn,omitempty"`
+	Github            string                `yaml:"GitHub,omitempty"`
 }
 
-func (c *Contact) GetKind() string                               { return strings.ToLower(reflect.TypeOf(*c).Name()) }
+func (c *Contact) GetKind() string                               { return "contact" }
 func (c *Contact) GetName() string                               { return c.Name }
 func (c *Contact) SetName(name string)                           { c.Name = name }
 func (c *Contact) GetNamespace() string                          { return c.Namespace }

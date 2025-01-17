@@ -1,6 +1,5 @@
 Code
-- [ ] Add Languages model
-- [ ] Reliable preload data
+- [ ] Tests
 Deployment
 - [ ] Dockerfile
 - [ ] Helm chart
