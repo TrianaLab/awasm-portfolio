@@ -37,9 +37,9 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 	}
 
 	// Filter namespaces when kind is "all" and namespace is specified
-	if strings.ToLower(kind) == "all" && namespace != "" {
+	if strings.ToLower(kind) == "all" {
 		for i := 0; i < len(resources); {
-			if resources[i].GetKind() == "namespace" && resources[i].GetName() != namespace {
+			if resources[i].GetKind() == "namespace" {
 				resources = append(resources[:i], resources[i+1:]...)
 			} else {
 				i++
