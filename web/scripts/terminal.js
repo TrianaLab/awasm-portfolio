@@ -1,10 +1,4 @@
 (function () {
-    // Check if the terminal is already initialized
-    if (window.term) {
-        console.warn("Terminal is already initialized.");
-        return;
-    }
-
     // Create a global terminal instance
     const term = new Terminal({
         cursorBlink: true,
@@ -28,11 +22,17 @@
     let currentInput = "";
     let cursorPosition = 0;
 
-    // Initialize the worker
-    const worker = new Worker("scripts/wasm_worker.js");
-    let wasmReady = false;
+    // Use the existing worker from the global window object
+    const worker = window.wasmWorker;
+    if (!worker) {
+        console.error("WebAssembly worker is not available.");
+        return;
+    }
 
-    worker.onmessage = (event) => {
+    let wasmReady = window.wasmReady || false;
+
+    // Use addEventListener to add a message handler without overriding others
+    worker.addEventListener('message', (event) => {
         const { output, error, status } = event.data;
 
         if (status === "wasm-ready") {
@@ -49,9 +49,7 @@
         }
 
         writePrompt();
-    };
-
-    worker.postMessage({ type: "initialize" }); // Trigger WASM initialization in the worker
+    });
 
     function writePrompt() {
         term.write("$ ");
@@ -84,9 +82,12 @@ Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
 
         if (!wasmReady) {
             term.write("Initializing WebAssembly module...\r\n");
+
+            // Wait until wasmReady becomes true
             await new Promise((resolve) => {
                 const interval = setInterval(() => {
-                    if (wasmReady) {
+                    if (window.wasmReady) {  // Check global flag set by wasm_init.js
+                        wasmReady = true;
                         clearInterval(interval);
                         resolve();
                     }

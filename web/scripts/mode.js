@@ -9,31 +9,43 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const worker = new Worker("scripts/wasm_worker.js");
+    // Use the existing global worker
+    const worker = window.wasmWorker;
+    if (!worker) {
+        console.error("WebAssembly worker is not available.");
+        return;
+    }
+
     let wasmReady = false;
 
     worker.onmessage = (event) => {
         const { output, error, status } = event.data;
-
+    
         if (status === "wasm-ready") {
             wasmReady = true;
             console.log("WebAssembly module is ready.");
         } else if (error) {
             console.error("Error from WASM module:", error);
         } else if (output) {
-            try {
-                const jsonData = JSON.parse(output);
-                console.log("JSON data refreshed:", jsonData);
-
-                // Render the graph with the new data
-                renderGraph(jsonData);
-            } catch (err) {
-                console.error("Failed to parse JSON data:", err);
+            // Basic check for JSON-like output
+            const trimmedOutput = output.trim();
+            if ((trimmedOutput.startsWith("{") && trimmedOutput.endsWith("}")) ||
+                (trimmedOutput.startsWith("[") && trimmedOutput.endsWith("]"))) {
+                try {
+                    const jsonData = JSON.parse(output);
+                    console.log("JSON data refreshed:", jsonData);
+    
+                    // Render the graph with the new data
+                    renderGraph(jsonData);
+                } catch (err) {
+                    console.error("Failed to parse JSON data:", err);
+                }
+            } else {
+                console.warn("Received non-JSON output:", output);
+                // Optionally handle non-JSON output here.
             }
         }
-    };
-
-    worker.postMessage({ type: "initialize" }); // Initialize the WASM module
+    };    
 
     function fetchJsonData() {
         if (!wasmReady) {
