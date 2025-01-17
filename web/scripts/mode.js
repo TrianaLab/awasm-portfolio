@@ -9,6 +9,36 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Initialize the worker
+    const worker = new Worker("scripts/wasm_worker.js");
+    let wasmReady = false;
+
+    worker.onmessage = (event) => {
+        const { output, error, status } = event.data;
+
+        if (status === "wasm-ready") {
+            wasmReady = true;
+            console.log("WebAssembly module is ready.");
+        }
+
+        if (error) {
+            console.error("Error from WASM module:", error);
+        } else if (output) {
+            console.log("Response from WASM module:", output);
+        }
+    };
+
+    worker.postMessage({ type: "initialize" }); // Initialize the WASM module
+
+    // Function to call the WebAssembly module
+    function callWasmCommand(command) {
+        if (!wasmReady) {
+            console.warn("WASM module is not ready yet.");
+            return;
+        }
+        worker.postMessage({ type: "command", command });
+    }
+
     // Set initial states
     uiCanvas.style.transform = "translateY(100%)";
     uiCanvas.style.opacity = "0";
@@ -32,6 +62,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 uiCanvas.style.transition = "transform 0.3s ease-in-out, opacity 0.3s";
                 uiCanvas.style.transform = "translateY(0)";
                 uiCanvas.style.opacity = "1";
+
+                // Call the WebAssembly module and log the response
+                console.log("Switching to UI mode...");
+                callWasmCommand("kubectl get all --all-namespaces --output json");
             }, 300); // Match animation duration
         } else {
             // Switch to CLI mode
