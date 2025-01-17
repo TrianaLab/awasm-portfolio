@@ -14,7 +14,6 @@
     term.loadAddon(fitAddon);
     fitAddon.fit();
 
-    // Terminal initialization is complete
     window.termInitialized = true;
 
     let commandHistory = [];
@@ -31,9 +30,18 @@
 
     let wasmReady = window.wasmReady || false;
 
-    // Use addEventListener to add a message handler without overriding others
-    worker.addEventListener('message', (event) => {
-        const { output, error, status } = event.data;
+    // Generate a unique correlation ID for this instance of terminal.js
+    const terminalCorrelationId = "terminal-" + Math.random().toString(36).substr(2, 9);
+
+    // Listen for custom events dispatched by the centralized handler
+    document.addEventListener("workerMessage", (event) => {
+        const { output, error, status, correlationId } = event.detail;
+
+        // Filter messages to only process those matching this script's correlationId
+        // Also allow global messages like 'wasm-ready' without correlationId.
+        if (correlationId && correlationId !== terminalCorrelationId) {
+            return;
+        }
 
         if (status === "wasm-ready") {
             wasmReady = true;
@@ -82,20 +90,26 @@ Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
 
         if (!wasmReady) {
             term.write("Initializing WebAssembly module...\r\n");
-
-            // Wait until wasmReady becomes true
+            // Wait until wasmReady becomes true using a promise
             await new Promise((resolve) => {
-                const interval = setInterval(() => {
-                    if (window.wasmReady) {  // Check global flag set by wasm_init.js
+                const onReady = (event) => {
+                    const { status } = event.detail;
+                    if (status === "wasm-ready") {
                         wasmReady = true;
-                        clearInterval(interval);
+                        document.removeEventListener("workerMessage", onReady);
                         resolve();
                     }
-                }, 50);
+                };
+                document.addEventListener("workerMessage", onReady);
             });
         }
 
-        worker.postMessage({ type: "command", command });
+        // Send command to worker with correlationId
+        worker.postMessage({ 
+            type: "command", 
+            command, 
+            correlationId: terminalCorrelationId 
+        });
     }
 
     function updateInput() {

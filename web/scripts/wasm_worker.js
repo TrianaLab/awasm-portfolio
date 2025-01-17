@@ -32,7 +32,17 @@ initializeWasm();
 
 // Listen for incoming messages from the main thread
 self.onmessage = async (event) => {
-    const { command, type } = event.data;
+    // Include correlationId in the destructuring
+    const { command, type, correlationId } = event.data;
+
+    // Handle explicit initialization requests separately if needed
+    if (type === "initialize") {
+        if (!wasmLoaded) {
+            await initializeWasm();
+        }
+        self.postMessage({ status: "wasm-ready", correlationId });
+        return;
+    }
 
     if (!wasmLoaded) {
         await initializeWasm();
@@ -40,12 +50,17 @@ self.onmessage = async (event) => {
 
     if (typeof executeCommand === "function") {
         try {
-            const output = executeCommand(command.trim());
-            self.postMessage({ output });
+            if (typeof command === "string") {
+                const output = executeCommand(command.trim());
+                // Include correlationId in the response
+                self.postMessage({ output, correlationId });
+            } else {
+                self.postMessage({ error: "Command is undefined or not a string.", correlationId });
+            }
         } catch (err) {
-            self.postMessage({ error: `Error executing command: ${err.message}` });
+            self.postMessage({ error: `Error executing command: ${err.message}`, correlationId });
         }
     } else {
-        self.postMessage({ error: "executeCommand is not available." });
+        self.postMessage({ error: "executeCommand is not available.", correlationId });
     }
 };

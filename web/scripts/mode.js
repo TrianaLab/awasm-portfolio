@@ -18,9 +18,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let wasmReady = false;
 
-    worker.onmessage = (event) => {
-        const { output, error, status } = event.data;
-    
+    // Generate a unique correlation ID for this instance of mode.js
+    const instanceCorrelationId = "mode-" + Math.random().toString(36).substr(2, 9);
+
+    // Listen for custom events dispatched by the centralized handler
+    document.addEventListener("workerMessage", (event) => {
+        const { output, error, status, correlationId } = event.detail;
+
+        // Filter messages to only process those matching this script's correlationId,
+        // or handle global messages like wasm-ready without a correlationId.
+        if (correlationId && correlationId !== instanceCorrelationId) {
+            return; // Ignore messages not meant for this script
+        }
+
         if (status === "wasm-ready") {
             wasmReady = true;
             console.log("WebAssembly module is ready.");
@@ -45,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 // Optionally handle non-JSON output here.
             }
         }
-    };    
+    });
 
     function fetchJsonData() {
         if (!wasmReady) {
@@ -54,7 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         console.log("Fetching JSON data...");
-        worker.postMessage({ type: "command", command: "kubectl get all --all-namespaces --output json" });
+        // Send a message to the worker with the correlationId
+        worker.postMessage({ 
+            type: "command", 
+            command: "kubectl get all --all-namespaces --output json",
+            correlationId: instanceCorrelationId 
+        });
     }
 
     function renderGraph(jsonData) {
