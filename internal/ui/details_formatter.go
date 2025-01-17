@@ -9,6 +9,11 @@ import (
 // DetailsFormatter formats resources into a detailed YAML-like structure
 type DetailsFormatter struct{}
 
+// NewDetailsFormatter creates a new TableFormatter
+func NewDetailsFormatter() *DetailsFormatter {
+	return &DetailsFormatter{}
+}
+
 // FormatDetails formats a resource into YAML-like details
 func (f DetailsFormatter) FormatDetails(resource models.Resource) string {
 	// Convert the resource to YAML format

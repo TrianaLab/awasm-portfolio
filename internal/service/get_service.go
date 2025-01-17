@@ -20,12 +20,13 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		return "", fmt.Errorf("a resource cannot be retrieved by name across all namespaces")
 	}
 
+	// Retrieve resources from the repository
 	resources, err := s.repo.List(kind, name, namespace)
 	if err != nil {
 		return "", err
 	}
 
-	// Apply namespace-specific logic when "all" is requested
+	// Filter namespaces when kind is "all" and namespace is specified
 	if strings.ToLower(kind) == "all" && namespace != "" {
 		for i := 0; i < len(resources); {
 			if resources[i].GetKind() == "namespace" && resources[i].GetName() != namespace {
@@ -36,7 +37,7 @@ func (s *GetService) GetResources(kind string, name string, namespace string) (s
 		}
 	}
 
-	// Instantiate the UnifiedFormatter and format the table
-	formatter := ui.NewUnifiedFormatter()
+	// Instantiate and use the new TableFormatter
+	formatter := ui.NewTableFormatter()
 	return formatter.FormatTable(resources), nil
 }

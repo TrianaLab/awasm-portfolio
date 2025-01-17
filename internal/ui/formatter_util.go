@@ -3,15 +3,9 @@ package ui
 import (
 	"awasm-portfolio/internal/models"
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 )
-
-// capitalizeFieldName capitalizes the first letter of a field name
-func capitalizeFieldName(fieldName string) string {
-	return strings.ToUpper(fieldName[:1]) + strings.ToLower(fieldName[1:])
-}
 
 // calculateColumnWidths calculates the width for each column
 func calculateColumnWidths(headers []string, rows [][]string) []int {
@@ -81,43 +75,15 @@ func calculateAge(timestamp time.Time) string {
 	}
 }
 
-// summarizeArray returns a summary of the array or slice
-func summarizeArray(fieldValue reflect.Value) string {
-	length := fieldValue.Len()
-	if length > 0 {
-		return fmt.Sprintf("%d items", length)
-	}
-	return "0 items"
-}
-
-// formatNestedField formats a nested field as "kind/name" if applicable
-func formatNestedField(fieldValue reflect.Value) string {
-	if !fieldValue.IsValid() || (fieldValue.Kind() == reflect.Ptr && fieldValue.IsNil()) {
-		return ""
-	}
-
-	if ownerRef, ok := fieldValue.Interface().(models.OwnerReference); ok {
-		if ownerRef.Name != "" {
-			return fmt.Sprintf("%s/%s", ownerRef.Kind, ownerRef.Name)
+// extractRowsFromSchema generates rows based on schema extractors
+func extractRowsFromSchema(resources []models.Resource, schema Schema) [][]string {
+	rows := make([][]string, len(resources))
+	for i, resource := range resources {
+		row := make([]string, len(schema.Extractors))
+		for j, extractor := range schema.Extractors {
+			row[j] = extractor(resource)
 		}
+		rows[i] = row
 	}
-
-	if resource, ok := fieldValue.Interface().(models.Resource); ok {
-		formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
-		return formatted
-	}
-
-	if fieldValue.Kind() == reflect.Struct {
-		if nestedField := fieldValue.Addr(); nestedField.IsValid() {
-			if resource, ok := nestedField.Interface().(models.Resource); ok {
-				if resource.GetName() == "" {
-					return ""
-				}
-				formatted := fmt.Sprintf("%s/%s", resource.GetKind(), resource.GetName())
-				return formatted
-			}
-		}
-	}
-
-	return fmt.Sprintf("%v", fieldValue.Interface())
+	return rows
 }

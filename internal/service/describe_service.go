@@ -36,7 +36,7 @@ func (s *DescribeService) DescribeResource(kind, name, namespace string) (string
 		}
 	}
 
-	formatter := ui.NewUnifiedFormatter()
+	formatter := ui.NewDetailsFormatter()
 
 	var detailsBuilder strings.Builder
 	for _, resource := range resources {
