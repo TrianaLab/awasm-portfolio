@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize the worker
     const worker = new Worker("scripts/wasm_worker.js");
     let wasmReady = false;
+    let globalJsonData = null; // Store JSON data globally for graph visualization
 
     worker.onmessage = (event) => {
         const { output, error, status } = event.data;
@@ -24,7 +25,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (error) {
             console.error("Error from WASM module:", error);
         } else if (output) {
-            console.log("Response from WASM module:", output);
+            try {
+                globalJsonData = JSON.parse(output); // Store the parsed JSON data
+                console.log("JSON data stored:", globalJsonData);
+
+                // Trigger graph rendering
+                renderGraph(globalJsonData);
+            } catch (err) {
+                console.error("Failed to parse JSON:", err);
+            }
         }
     };
 
@@ -85,4 +94,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 300); // Match animation duration
         }
     });
+
+    function renderGraph(data) {
+        const event = new CustomEvent("render-graph", { detail: data });
+        document.dispatchEvent(event);
+    }
 });

@@ -7,11 +7,11 @@ import (
 )
 
 type Namespace struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
+	Kind              string                `json:"Kind,omitempty" yaml:"Kind,omitempty"`
+	Name              string                `json:"Name,omitempty" yaml:"Name,omitempty"`
+	Namespace         string                `json:"Namespace,omitempty" yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `json:"Owner,omitempty" yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `json:"CreationTimestamp,omitempty" yaml:"CreationTimestamp,omitempty"`
 }
 
 func (ns *Namespace) GetKind() string                               { return "namespace" }

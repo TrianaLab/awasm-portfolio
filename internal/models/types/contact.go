@@ -7,14 +7,14 @@ import (
 )
 
 type Contact struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
-	Email             string                `yaml:"Email,omitempty"`
-	Linkedin          string                `yaml:"LinkedIn,omitempty"`
-	Github            string                `yaml:"GitHub,omitempty"`
+	Kind              string                `yaml:"Kind,omitempty" json:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty" json:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty" json:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty" json:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty" json:"CreationTimestamp,omitempty"`
+	Email             string                `yaml:"Email,omitempty" json:"Email,omitempty"`
+	Linkedin          string                `yaml:"LinkedIn,omitempty" json:"LinkedIn,omitempty"`
+	Github            string                `yaml:"GitHub,omitempty" json:"GitHub,omitempty"`
 }
 
 func (c *Contact) GetKind() string                               { return "contact" }

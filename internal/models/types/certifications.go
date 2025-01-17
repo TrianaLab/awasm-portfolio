@@ -7,17 +7,17 @@ import (
 )
 
 type Certification struct {
-	Description string `yaml:"Description,omitempty"`
-	Link        string `yaml:"Link,omitempty"`
+	Description string `yaml:"Description,omitempty" json:"Description,omitempty"`
+	Link        string `yaml:"Link,omitempty" json:"Link,omitempty"`
 }
 
 type Certifications struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
-	Certifications    []Certification       `yaml:"Certifications,omitempty"`
+	Kind              string                `yaml:"Kind,omitempty" json:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty" json:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty" json:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty" json:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty" json:"CreationTimestamp,omitempty"`
+	Certifications    []Certification       `yaml:"Certifications,omitempty" json:"Certifications,omitempty"`
 }
 
 func (c *Certifications) GetKind() string                               { return "certifications" }

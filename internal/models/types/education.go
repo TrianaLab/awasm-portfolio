@@ -7,18 +7,18 @@ import (
 )
 
 type Course struct {
-	Title       string `yaml:"Title,omitempty"`
-	Institution string `yaml:"Institution,omitempty"`
-	Duration    string `yaml:"Duration,omitempty"`
+	Title       string `yaml:"Title,omitempty" json:"Title,omitempty"`
+	Institution string `yaml:"Institution,omitempty" json:"Institution,omitempty"`
+	Duration    string `yaml:"Duration,omitempty" json:"Duration,omitempty"`
 }
 
 type Education struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
-	Courses           []Course              `yaml:"Courses,omitempty"`
+	Kind              string                `yaml:"Kind,omitempty" json:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty" json:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty" json:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty" json:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty" json:"CreationTimestamp,omitempty"`
+	Courses           []Course              `yaml:"Courses,omitempty" json:"Courses,omitempty"`
 }
 
 func (e *Education) GetKind() string                               { return "education" }

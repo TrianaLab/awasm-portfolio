@@ -204,6 +204,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		contributions,
 		education,
 		experience,
+		skills,
 		profile,
 	}
 
