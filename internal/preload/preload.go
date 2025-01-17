@@ -7,19 +7,18 @@ import (
 )
 
 func PreloadData(repo *repository.InMemoryRepository) {
-	name := "eduardo"
 	namespace := &types.Namespace{
 		Kind: "namespace",
 		Name: "default",
 	}
 	ownerRef := models.OwnerReference{
 		Kind:      "profile",
-		Name:      name + "-profile",
+		Name:      "Profile",
 		Namespace: namespace.Name,
 	}
 	certifications := &types.Certifications{
 		Kind:      "certifications",
-		Name:      name + "-certifications",
+		Name:      "Certifications",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
 		Certifications: []types.Certification{
@@ -35,7 +34,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 	contact := &types.Contact{
 		Kind:      "contact",
-		Name:      name + "-contact",
+		Name:      "Contact",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
 		Email:     "edudiazasencio@gmail.com",
@@ -44,7 +43,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 	contributions := &types.Contributions{
 		Kind:      "contributions",
-		Name:      name + "-contributions",
+		Name:      "Contributions",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
 		Contributions: []types.Contribution{
@@ -72,7 +71,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 	education := &types.Education{
 		Kind:      "education",
-		Name:      name + "-education",
+		Name:      "Education",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
 		Courses: []types.Course{
@@ -90,7 +89,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 	experience := &types.Experience{
 		Kind:      "experience",
-		Name:      name + "-experience",
+		Name:      "Experience",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
 		Jobs: []types.Job{
@@ -134,7 +133,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 	skills := &types.Skills{
 		Kind:      "skills",
-		Name:      name + "-skills",
+		Name:      "Skills",
 		Namespace: namespace.Name,
 		OwnerRef:  ownerRef,
 		Skills: []types.Skill{
@@ -187,7 +186,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	profile := &types.Profile{
 		Kind:           "profile",
-		Name:           name,
+		Name:           "Profile",
 		Namespace:      namespace.Name,
 		Contributions:  *contributions,
 		Contact:        *contact,
