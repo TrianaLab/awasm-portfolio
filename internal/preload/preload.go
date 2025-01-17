@@ -186,6 +186,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 
 	profile := &types.Profile{
+		Kind:           "profile",
 		Name:           name,
 		Namespace:      namespace.Name,
 		Contributions:  *contributions,

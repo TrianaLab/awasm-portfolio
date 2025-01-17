@@ -6,57 +6,44 @@ import (
 )
 
 // TableFormatter formats resources into tables
-type TableFormatter struct{}
+type TableFormatter struct {
+	schemas map[string]Schema
+}
 
-// FormatTable formats resources into grouped tables
-func (f TableFormatter) FormatTable(resources []models.Resource) string {
+// NewTableFormatter creates a new TableFormatter
+func NewTableFormatter() *TableFormatter {
+	return &TableFormatter{
+		schemas: GenerateSchemas(),
+	}
+}
+
+// FormatTable formats resources dynamically
+func (f *TableFormatter) FormatTable(resources []models.Resource) string {
 	if len(resources) == 0 {
 		return "No resources found."
 	}
 
+	// Group resources by kind
 	grouped := groupResourcesByKind(resources)
-
 	var sb strings.Builder
+
 	for kind, group := range grouped {
-		if kind == "namespace" {
-			sb.WriteString(f.formatNamespaceTable(group))
-		} else {
-			sb.WriteString(f.formatGenericTable(group))
+		// Get schema for the resource kind
+		schema, exists := f.schemas[kind]
+		if !exists {
+			schema = f.schemas["default"]
 		}
+
+		// Extract headers and rows
+		headers := schema.Headers
+		rows := extractRowsFromSchema(group, schema)
+
+		// Calculate column widths and format table
+		colWidths := calculateColumnWidths(headers, rows)
+		formatHeaders(&sb, headers, colWidths)
+		formatRows(&sb, rows, colWidths)
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
-}
-
-// formatNamespaceTable formats namespace resources as a single-column table
-// formatNamespaceTable formats namespace resources with AGE column
-func (f TableFormatter) formatNamespaceTable(resources []models.Resource) string {
-	var sb strings.Builder
-	headers := []string{"NAME", "AGE"} // Add AGE column
-	rows := [][]string{}
-
-	for _, resource := range resources {
-		name := resource.GetName()
-		age := calculateAge(resource.GetCreationTimestamp())
-		rows = append(rows, []string{name, age})
-	}
-
-	colWidths := calculateColumnWidths(headers, rows)
-	formatHeaders(&sb, headers, colWidths)
-	formatRows(&sb, rows, colWidths)
-
-	return sb.String()
-}
-
-// formatGenericTable formats a generic table for resources
-func (f TableFormatter) formatGenericTable(resources []models.Resource) string {
-	headers := extractHeaders(resources[0])
-	rows := extractRows(resources, headers)
-	colWidths := calculateColumnWidths(headers, rows)
-
-	var sb strings.Builder
-	formatHeaders(&sb, headers, colWidths)
-	formatRows(&sb, rows, colWidths)
 	return sb.String()
 }
