@@ -7,19 +7,19 @@ import (
 )
 
 type Job struct {
-	Title       string `yaml:"Title,omitempty"`
-	Description string `yaml:"Description,omitempty"`
-	Company     string `yaml:"Company,omitempty"`
-	Duration    string `yaml:"Duration,omitempty"`
+	Title       string `yaml:"Title,omitempty" json:"Title,omitempty"`
+	Description string `yaml:"Description,omitempty" json:"Description,omitempty"`
+	Company     string `yaml:"Company,omitempty" json:"Company,omitempty"`
+	Duration    string `yaml:"Duration,omitempty" json:"Duration,omitempty"`
 }
 
 type Experience struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
-	Jobs              []Job                 `yaml:"Jobs,omitempty"`
+	Kind              string                `yaml:"Kind,omitempty" json:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty" json:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty" json:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty" json:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty" json:"CreationTimestamp,omitempty"`
+	Jobs              []Job                 `yaml:"Jobs,omitempty" json:"Jobs,omitempty"`
 }
 
 func (e *Experience) GetKind() string                               { return "experience" }

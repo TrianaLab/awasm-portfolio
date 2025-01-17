@@ -19,10 +19,10 @@ type Resource interface {
 }
 
 type OwnerReference struct {
-	Kind      string
-	Name      string
-	Namespace string
-	Owner     Resource
+	Kind      string   `json:"Kind,omitempty" yaml:"Kind,omitempty"`
+	Name      string   `json:"Name,omitempty" yaml:"Name,omitempty"`
+	Namespace string   `json:"Namespace,omitempty" yaml:"Namespace,omitempty"`
+	Owner     Resource `json:"-" yaml:"-"`
 }
 
 func (o OwnerReference) GetID() string {

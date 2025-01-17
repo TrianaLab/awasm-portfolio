@@ -8,17 +8,17 @@ import (
 )
 
 type Profile struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
-	Contributions     Contributions         `yaml:"Contributions,omitempty"`
-	Experience        Experience            `yaml:"Experience,omitempty"`
-	Certifications    Certifications        `yaml:"Certifications,omitempty"`
-	Education         Education             `yaml:"Education,omitempty"`
-	Skills            Skills                `yaml:"Skills,omitempty"`
-	Contact           Contact               `yaml:"Contact,omitempty"`
+	Kind              string                `json:"Kind,omitempty" yaml:"Kind,omitempty"`
+	Name              string                `json:"Name,omitempty" yaml:"Name,omitempty"`
+	Namespace         string                `json:"Namespace,omitempty" yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `json:"Owner,omitempty" yaml:"Owner,omitempty"`
+	CreationTimestamp time.Time             `json:"CreationTimestamp,omitempty" yaml:"CreationTimestamp,omitempty"`
+	Contributions     Contributions         `json:"Contributions,omitempty" yaml:"Contributions,omitempty"`
+	Experience        Experience            `json:"Experience,omitempty" yaml:"Experience,omitempty"`
+	Certifications    Certifications        `json:"Certifications,omitempty" yaml:"Certifications,omitempty"`
+	Education         Education             `json:"Education,omitempty" yaml:"Education,omitempty"`
+	Skills            Skills                `json:"Skills,omitempty" yaml:"Skills,omitempty"`
+	Contact           Contact               `json:"Contact,omitempty" yaml:"Contact,omitempty"`
 }
 
 func (p *Profile) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*p).Name()) }

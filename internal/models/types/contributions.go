@@ -7,18 +7,18 @@ import (
 )
 
 type Contribution struct {
-	Project     string `yaml:"Project,omitempty"`
-	Description string `yaml:"Description,omitempty"`
-	Link        string `yaml:"Link,omitempty"`
+	Project     string `yaml:"Project,omitempty" json:"Project,omitempty"`
+	Description string `yaml:"Description,omitempty" json:"Description,omitempty"`
+	Link        string `yaml:"Link,omitempty" json:"Link,omitempty"`
 }
 
 type Contributions struct {
-	Kind              string                `yaml:"Kind,omitempty"`
-	Name              string                `yaml:"Name,omitempty"`
-	Namespace         string                `yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty"`
-	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty"`
-	Contributions     []Contribution        `yaml:"Contributions,omitempty"`
+	Kind              string                `yaml:"Kind,omitempty" json:"Kind,omitempty"`
+	Name              string                `yaml:"Name,omitempty" json:"Name,omitempty"`
+	Namespace         string                `yaml:"Namespace,omitempty" json:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `yaml:"Owner,omitempty" json:"Owner,omitempty"`
+	CreationTimestamp time.Time             `yaml:"CreationTimestamp,omitempty" json:"CreationTimestamp,omitempty"`
+	Contributions     []Contribution        `yaml:"Contributions,omitempty" json:"Contributions,omitempty"`
 }
 
 func (c *Contributions) GetKind() string                               { return "contributions" }

@@ -90,27 +90,23 @@ body.light-theme #terminal::-webkit-scrollbar-thumb:hover {
 
 /* UI Canvas */
 #ui-canvas {
-    position: absolute;
+    display: flex !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: absolute !important;
     top: 0;
     left: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    display: flex;
-    justify-content: center; /* Center horizontally */
-    align-items: center; /* Center vertically */
-    transform: translateY(100%); /* Start hidden below */
-    opacity: 0;
-    visibility: hidden; /* Hidden by default */
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
-    transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
-    z-index: 2; /* UI Canvas slides in on top */
 }
 
 body.light-theme #ui-canvas {
     background-color: var(--background-color-light);
     color: var(--text-color-light);
 }
+
 
 /* Center "Coming Soon" message */
 #ui-canvas p {

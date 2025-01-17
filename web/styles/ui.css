@@ -1,0 +1,118 @@
+#graph-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+circle {
+    transition: all 0.2s ease;
+    opacity: 0.9;
+}
+
+text {
+    font-family: Arial, sans-serif;
+    pointer-events: none;
+    fill: #ffffff;
+}
+
+
+/* =============================
+   1) THE GRAPH (SVG) BACKGROUND
+   ============================= */
+   #graph-container svg {
+    background-color: var(--background-color-dark);
+}
+
+body.light-theme #graph-container svg {
+    background-color: var(--background-color-light);
+}
+
+
+/* ============================
+   2) THE BUBBLE OVERLAY
+   ============================ */
+.bubble-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+    z-index: 1000;
+    overflow: hidden; /* We'll animate a circular clip-path over this */
+    /* 
+       For any text inside bubble-overlay, we use the same font color 
+       that matches the current theme 
+    */
+}
+
+/* Light theme overrides for the overlay */
+body.light-theme .bubble-overlay {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+}
+
+/* For text inside the overlay container (h1, pre, etc.) */
+.bubble-overlay .bubble-content {
+    font-family: "Courier, monospace";
+    text-align: center;
+    margin: 40px auto;
+    max-width: 80%;
+    max-height: 80%;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+/* 
+   Scrollbars for .bubble-overlay 
+   We’ll reuse the same approach as #terminal, but scoped to .bubble-overlay
+*/
+.bubble-overlay {
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: var(--scrollbar-color-dark) var(--background-color-dark);
+}
+.bubble-overlay::-webkit-scrollbar {
+    width: 8px;
+}
+.bubble-overlay::-webkit-scrollbar-track {
+    background: var(--background-color-dark);
+}
+.bubble-overlay::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-dark);
+    border-radius: 10px;
+    border: 2px solid var(--background-color-dark);
+}
+.bubble-overlay::-webkit-scrollbar-thumb:hover {
+    background-color: #777;
+}
+
+/* Light theme overrides for scrollbars */
+body.light-theme .bubble-overlay {
+    scrollbar-color: var(--scrollbar-color-light) var(--background-color-light);
+}
+body.light-theme .bubble-overlay::-webkit-scrollbar-track {
+    background: var(--background-color-light);
+}
+body.light-theme .bubble-overlay::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-light);
+    border: 2px solid var(--background-color-light);
+}
+body.light-theme .bubble-overlay::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+}
+
+/* The back arrow button (positioned in top-left) */
+.bubble-overlay .back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+}
+.bubble-overlay .back-arrow svg {
+    /* We let the theme color the arrow via "color: inherit" or "fill: currentColor" */
+    fill: currentColor; 
+}
