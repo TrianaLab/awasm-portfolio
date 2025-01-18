@@ -113,6 +113,10 @@ body.light-theme .bubble-overlay {
     margin-right: 10px; /* Space between arrow and header */
     display: flex;
     align-items: center; /* Align arrow icon to the header text */
+    transition: transform 0.3s ease; /* Hover animation */
+}
+.header-container .back-arrow:hover {
+    transform: scale(1.2); /* Zoom-in effect */
 }
 .header-container .back-arrow svg {
     fill: currentColor;
@@ -123,7 +127,7 @@ body.light-theme .bubble-overlay {
     margin: 0;
     padding: 5px 10px;
     font-family: "Courier New", Courier, monospace;
-    font-size: 2em; /* Slightly larger */
+    font-size: 1.7em; /* Slightly reduced font size */
     background-color: inherit; /* Blend with the overlay background */
     color: inherit; /* Use theme's text color */
     border-radius: 4px;
@@ -142,54 +146,4 @@ body.light-theme .bubble-overlay {
     background-color: inherit; /* Blend with the overlay background */
     color: inherit; /* Use theme's text color */
     border-radius: 8px;
-}
-
-/* Top Gradient for Invisibilization */
-.bubble-content::before {
-    content: "";
-    position: sticky;
-    top: 0;
-    left: 0;
-    height: 30px; /* Gradient height */
-    width: 100%;
-    background: linear-gradient(
-        to bottom,
-        var(--background-color-dark) 0%,
-        transparent 100%
-    );
-    z-index: 1000;
-    pointer-events: none;
-}
-
-body.light-theme .bubble-content::before {
-    background: linear-gradient(
-        to bottom,
-        var(--background-color-light) 0%,
-        transparent 100%
-    );
-}
-
-/* Bottom Gradient for Invisibilization */
-.bubble-content::after {
-    content: "";
-    position: sticky;
-    bottom: 0;
-    left: 0;
-    height: 30px; /* Gradient height */
-    width: 100%;
-    background: linear-gradient(
-        to top,
-        var(--background-color-dark) 0%,
-        transparent 100%
-    );
-    z-index: 1000;
-    pointer-events: none;
-}
-
-body.light-theme .bubble-content::after {
-    background: linear-gradient(
-        to top,
-        var(--background-color-light) 0%,
-        transparent 100%
-    );
 }
