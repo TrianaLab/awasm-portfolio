@@ -114,6 +114,12 @@ func TestDeleteService(t *testing.T) {
 	if !strings.Contains(msg, "namespace/test in namespace '' deleted") {
 		t.Errorf("unexpected success message: %s", msg)
 	}
+
+	// Test delete inexistent namespace
+	_, err = ds.DeleteResource("namespace", "inexistent", "")
+	if err == nil || !strings.Contains(err.Error(), "namespace/inexistent not found in namespace ''") {
+		t.Errorf("expected missing namespace error, got %v", err)
+	}
 }
 
 // Test for DescribeService

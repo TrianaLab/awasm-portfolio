@@ -38,13 +38,13 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 		return "", fmt.Errorf("a resource cannot be retrieved by name across all namespaces")
 	}
 
-	if nKind == "namespace" {
-		return s.repo.Delete("all", "", name)
-	}
-
 	resources, err := s.repo.List("all", "", "")
 	if err != nil {
 		return "", err
+	}
+
+	if nKind == "namespace" && len(resources) > 0 {
+		return s.repo.Delete("all", "", name)
 	}
 
 	var deletedResources []string
