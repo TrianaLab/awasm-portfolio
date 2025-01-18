@@ -38,3 +38,7 @@ yarn-error.log
 # Ignore build tools output (if any future additions)
 dist/
 build/
+
+# Coverage files
+**/coverage.out
+**/coverage.html
