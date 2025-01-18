@@ -165,67 +165,61 @@ document.addEventListener("render-graph", (event) => {
         function zoomIntoBubble(d) {
             const bubbleCenterX = svgRect.left + d.x;
             const bubbleCenterY = svgRect.top + d.y;
-
-            const screenWidth = window.innerWidth;
-            const screenHeight = window.innerHeight;
-
-            const radiusNeeded = Math.max(
-                distance(bubbleCenterX, bubbleCenterY, 0, 0),
-                distance(bubbleCenterX, bubbleCenterY, screenWidth, 0),
-                distance(bubbleCenterX, bubbleCenterY, 0, screenHeight),
-                distance(bubbleCenterX, bubbleCenterY, screenWidth, screenHeight)
-            );
-
+        
             const overlay = d3.select("body")
                 .append("div")
                 .attr("class", "bubble-overlay")
                 .style("clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
                 .style("-webkit-clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`);
-
+        
             overlay
                 .transition()
                 .duration(500)
-                .style("clip-path", `circle(${radiusNeeded}px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
-                .style("-webkit-clip-path", `circle(${radiusNeeded}px at ${bubbleCenterX}px ${bubbleCenterY}px)`);
-
-            const backButton = overlay
+                .style("clip-path", `circle(150% at ${bubbleCenterX}px ${bubbleCenterY}px)`)
+                .style("-webkit-clip-path", `circle(150% at ${bubbleCenterX}px ${bubbleCenterY}px)`);
+        
+            // Header Container (Back Arrow + Header)
+            const headerContainer = overlay
+                .append("div")
+                .attr("class", "header-container");
+        
+            // Back button
+            headerContainer
                 .append("div")
                 .attr("class", "back-arrow")
-                .html(backButtonSvg);
-
+                .html(backButtonSvg)
+                .on("click", () => {
+                    overlay
+                        .transition()
+                        .duration(500)
+                        .style("clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
+                        .style("-webkit-clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
+                        .on("end", () => {
+                            overlay.remove();
+                        });
+                });
+        
+            // Header
+            headerContainer
+                .append("h1")
+                .text(d.name);
+        
+            // Content container
             const contentContainer = overlay
                 .append("div")
-                .attr("class", "bubble-content")
-                .style("font-family", "'Courier New', Courier, monospace");
-
-            contentContainer
-                .append("h1")
-                .style("margin-bottom", "0.5em")
-                .text(d.name);
-
+                .attr("class", "bubble-content");
+        
             const yamlStr = jsyaml.dump(d.details);
-
+        
             contentContainer
                 .append("pre")
                 .style("text-align", "left")
                 .style("white-space", "pre-wrap")
                 .style("word-break", "break-word")
                 .text(yamlStr);
-
-            backButton.on("click", () => {
-                overlay
-                    .transition()
-                    .duration(500)
-                    .style("clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
-                    .style("-webkit-clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
-                    .on("end", () => {
-                        overlay.remove();
-                    });
-            });
         }
-
+        
         simulation.alpha(1).restart();
     }
-
     ensureUICanvasVisible();
 });
