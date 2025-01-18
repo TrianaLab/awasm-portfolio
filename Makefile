@@ -18,7 +18,7 @@ GOOS := js
 
 # Targets
 
-.PHONY: build-cloudflare-worker build run clean
+.PHONY: build-cloudflare-worker build run clean test test-coverage update-readme
 
 # Build for Cloudflare Worker
 build-cloudflare-worker: clean ensure-deps fetch-wasm-exec
@@ -37,11 +37,37 @@ run: build
 	@echo "Starting development server on http://127.0.0.1:8000..."
 	$(PYTHON) -m http.server 8000 --bind 127.0.0.1 --directory $(WEB_DIR)
 
+# Run Tests
+test:
+	@echo "Running all tests..."
+	$(GO) test ./... -v
+
+# Run Tests with Coverage
+test-coverage:
+	@echo "Running all tests with coverage report..."
+	$(GO) test ./... -v -coverprofile=coverage.out
+	@echo "Coverage report generated in coverage.out"
+	@$(GO) tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage HTML report generated: coverage.html"
+
+# Extract coverage percentage and update README
+update-readme: test-coverage
+	@echo "Extracting coverage percentage..."
+	coverage=$$(grep -Po '(?<=total:).*?\d+\.\d+%' coverage.out | head -1); \
+	if [ -z "$$coverage" ]; then \
+		echo "Failed to extract coverage percentage"; \
+		exit 1; \
+	fi; \
+	echo "Updating README with coverage: $$coverage"; \
+	sed -i '' "s/^Coverage: .*%/Coverage: $$coverage/" README.md
+
 # Clean Up
 clean:
 	@echo "Cleaning up previous builds..."
 	rm -f $(APP_WASM)
 	rm -f $(WASM_EXEC_JS)
+	rm -f coverage.out
+	rm -f coverage.html
 
 # Ensure Go Dependencies
 ensure-deps:

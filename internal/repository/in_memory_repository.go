@@ -31,9 +31,9 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 
 	var resources []models.Resource
 	for _, res := range r.resources {
-		if (kind == "" || strings.ToLower(res.GetKind()) == kind) &&
-			(name == "" || strings.ToLower(res.GetName()) == name) &&
-			(namespace == "" || strings.ToLower(res.GetNamespace()) == namespace || (res.GetNamespace() == "" && namespace != "")) {
+		if (kind == "" || strings.ToLower(res.GetKind()) == strings.ToLower(kind)) &&
+			(name == "" || strings.ToLower(res.GetName()) == strings.ToLower(name)) &&
+			(namespace == "" || strings.ToLower(res.GetNamespace()) == strings.ToLower(namespace) || (res.GetNamespace() == "" && namespace != "")) {
 			resources = append(resources, res)
 		}
 	}
