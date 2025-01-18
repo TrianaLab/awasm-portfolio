@@ -22,7 +22,10 @@ func NewDeleteService(repo *repository.InMemoryRepository, cmd *cobra.Command) *
 }
 
 func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, error) {
-	nKind, _ := util.NormalizeKind(kind)
+	nKind, err := util.NormalizeKind(kind)
+	if err != nil {
+		return "", err
+	}
 	if nKind == "" {
 		return "", fmt.Errorf("you must specify only one resource")
 	}
@@ -31,7 +34,7 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 		return "", fmt.Errorf("resource(s) were provided, but no name was specified")
 	}
 
-	if namespace == "" {
+	if namespace == "" && kind != "namespace" {
 		return "", fmt.Errorf("a resource cannot be retrieved by name across all namespaces")
 	}
 

@@ -150,9 +150,12 @@ func TestCascadingNamespaceDelete(t *testing.T) {
 	}
 
 	// Attempt to delete cascading namespace:
-	_, err := repo.Delete("namespace", "nsCascade", "")
-	if err == nil || !strings.Contains(err.Error(), "not found") {
-		t.Fatalf("expected 'not found' error when deleting namespace, got: %v", err)
+	delMsg, err := repo.Delete("all", "", "nsCascade")
+	if err != nil {
+		t.Fatalf("unexpected error deleting existing resource: %v", err)
+	}
+	if !strings.Contains(delMsg, "namespace/nsCascade") {
+		t.Errorf("delete message did not mention deleted resource: %s", delMsg)
 	}
 
 	// Confirm resources inside the namespace are deleted.

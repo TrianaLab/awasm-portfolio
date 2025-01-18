@@ -1,8 +1,7 @@
-package ui_test
+package ui
 
 import (
 	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/ui"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -49,7 +48,7 @@ func TestFormatDetails(t *testing.T) {
 	res := newTestResource("testKind", "testName", "testNS")
 	resources := []models.Resource{res}
 
-	output := ui.FormatDetails(resources)
+	output := FormatDetails(resources)
 
 	var parsed []testResource
 	err := yaml.Unmarshal([]byte(output), &parsed)
@@ -82,7 +81,7 @@ func TestFormatTableJSON(t *testing.T) {
 	res := newTestResource("testKind", "testName", "testNS")
 	resources := []models.Resource{res}
 
-	output := ui.FormatTable(resources, "json")
+	output := FormatTable(resources, "json")
 
 	// Try to unmarshal JSON to ensure it's valid.
 	var data []map[string]interface{}
@@ -98,7 +97,7 @@ func TestFormatTableYAML(t *testing.T) {
 	res := newTestResource("testKind", "testName", "testNS")
 	resources := []models.Resource{res}
 
-	output := ui.FormatTable(resources, "yaml")
+	output := FormatTable(resources, "yaml")
 
 	// Try to unmarshal YAML to ensure it's valid.
 	var parsed []map[string]interface{}
@@ -116,7 +115,7 @@ func TestFormatTableDefault(t *testing.T) {
 	resources := []models.Resource{res}
 
 	// Use default table format
-	output := ui.FormatTable(resources, "table")
+	output := FormatTable(resources, "table")
 
 	// Check that output contains header keywords for namespace.
 	if !strings.Contains(output, "NAME") || !strings.Contains(output, "AGE") {
