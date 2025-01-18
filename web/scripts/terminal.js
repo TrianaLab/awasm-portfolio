@@ -1,10 +1,4 @@
 (function () {
-    // Check if the terminal is already initialized
-    if (window.term) {
-        console.warn("Terminal is already initialized.");
-        return;
-    }
-
     // Create a global terminal instance
     const term = new Terminal({
         cursorBlink: true,
@@ -20,7 +14,6 @@
     term.loadAddon(fitAddon);
     fitAddon.fit();
 
-    // Terminal initialization is complete
     window.termInitialized = true;
 
     let commandHistory = [];
@@ -28,30 +21,48 @@
     let currentInput = "";
     let cursorPosition = 0;
 
-    // Initialize the worker
-    const worker = new Worker("scripts/wasm_worker.js");
-    let wasmReady = false;
+    // Use the existing worker from the global window object
+    const worker = window.wasmWorker;
+    if (!worker) {
+        console.error("WebAssembly worker is not available.");
+        return;
+    }
 
-    worker.onmessage = (event) => {
-        const { output, error, status } = event.data;
+    let wasmReady = window.wasmReady || false;
 
-        if (status === "wasm-ready") {
-            wasmReady = true;
-            term.write("WebAssembly module initialized.\r\n");
-            writePrompt();
+    // Generate a unique correlation ID for this instance of terminal.js
+    const terminalCorrelationId = "terminal-" + Math.random().toString(36).substr(2, 9);
+
+    // Listen for custom events dispatched by the centralized handler
+    document.addEventListener("workerMessage", (event) => {
+        const { output, error, status, correlationId } = event.detail;
+    
+        // Filter messages to only process those matching this script's correlationId
+        // Also allow global messages like 'wasm-ready' without correlationId.
+        if (correlationId && correlationId !== terminalCorrelationId) {
             return;
         }
-
+    
+        if (status === "wasm-ready") {
+            // Check if we've already handled wasm-ready
+            if (!wasmReady) {
+                wasmReady = true;
+                term.write("WebAssembly module initialized.\r\n");
+                writePrompt();
+            }
+            // Exit early to avoid processing further parts of this message
+            return;
+        }
+    
         if (error) {
             term.write(`Error: ${error}\r\n`);
         } else if (output) {
             term.write(output.replace(/\n/g, "\r\n") + "\r\n");
         }
-
+    
         writePrompt();
-    };
-
-    worker.postMessage({ type: "initialize" }); // Trigger WASM initialization in the worker
+    });
+    
 
     function writePrompt() {
         term.write("$ ");
@@ -84,17 +95,26 @@ Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
 
         if (!wasmReady) {
             term.write("Initializing WebAssembly module...\r\n");
+            // Wait until wasmReady becomes true using a promise
             await new Promise((resolve) => {
-                const interval = setInterval(() => {
-                    if (wasmReady) {
-                        clearInterval(interval);
+                const onReady = (event) => {
+                    const { status } = event.detail;
+                    if (status === "wasm-ready") {
+                        wasmReady = true;
+                        document.removeEventListener("workerMessage", onReady);
                         resolve();
                     }
-                }, 50);
+                };
+                document.addEventListener("workerMessage", onReady);
             });
         }
 
-        worker.postMessage({ type: "command", command });
+        // Send command to worker with correlationId
+        worker.postMessage({ 
+            type: "command", 
+            command, 
+            correlationId: terminalCorrelationId 
+        });
     }
 
     function updateInput() {

@@ -9,11 +9,27 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    const worker = new Worker("scripts/wasm_worker.js");
+    // Use the existing global worker
+    const worker = window.wasmWorker;
+    if (!worker) {
+        console.error("WebAssembly worker is not available.");
+        return;
+    }
+
     let wasmReady = false;
 
-    worker.onmessage = (event) => {
-        const { output, error, status } = event.data;
+    // Generate a unique correlation ID for this instance of mode.js
+    const instanceCorrelationId = "mode-" + Math.random().toString(36).substr(2, 9);
+
+    // Listen for custom events dispatched by the centralized handler
+    document.addEventListener("workerMessage", (event) => {
+        const { output, error, status, correlationId } = event.detail;
+
+        // Filter messages to only process those matching this script's correlationId,
+        // or handle global messages like wasm-ready without a correlationId.
+        if (correlationId && correlationId !== instanceCorrelationId) {
+            return; // Ignore messages not meant for this script
+        }
 
         if (status === "wasm-ready") {
             wasmReady = true;
@@ -21,19 +37,25 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (error) {
             console.error("Error from WASM module:", error);
         } else if (output) {
-            try {
-                const jsonData = JSON.parse(output);
-                console.log("JSON data refreshed:", jsonData);
-
-                // Render the graph with the new data
-                renderGraph(jsonData);
-            } catch (err) {
-                console.error("Failed to parse JSON data:", err);
+            // Basic check for JSON-like output
+            const trimmedOutput = output.trim();
+            if ((trimmedOutput.startsWith("{") && trimmedOutput.endsWith("}")) ||
+                (trimmedOutput.startsWith("[") && trimmedOutput.endsWith("]"))) {
+                try {
+                    const jsonData = JSON.parse(output);
+                    console.log("JSON data refreshed:", jsonData);
+    
+                    // Render the graph with the new data
+                    renderGraph(jsonData);
+                } catch (err) {
+                    console.error("Failed to parse JSON data:", err);
+                }
+            } else {
+                console.warn("Received non-JSON output:", output);
+                // Optionally handle non-JSON output here.
             }
         }
-    };
-
-    worker.postMessage({ type: "initialize" }); // Initialize the WASM module
+    });
 
     function fetchJsonData() {
         if (!wasmReady) {
@@ -42,7 +64,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         console.log("Fetching JSON data...");
-        worker.postMessage({ type: "command", command: "kubectl get all --all-namespaces --output json" });
+        // Send a message to the worker with the correlationId
+        worker.postMessage({ 
+            type: "command", 
+            command: "kubectl get all --all-namespaces --output json",
+            correlationId: instanceCorrelationId 
+        });
     }
 
     function renderGraph(jsonData) {
