@@ -1,0 +1,51 @@
+/* Terminal Container */
+#terminal {
+    width: 80%;
+    height: 70%;
+    border-radius: 10px;
+    padding: 20px;
+    overflow-y: visible;
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+    transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
+    box-sizing: border-box;
+    transform: translateY(0);
+    opacity: 1;
+    z-index: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-color-dark) var(--background-color-dark);
+}
+
+/* Scrollbar Styling for WebKit Browsers */
+#terminal::-webkit-scrollbar {
+    width: 8px;
+}
+#terminal::-webkit-scrollbar-track {
+    background: var(--background-color-dark);
+}
+#terminal::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-dark);
+    border-radius: 10px;
+    border: 2px solid var(--background-color-dark);
+}
+#terminal::-webkit-scrollbar-thumb:hover {
+    background-color: #777;
+}
+
+/* Light Theme Adjustments for Terminal */
+body.light-theme #terminal {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+    scrollbar-color: var(--scrollbar-color-light) var(--background-color-light);
+}
+
+body.light-theme #terminal::-webkit-scrollbar-track {
+    background: var(--background-color-light);
+}
+body.light-theme #terminal::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-light);
+    border: 2px solid var(--background-color-light);
+}
+body.light-theme #terminal::-webkit-scrollbar-thumb:hover {
+    background-color: #999;
+}
