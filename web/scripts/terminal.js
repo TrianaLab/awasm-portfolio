@@ -36,28 +36,33 @@
     // Listen for custom events dispatched by the centralized handler
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
-
+    
         // Filter messages to only process those matching this script's correlationId
         // Also allow global messages like 'wasm-ready' without correlationId.
         if (correlationId && correlationId !== terminalCorrelationId) {
             return;
         }
-
+    
         if (status === "wasm-ready") {
-            wasmReady = true;
-            term.write("WebAssembly module initialized.\r\n");
-            writePrompt();
+            // Check if we've already handled wasm-ready
+            if (!wasmReady) {
+                wasmReady = true;
+                term.write("WebAssembly module initialized.\r\n");
+                writePrompt();
+            }
+            // Exit early to avoid processing further parts of this message
             return;
         }
-
+    
         if (error) {
             term.write(`Error: ${error}\r\n`);
         } else if (output) {
             term.write(output.replace(/\n/g, "\r\n") + "\r\n");
         }
-
+    
         writePrompt();
     });
+    
 
     function writePrompt() {
         term.write("$ ");
