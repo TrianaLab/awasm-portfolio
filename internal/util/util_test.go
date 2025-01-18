@@ -1,12 +1,13 @@
-package util
+package util_test
 
 import (
+	"awasm-portfolio/internal/util"
 	"strings"
 	"testing"
 )
 
 func TestSupportedResources(t *testing.T) {
-	resources := SupportedResources()
+	resources := util.SupportedResources()
 
 	// Check that certain keys map to expected canonical values.
 	tests := []struct {
@@ -55,7 +56,7 @@ func TestNormalizeKind(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		output, err := NormalizeKind(tc.input)
+		output, err := util.NormalizeKind(tc.input)
 		if tc.expectError {
 			if err == nil {
 				t.Errorf("NormalizeKind(%q): expected error but got none", tc.input)

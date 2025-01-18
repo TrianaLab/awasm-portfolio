@@ -1,7 +1,8 @@
-package repository
+package repository_test
 
 import (
 	"awasm-portfolio/internal/models"
+	"awasm-portfolio/internal/repository"
 	"fmt"
 	"strings"
 	"testing"
@@ -44,7 +45,7 @@ func newResource(kind, name, namespace string) *dummyResource {
 }
 
 func TestCreateInvalidAndDuplicate(t *testing.T) {
-	repo := NewInMemoryRepository()
+	repo := repository.NewInMemoryRepository()
 
 	// Create valid resource
 	validRes := newResource("profile", "user1", "ns1")
@@ -74,7 +75,7 @@ func TestCreateInvalidAndDuplicate(t *testing.T) {
 }
 
 func TestListScenarios(t *testing.T) {
-	repo := NewInMemoryRepository()
+	repo := repository.NewInMemoryRepository()
 
 	// Populate repository with one valid resource.
 	validRes := newResource("profile", "user1", "ns1")
@@ -103,7 +104,7 @@ func TestListScenarios(t *testing.T) {
 }
 
 func TestDeleteScenarios(t *testing.T) {
-	repo := NewInMemoryRepository()
+	repo := repository.NewInMemoryRepository()
 
 	// Populate repository with one valid resource.
 	validRes := newResource("profile", "user1", "ns1")
@@ -133,7 +134,7 @@ func TestDeleteScenarios(t *testing.T) {
 
 func TestCascadingNamespaceDelete(t *testing.T) {
 	// Use a fresh repository instance for cascading delete test.
-	repo := NewInMemoryRepository()
+	repo := repository.NewInMemoryRepository()
 
 	// Create a namespace and resources within it.
 	ns := newResource("namespace", "nsCascade", "")
