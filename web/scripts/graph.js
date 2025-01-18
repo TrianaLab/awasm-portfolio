@@ -6,15 +6,14 @@ document.addEventListener("render-graph", (event) => {
         return;
     }
 
-    // NEW back arrow icon
+    // NEW back arrow icon (unchanged)
     const backButtonSvg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-            <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free -->
+            <!-- SVG content -->
             <path d="M125.7 160l50.3 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L48 224c-17.7 0-32-14.3-32-32L16 64c0-17.7 14.3-32 32-32s32 14.3 32 32l0 51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"/>
         </svg>
     `;
 
-    /** Utility to compute distance between two points */
     function distance(x1, y1, x2, y2) {
         return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
     }
@@ -59,10 +58,12 @@ document.addEventListener("render-graph", (event) => {
     }
 
     function renderGraphContent() {
-        // Map the data to bubble-friendly format
+        // Map the data to bubble-friendly format with minimal required size
         const data = globalJsonData.map((d) => {
             const textLength = d.Name.length;
-            const estimatedRadius = textLength * 5 + 20;
+            // Estimate radius based on monospace font width (approx 8px per character at 14px font size)
+            // Add padding of 10 pixels
+            const estimatedRadius = (textLength * 8) / 2 + 10;
             return {
                 name: d.Name,
                 namespace: d.Namespace || "unknown",
@@ -81,19 +82,17 @@ document.addEventListener("render-graph", (event) => {
         // Clear or create the SVG
         const svgSelection = d3
             .select("#graph-container")
-            .html("") // Remove old content
+            .html("")
             .append("svg")
             .attr("width", width)
             .attr("height", height);
 
-        // We'll need the raw node for bounding rect
         const svgNode = svgSelection.node();
         const svgRect = svgNode.getBoundingClientRect();
 
-        // Use D3 color scale for bubble fill
-        const colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+        // Use a high-contrast color scale for white text
+        const colorScale = d3.scaleOrdinal(d3.schemeDark2);
 
-        // Force Simulation
         const simulation = d3
             .forceSimulation(data)
             .force("center", d3.forceCenter(width / 2, height / 2).strength(0.3))
@@ -105,7 +104,6 @@ document.addEventListener("render-graph", (event) => {
             .force("y", d3.forceY(height / 2).strength(0.05))
             .on("tick", ticked);
 
-        // Each node is a group <g>
         const node = svgSelection
             .selectAll("g")
             .data(data)
@@ -113,7 +111,6 @@ document.addEventListener("render-graph", (event) => {
             .append("g")
             .attr("class", "node");
 
-        // Bubbles (circles)
         node
             .append("circle")
             .attr("r", (d) => d.radius)
@@ -151,7 +148,6 @@ document.addEventListener("render-graph", (event) => {
                 zoomIntoBubble(this.__data__);
             });
 
-        // Labels
         node
             .append("text")
             .text((d) => d.name)
@@ -166,19 +162,10 @@ document.addEventListener("render-graph", (event) => {
             node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
         }
 
-        /**
-         * Zoom into the bubble with a circle clip-path,
-         * show details in YAML (using js-yaml),
-         * and provide a back arrow to close.
-         * 
-         * Font: "Courier New" for the overlay content
-         */
         function zoomIntoBubble(d) {
-            // Center of this bubble in absolute coords
             const bubbleCenterX = svgRect.left + d.x;
             const bubbleCenterY = svgRect.top + d.y;
 
-            // Compute how big the circle must grow to cover the screen
             const screenWidth = window.innerWidth;
             const screenHeight = window.innerHeight;
 
@@ -189,40 +176,33 @@ document.addEventListener("render-graph", (event) => {
                 distance(bubbleCenterX, bubbleCenterY, screenWidth, screenHeight)
             );
 
-            // 1) Create an overlay that uses a circular clip-path
             const overlay = d3.select("body")
                 .append("div")
                 .attr("class", "bubble-overlay")
                 .style("clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
                 .style("-webkit-clip-path", `circle(0px at ${bubbleCenterX}px ${bubbleCenterY}px)`);
 
-            // 2) Circle clip expand animation (zoom in)
             overlay
                 .transition()
                 .duration(500)
                 .style("clip-path", `circle(${radiusNeeded}px at ${bubbleCenterX}px ${bubbleCenterY}px)`)
                 .style("-webkit-clip-path", `circle(${radiusNeeded}px at ${bubbleCenterX}px ${bubbleCenterY}px)`);
 
-            // 3) Add a back arrow at the top-left
             const backButton = overlay
                 .append("div")
                 .attr("class", "back-arrow")
                 .html(backButtonSvg);
 
-            // 4) Main content container for the details,
-            //    using "Courier New" or fallback
             const contentContainer = overlay
                 .append("div")
                 .attr("class", "bubble-content")
                 .style("font-family", "'Courier New', Courier, monospace");
 
-            // Resource name
             contentContainer
                 .append("h1")
                 .style("margin-bottom", "0.5em")
                 .text(d.name);
 
-            // YAML details block (using js-yaml)
             const yamlStr = jsyaml.dump(d.details);
 
             contentContainer
@@ -232,7 +212,6 @@ document.addEventListener("render-graph", (event) => {
                 .style("word-break", "break-word")
                 .text(yamlStr);
 
-            // 5) Click arrow → circle clip collapse animation (zoom out)
             backButton.on("click", () => {
                 overlay
                     .transition()
@@ -245,7 +224,6 @@ document.addEventListener("render-graph", (event) => {
             });
         }
 
-        // Start force simulation
         simulation.alpha(1).restart();
     }
 
