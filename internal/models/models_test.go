@@ -5,13 +5,7 @@ import (
 	"strings"
 	"testing"
 	"time"
-)
-
-// DummyResource is a test implementation of the Resource interface.
-type DummyResource struct {
-	kind              string
-	name              string
-	namespace         string
+)         string
 	ownerReference    models.OwnerReference
 	creationTimestamp time.Time
 }
