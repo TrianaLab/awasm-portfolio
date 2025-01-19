@@ -55,7 +55,7 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 
 		deletedResources = append(deletedResources, deletedNamespace, deletedChildren)
 
-		return fmt.Sprintf("%s", strings.Join(deletedResources, "\n")), nil
+		return strings.Join(deletedResources, "\n"), nil
 	}
 
 	resources, err := s.repo.List("all", "", "")
@@ -79,5 +79,5 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 		}
 	}
 
-	return fmt.Sprintf("%s", strings.Join(deletedResources, "\n")), nil
+	return strings.Join(deletedResources, "\n"), nil
 }
