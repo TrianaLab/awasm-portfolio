@@ -12,7 +12,7 @@ on:
 env:
   GO_VERSION: stable
 
-  permissions:
+permissions:
   contents: read
   pages: write
   id-token: write
