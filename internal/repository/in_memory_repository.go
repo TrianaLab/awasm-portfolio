@@ -78,5 +78,5 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 			deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s' deleted", res.GetKind(), res.GetName(), res.GetNamespace()))
 		}
 	}
-	return fmt.Sprintf("%s", strings.Join(deletedResources, "\n")), nil
+	return strings.Join(deletedResources, "\n"), nil
 }

@@ -185,7 +185,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 
 	profile := &types.Profile{
-		Kind:           "profile",
+		Kind:           "odofdinf",
 		Name:           "Profile",
 		Namespace:      namespace.Name,
 		Contributions:  *contributions,
@@ -209,6 +209,9 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	// Iterate over the resources and create them
 	for _, resource := range resources {
-		repo.Create(resource)
+		_, err := repo.Create(resource)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
