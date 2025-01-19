@@ -25,8 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
 
-        // Filter messages to only process those matching this script's correlationId,
-        // or handle global messages like wasm-ready without a correlationId.
         if (correlationId && correlationId !== instanceCorrelationId) {
             return; // Ignore messages not meant for this script
         }
@@ -37,22 +35,11 @@ document.addEventListener("DOMContentLoaded", () => {
         } else if (error) {
             console.error("Error from WASM module:", error);
         } else if (output) {
-            // Basic check for JSON-like output
-            const trimmedOutput = output.trim();
-            if ((trimmedOutput.startsWith("{") && trimmedOutput.endsWith("}")) ||
-                (trimmedOutput.startsWith("[") && trimmedOutput.endsWith("]"))) {
-                try {
-                    const jsonData = JSON.parse(output);
-                    console.log("JSON data refreshed:", jsonData);
-    
-                    // Render the graph with the new data
-                    renderGraph(jsonData);
-                } catch (err) {
-                    console.error("Failed to parse JSON data:", err);
-                }
-            } else {
-                console.warn("Received non-JSON output:", output);
-                // Optionally handle non-JSON output here.
+            try {
+                const jsonData = JSON.parse(output);
+                renderGraph(jsonData);
+            } catch (err) {
+                console.error("Failed to parse output:", err);
             }
         }
     });
@@ -64,7 +51,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         console.log("Fetching JSON data...");
-        // Send a message to the worker with the correlationId
         worker.postMessage({ 
             type: "command", 
             command: "kubectl get all --all-namespaces --output json",
@@ -88,8 +74,8 @@ document.addEventListener("DOMContentLoaded", () => {
             graphContainer.style.visibility = "visible";
             graphContainer.style.opacity = "1";
 
-            // Fetch fresh data and render the graph
             fetchJsonData();
+            updateGraphSize();
         } else {
             modeLabel.textContent = "CLI";
 
@@ -99,4 +85,28 @@ document.addEventListener("DOMContentLoaded", () => {
             terminal.style.opacity = "1";
         }
     });
+
+    // New resizing functionality
+    const updateGraphSize = () => {
+        const svg = document.querySelector("#graph-container svg");
+        if (svg) {
+            svg.setAttribute("width", `${window.innerWidth}px`);
+            svg.setAttribute("height", `${window.innerHeight}px`);
+        }
+    };
+
+    const updateSizes = () => {
+        if (terminal.style.visibility === "visible") {
+            terminal.style.height = `${window.innerHeight * 0.8}px`;
+            terminal.style.width = `${window.innerWidth * 0.8}px`;
+        }
+        if (graphContainer.style.visibility === "visible") {
+            graphContainer.style.height = `${window.innerHeight * 0.9}px`;
+            graphContainer.style.width = `${window.innerWidth * 0.9}px`;
+            updateGraphSize();
+        }
+    };
+
+    window.addEventListener("resize", updateSizes);
+    updateSizes();
 });

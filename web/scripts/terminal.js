@@ -14,6 +14,12 @@
     term.loadAddon(fitAddon);
     fitAddon.fit();
 
+    // Update terminal size on window resize
+    const updateTerminalSize = () => {
+        fitAddon.fit();
+    };
+    window.addEventListener('resize', updateTerminalSize);
+
     window.termInitialized = true;
 
     let commandHistory = [];
