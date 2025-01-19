@@ -35,6 +35,7 @@ func NewRootCommand(repo *repository.InMemoryRepository) *cobra.Command {
 		cmd.Println("  delete      Delete a resource")
 		cmd.Println("  describe    Describe a specific resource")
 		cmd.Println("  get         Get resources of a specific kind or a specific resource")
+		cmd.Println("  version     Get the current version of the application")
 
 		cmd.Println("\nAvailable Resources:")
 		resources := util.SupportedResources()
@@ -64,6 +65,7 @@ func NewRootCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	rootCmd.AddCommand(NewDeleteCommand(resourceService))
 	rootCmd.AddCommand(NewGetCommand(resourceService))
 	rootCmd.AddCommand(NewDescribeCommand(resourceService))
+	rootCmd.AddCommand(NewVersionCommand())
 
 	// Add global persistent flags
 	rootCmd.PersistentFlags().StringP("namespace", "n", "default", "Specify the namespace")

@@ -16,6 +16,9 @@ PYTHON := python3
 GOARCH := wasm
 GOOS := js
 
+# Version (default to "development" if not provided externally)
+VERSION ?= development
+
 # Targets
 
 .PHONY: build-cloudflare-worker build run clean test test-coverage update-readme
@@ -23,16 +26,21 @@ GOOS := js
 # Build for Cloudflare Worker
 build-cloudflare-worker: clean ensure-deps fetch-wasm-exec
 	@echo "Building WebAssembly binary for Cloudflare Worker..."
-	GOARCH=$(GOARCH) GOOS=$(GOOS) $(GO) build -o $(APP_WASM) main.go
+	GOARCH=$(GOARCH) GOOS=$(GOOS) $(GO) build \
+	    -ldflags "-X 'awasm-portfolio/cmd.appVersion=$(VERSION)'" \
+	    -o $(APP_WASM) main.go
 	@echo "Build complete: $(APP_WASM)"
 
 # General Build
 build: clean ensure-deps fetch-wasm-exec
 	@echo "Building WebAssembly binary..."
-	GOARCH=$(GOARCH) GOOS=$(GOOS) $(GO) build -o $(APP_WASM) main.go
+	GOARCH=$(GOARCH) GOOS=$(GOOS) $(GO) build \
+	    -ldflags "-X 'awasm-portfolio/cmd.appVersion=$(VERSION)'" \
+	    -o $(APP_WASM) main.go
 	@echo "Build complete: $(APP_WASM)"
 
 # Run Local Development Server
+# Pass VERSION when calling this target to ensure correct version is built.
 run: build
 	@echo "Starting development server on http://127.0.0.1:8000..."
 	$(PYTHON) -m http.server 8000 --bind 127.0.0.1 --directory $(WEB_DIR)
