@@ -21,15 +21,7 @@ VERSION ?= development
 
 # Targets
 
-.PHONY: build-cloudflare-worker build run clean test test-coverage update-readme
-
-# Build for Cloudflare Worker
-build-cloudflare-worker: clean ensure-deps fetch-wasm-exec
-	@echo "Building WebAssembly binary for Cloudflare Worker..."
-	GOARCH=$(GOARCH) GOOS=$(GOOS) $(GO) build \
-	    -ldflags "-X 'awasm-portfolio/cmd.appVersion=$(VERSION)'" \
-	    -o $(APP_WASM) main.go
-	@echo "Build complete: $(APP_WASM)"
+.PHONY: build run clean test install-go-test-coverage check-coverage update-readme
 
 # General Build
 build: clean ensure-deps fetch-wasm-exec
@@ -45,23 +37,25 @@ run: build
 	@echo "Starting development server on http://127.0.0.1:8000..."
 	$(PYTHON) -m http.server 8000 --bind 127.0.0.1 --directory $(WEB_DIR)
 
-# Run Tests
-test:
-	@echo "Running all tests..."
-	$(GO) test ./... -v
+# Run Tests with Custom Coverage
+test: check-coverage
+	@echo "Tests completed with coverage."
 
-# Run Tests with Coverage
-test-coverage:
-	@echo "Running all tests with coverage report..."
-	$(GO) test ./... -v -coverprofile=coverage.out
-	@echo "Coverage report generated in coverage.out"
-	@$(GO) tool cover -html=coverage.out -o coverage.html
-	@echo "Coverage HTML report generated: coverage.html"
+# Install go-test-coverage
+install-go-test-coverage:
+	@echo "Installing go-test-coverage..."
+	$(GO) install github.com/vladopajic/go-test-coverage/v2@latest
+
+# Run Tests and Check Coverage
+check-coverage: install-go-test-coverage
+	@echo "Running tests and generating coverage report..."
+	go test ./... -coverprofile=./cover.out -covermode=atomic -coverpkg=./...
+	$$(go env GOPATH)/bin/go-test-coverage --config=./.testcoverage.yml
 
 # Extract coverage percentage and update README
-update-readme: test-coverage
-	@echo "Extracting coverage percentage..."
-	coverage=$$(grep -Po '(?<=total:).*?\d+\.\d+%' coverage.out | head -1); \
+update-readme: check-coverage
+	@echo "Extracting coverage percentage and updating README..."
+	coverage=$$(grep -Po '(?<=total:).*?\d+\.\d+%' cover.out | head -1); \
 	if [ -z "$$coverage" ]; then \
 		echo "Failed to extract coverage percentage"; \
 		exit 1; \
@@ -74,7 +68,7 @@ clean:
 	@echo "Cleaning up previous builds..."
 	rm -f $(APP_WASM)
 	rm -f $(WASM_EXEC_JS)
-	rm -f coverage.out
+	rm -f cover.out
 	rm -f coverage.html
 
 # Ensure Go Dependencies
@@ -82,15 +76,7 @@ ensure-deps:
 	@echo "Tidying up Go modules..."
 	$(GO) mod tidy
 
-# Fetch wasm_exec.js
+# Fetch wasm_exec.js from Local Go Installation
 fetch-wasm-exec:
-	@echo "Fetching wasm_exec.js..."
-	GO_VERSION=$$($(GO) version | awk '{print $$3}'); \
-	WASM_URL="https://raw.githubusercontent.com/golang/go/$${GO_VERSION}/misc/wasm/wasm_exec.js"; \
-	if curl --output /dev/null --silent --head --fail "$${WASM_URL}"; then \
-		echo "Downloading wasm_exec.js for $${GO_VERSION}..."; \
-		curl -o $(WASM_EXEC_JS) "$${WASM_URL}"; \
-	else \
-		echo "Error: Unable to download wasm_exec.js for $${GO_VERSION}. Please ensure the version is correct."; \
-		exit 1; \
-	fi
+	@echo "Fetching wasm_exec.js from local Go installation..."
+	cp "$$(go env GOROOT)/misc/wasm/wasm_exec.js" $(WASM_EXEC_JS)
