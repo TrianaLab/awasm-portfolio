@@ -2,6 +2,8 @@ name: Go lint and test
 
 on:
   pull_request:
+    paths:
+      - "**/*.go"
   push:
     branches:
       - "main"
