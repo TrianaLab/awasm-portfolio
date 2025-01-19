@@ -11,13 +11,7 @@ import (
 
 type InMemoryRepository struct {
 	mu        sync.RWMutex
-	resources map[string]models.Resource
-}
-
-func NewInMemoryRepository() *InMemoryRepository {
-	return &InMemoryRepository{
-		resources: make(map[string]models.Resource),
-	}
+	resources map[string]mode
 }
 
 func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resource, error) {
