@@ -1,0 +1,71 @@
+name: Deploy to pages and ghcr.io
+
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+env:
+  GO_VERSION: stable
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  packages: write
+
+concurrency:
+  group: "deploy-matrix"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [pages, docker]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Build Go project
+        run: make build VERSION=$GITHUB_REF_NAME
+
+      - name: Setup Pages
+        if: matrix.target == 'pages'
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        if: matrix.target == 'pages'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './web'
+
+      - name: Deploy to GitHub Pages
+        if: matrix.target == 'pages'
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Log in to GitHub Container Registry
+        if: matrix.target == 'docker'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute lowercase repo info
+        id: lowercase_repo
+        run: echo "repo_lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        if: matrix.target == 'docker'
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          tags: ghcr.io/trianalab/${{ steps.lowercase_repo.outputs.repo_lower }}:${{ github.ref_name }}

@@ -1,0 +1,19 @@
+body {
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+    font-family: var(--font-family);
+    transition: background-color var(--transition-duration), color var(--transition-duration);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+body.light-theme {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+}

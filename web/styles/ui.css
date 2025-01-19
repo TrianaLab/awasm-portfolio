@@ -1,0 +1,91 @@
+/* UI Canvas */
+#ui-canvas {
+    display: flex !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: absolute !important;
+    top: 0;
+    left: 0;
+    background-color: var(--background-color-dark);
+    color: var(--text-color-dark);
+}
+
+body.light-theme #ui-canvas {
+    background-color: var(--background-color-light);
+    color: var(--text-color-light);
+}
+
+/* Center "Coming Soon" message */
+#ui-canvas p {
+    font-family: 'Courier New', monospace;
+    font-size: 24px;
+    text-align: center;
+    margin: 0;
+}
+
+/* Header Container */
+#icon-container {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    z-index: 3;
+}
+
+/* Toggle Buttons */
+#theme-toggle, #mode-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s, color 0.3s;
+    text-align: center;
+}
+
+body.light-theme #theme-toggle, 
+body.light-theme #mode-toggle {
+    background-color: #ddd;
+    color: #000;
+}
+
+/* GitHub Link */
+#github-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 50%;
+    text-decoration: none;
+    transition: transform 0.3s, background-color 0.3s, color 0.3s;
+}
+
+body.light-theme #github-link {
+    background-color: #ddd;
+    color: #000;
+}
+
+/* Hover Effects */
+#theme-toggle:hover, #mode-toggle:hover, #github-link:hover {
+    transform: scale(1.1);
+    background-color: #555;
+}
+
+body.light-theme #theme-toggle:hover, 
+body.light-theme #mode-toggle:hover, 
+body.light-theme #github-link:hover {
+    background-color: #bbb;
+}

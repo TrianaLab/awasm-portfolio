@@ -1,0 +1,12 @@
+:root {
+    --background-color-light: #ffffff;
+    --text-color-light: #000000;
+    --scrollbar-color-light: #bbbbbb;
+
+    --background-color-dark: #1e1e1e;
+    --text-color-dark: #ffffff;
+    --scrollbar-color-dark: #555555;
+
+    --transition-duration: 0.3s; /* Faster animations */
+    --font-family: 'Roboto', 'Open Sans', sans-serif;
+}
