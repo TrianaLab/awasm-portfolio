@@ -24,7 +24,10 @@ kubectl get all -A
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				cmd.Help()
+				err := cmd.Help()
+				if err != nil {
+					cmd.Printf("Error: %s\n", err)
+				}
 				return
 			}
 
