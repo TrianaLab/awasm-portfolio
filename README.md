@@ -111,3 +111,5 @@ The backend, written in Go and compiled to WebAssembly, runs entirely within the
 
 ## Contributing
 Contributions are welcome! Open an issue or submit a pull request to share your ideas or fixes.
+
+
