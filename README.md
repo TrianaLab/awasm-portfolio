@@ -9,7 +9,6 @@ AWASM Portfolio is a WebAssembly-powered application that emulates a console, en
 But you can also check the live demo [here](https://trianalab.github.io/awasm-portfolio/).
 
 ## Deployment
-### Single-Command Deployments
 
 1. **Locally**: Use the provided Makefile:
    ```bash
