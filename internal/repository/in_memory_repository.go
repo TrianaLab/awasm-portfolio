@@ -31,9 +31,9 @@ func (r *InMemoryRepository) List(kind, name, namespace string) ([]models.Resour
 
 	var resources []models.Resource
 	for _, res := range r.resources {
-		if (kind == "" || strings.ToLower(res.GetKind()) == strings.ToLower(kind)) &&
-			(name == "" || strings.ToLower(res.GetName()) == strings.ToLower(name)) &&
-			(namespace == "" || strings.ToLower(res.GetNamespace()) == strings.ToLower(namespace) || (res.GetNamespace() == "" && namespace != "")) {
+		if (kind == "" || strings.EqualFold(res.GetKind(), kind)) &&
+			(name == "" || strings.EqualFold(res.GetName(), name)) &&
+			(namespace == "" || strings.EqualFold(res.GetNamespace(), namespace) || (res.GetNamespace() == "" && namespace != "")) {
 			resources = append(resources, res)
 		}
 	}
@@ -78,5 +78,5 @@ func (r *InMemoryRepository) Delete(kind, name, namespace string) (string, error
 			deletedResources = append(deletedResources, fmt.Sprintf("%s/%s in namespace '%s' deleted", res.GetKind(), res.GetName(), res.GetNamespace()))
 		}
 	}
-	return fmt.Sprintf("%s", strings.Join(deletedResources, "\n")), nil
+	return strings.Join(deletedResources, "\n"), nil
 }
