@@ -115,5 +115,4 @@ Contributions are welcome! Open an issue or submit a pull request to share your 
 ## Acknowledgments
 
 This project uses several open-source libraries and resources. We thank the developers of these projects for their contributions.
-
 For a full list of dependencies, their licenses, and acknowledgments, please see the [NOTICE.md](./NOTICE.md) file.
