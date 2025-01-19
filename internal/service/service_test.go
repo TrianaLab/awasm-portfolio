@@ -66,7 +66,10 @@ func TestCreateService(t *testing.T) {
 
 	// Test successful creation
 	namespace := newTestResource("namespace", "test", "")
-	repo.Create(namespace)
+	_, err = repo.Create(namespace)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	msg, err := cs.CreateResource("profile", "testProfile", "test")
 	if err != nil {
@@ -103,9 +106,15 @@ func TestDeleteService(t *testing.T) {
 
 	// Test successful deletion
 	namespace := newTestResource("namespace", "test", "")
-	repo.Create(namespace)
+	_, err = repo.Create(namespace)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	profile := newTestResource("profile", "testProfile", "test")
-	repo.Create(profile)
+	_, err = repo.Create(profile)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	msg, err := ds.DeleteResource("namespace", "test", "")
 	if err != nil {
@@ -136,9 +145,15 @@ func TestDescribeService(t *testing.T) {
 
 	// Test successful description
 	namespace := newTestResource("namespace", "testNS", "")
-	repo.Create(namespace)
+	_, err = repo.Create(namespace)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	profile := newTestResource("profile", "testProfile", "testNS")
-	repo.Create(profile)
+	_, err = repo.Create(profile)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	msg, err2 := ds.DescribeResource("profile", "testProfile", "testNS")
 	if err2 != nil {
@@ -153,20 +168,29 @@ func TestDescribeService(t *testing.T) {
 func TestGetService(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	cmd := newTestCommand()
-	cmd.Flags().Set("output", "json") // Set output format for testing
+	err := cmd.Flags().Set("output", "json")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	gs := service.NewGetService(repo, cmd)
 
 	// Test missing namespace
-	_, err := gs.GetResources("profile", "testName", "")
+	_, err = gs.GetResources("profile", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
 
 	// Test successful retrieval
 	namespace := newTestResource("namespace", "testNS", "")
-	repo.Create(namespace)
+	_, err = repo.Create(namespace)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 	profile := newTestResource("profile", "testProfile", "testNS")
-	repo.Create(profile)
+	_, err = repo.Create(profile)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
 
 	msg, err := gs.GetResources("profile", "", "testNS")
 	if err != nil {
