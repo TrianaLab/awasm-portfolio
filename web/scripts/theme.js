@@ -28,19 +28,25 @@ document.addEventListener("DOMContentLoaded", () => {
             const uiCanvas = document.getElementById("ui-canvas");
 
             if (term) {
-                term.options.theme = theme === "light-theme" ? {
-                    background: '#ffffff',
-                    foreground: '#000000',
-                    cursor: '#000000',
-                    cursorAccent: '#ffffff',
-                    selection: '#c7c7c7',
-                } : {
-                    background: '#1e1e1e',
-                    foreground: '#ffffff',
-                    cursor: '#ffffff',
-                    cursorAccent: '#000000',
-                    selection: '#555555',
-                };
+                if (theme === "light-theme") {
+                    term.options.theme = {
+                        background: '#ffffff',
+                        foreground: '#000000',
+                        cursor: '#000000',
+                        cursorAccent: '#ffffff',
+                        selectionBackground: 'rgba(0, 100, 0, 0.5)',    // darker green for better contrast
+                        selectionForeground: '#ffffff',                // white text on dark selection
+                    };
+                } else {
+                    term.options.theme = {
+                        background: '#1e1e1e',
+                        foreground: '#ffffff',
+                        cursor: '#ffffff',
+                        cursorAccent: '#000000',
+                        selectionBackground: 'rgba(255, 255, 0, 0.5)',  // light yellow for good contrast with white
+                        selectionForeground: '#000000',                // black text on yellow selection
+                    };
+                }
                 term.refresh(0, term.rows - 1);
             }
 
