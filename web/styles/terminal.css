@@ -16,16 +16,18 @@
     scrollbar-color: var(--scrollbar-color-dark) var(--background-color-dark);
 }
 
-/* Adjustments for Mobile Devices */
+/* Mobile Adjustments */
 @media (max-width: 768px) {
-    #terminal {
-        width: 100%; /* Utilize full screen width */
-        height: 100%; /* Utilize full screen height */
-        padding: 10px; /* Reduce padding for smaller screens */
+    html, body {
+        width: 100vw; /* Ensure viewport size */
+        height: 100vh; /* Ensure viewport size */
         overflow: hidden; /* Disable scrolling */
+        position: fixed; /* Prevent movement */
     }
-    body {
-        overflow: hidden; /* Prevent page-level scrolling */
+    #terminal {
+        width: 90%;
+        height: 90%;
+        margin-top: 50px;
     }
 }
 
