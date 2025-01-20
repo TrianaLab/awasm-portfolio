@@ -71,17 +71,36 @@
     
 
     function writePrompt() {
-        term.write("$ ");
+        term.write("\x1b[32m$ \x1b[0m");
     }
 
     function showWelcomeMessage() {
-
-        const welcomeMessage = 
-`Welcome to Edu Diaz's AWASM Portfolio! Type "kubectl describe profile" to get started or "kubectl --help" for more features.`;
-
-        term.write(welcomeMessage + "\r\n\r\n");
-    }
+        const asciiArt = [
+            "\x1b[32m   █████╗ ██╗    ██╗ █████╗ ███████╗███╗   ███╗\x1b[0m",
+            "\x1b[32m  ██╔══██╗██║    ██║██╔══██╗██╔════╝████╗ ████║\x1b[0m",
+            "\x1b[32m  ███████║██║ █╗ ██║███████║███████╗██╔████╔██║\x1b[0m",
+            "\x1b[32m  ██╔══██║██║███╗██║██╔══██║╚════██║██║╚██╔╝██║\x1b[0m",
+            "\x1b[32m  ██║  ██║╚███╔███╔╝██║  ██║███████║██║ ╚═╝ ██║\x1b[0m",
+            "\x1b[32m  ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═╝╚══════╝╚═╝     ╚═╝\x1b[0m"
+        ];
     
+        const welcomeMessageLines = [
+            "Welcome to Edu Diaz's AWASM Portfolio!",
+            'Type "kubectl describe profile" to get started or "kubectl --help" for more features.'
+        ];
+    
+        // Print each line of ASCII art
+        asciiArt.forEach(line => term.write(line + "\r\n"));
+    
+        // Add some spacing
+        term.write("\r\n");
+    
+        // Print each line of the welcome message
+        welcomeMessageLines.forEach(line => term.write(line + "\r\n"));
+    
+        // Add final spacing
+        term.write("\r\n");
+    }    
     
     showWelcomeMessage();
     writePrompt();
