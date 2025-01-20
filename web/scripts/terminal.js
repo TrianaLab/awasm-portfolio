@@ -75,12 +75,14 @@
     }
 
     function showWelcomeMessage() {
-        const welcomeMessage = `
-Welcome to TrianaLab AWASM Portfolio! Type "kubectl --help" to get started.
-        `;
+
+        const welcomeMessage = 
+`Welcome to Edu Diaz's AWASM Portfolio! Type "kubectl describe profile" to get started or "kubectl --help" for more features.`;
+
         term.write(welcomeMessage + "\r\n\r\n");
     }
-
+    
+    
     showWelcomeMessage();
     writePrompt();
 
