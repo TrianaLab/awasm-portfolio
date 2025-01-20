@@ -27,19 +27,19 @@ document.addEventListener("render-graph", (event) => {
                 y: Math.random() * window.innerHeight,
             };
         });
-
+    
         const width = window.innerWidth;
         const height = window.innerHeight;
-
+    
         const svgSelection = d3
             .select("#graph-container")
             .html("")
             .append("svg")
             .attr("width", width)
             .attr("height", height);
-
+    
         const colorScale = d3.scaleOrdinal(d3.schemeDark2);
-
+    
         simulation = d3
             .forceSimulation(data)
             .force("center", d3.forceCenter(width / 2, height / 2))
@@ -47,23 +47,47 @@ document.addEventListener("render-graph", (event) => {
             .force("x", d3.forceX(width / 2))
             .force("y", d3.forceY(height / 2))
             .on("tick", ticked);
-
+    
         const node = svgSelection
             .selectAll("g")
             .data(data)
             .enter()
             .append("g")
             .attr("class", "node");
-
+    
         node.append("circle")
             .attr("r", (d) => d.radius)
             .attr("fill", (d) => colorScale(d.namespace))
             .attr("stroke", "#ffffff")
             .attr("stroke-width", 1)
+            .on("mouseover", function (event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", d.radius * 1.5);
+    
+                simulation.force(
+                    "collision",
+                    d3.forceCollide().radius((inner) => (inner === d ? d.radius * 1.5 : inner.radius))
+                );
+                simulation.alpha(0.8).restart();
+            })
+            .on("mouseout", function (event, d) {
+                d3.select(this)
+                    .transition()
+                    .duration(200)
+                    .attr("r", d.radius);
+    
+                simulation.force(
+                    "collision",
+                    d3.forceCollide().radius((inner) => inner.radius)
+                );
+                simulation.alpha(0.8).restart();
+            })
             .on("click", function (event, d) {
                 zoomIntoBubble(d);
             });
-
+    
         node.append("text")
             .text((d) => d.name)
             .attr("dy", "0.3em")
@@ -71,10 +95,10 @@ document.addEventListener("render-graph", (event) => {
             .style("fill", "#ffffff")
             .style("font-family", "Courier, monospace")
             .style("font-size", "14px");
-
+    
         function ticked() {
             node.attr("transform", (d) => `translate(${d.x}, ${d.y})`);
-        }
+        }    
 
         function zoomIntoBubble(d) {
             const bubbleCenterX = d.x;
