@@ -85,8 +85,8 @@
         ];
     
         const welcomeMessageLines = [
-            "Welcome to Edu Diaz's AWASM Portfolio!",
-            'Type "kubectl describe profile" to get started or "kubectl --help" for more features.'
+            "Welcome to \x1b[32mEdu Diaz's\x1b[0m AWASM Portfolio!",
+            'Type \x1b[32mkubectl describe profile\x1b[0m to get started or \x1b[32mkubectl --help\x1b[0m to explore all features.'
         ];
     
         // Print each line of ASCII art
@@ -100,6 +100,9 @@
     
         // Add final spacing
         term.write("\r\n");
+    
+        // Print the closing message
+        term.write(closingMessage + "\r\n\r\n");
     }    
     
     showWelcomeMessage();
