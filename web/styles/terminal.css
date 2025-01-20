@@ -25,9 +25,9 @@
         position: fixed; /* Prevent movement */
     }
     #terminal {
-        width: 90%; /* Use full screen width */
-        height: 90%; /* Use full screen height */
-        margin-top: 50px; /* Adjust padding for smaller screens */
+        width: 90%;
+        height: 90%;
+        margin-top: 50px;
     }
 }
 
