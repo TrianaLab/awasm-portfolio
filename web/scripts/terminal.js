@@ -77,6 +77,7 @@
     }
 
     function showWelcomeMessage() {
+
         const asciiArt = [
             "\x1b[32m   █████╗ ██╗    ██╗ █████╗ ███████╗███╗   ███╗\x1b[0m",
             "\x1b[32m  ██╔══██╗██║    ██║██╔══██╗██╔════╝████╗ ████║\x1b[0m",
@@ -102,7 +103,7 @@
     
         // Add final spacing
         term.write("\r\n");
-    }    
+    }
     
     showWelcomeMessage();
     writePrompt();
