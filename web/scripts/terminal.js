@@ -5,6 +5,8 @@
         theme: {
             background: '#1e1e1e',
             foreground: '#ffffff',
+            selectionBackground: 'rgba(255, 255, 255, 0.3)',
+            selectionForeground: '#000000', 
         },
     });
     window.term = term; // Save the terminal instance globally
@@ -100,9 +102,6 @@
     
         // Add final spacing
         term.write("\r\n");
-    
-        // Print the closing message
-        term.write(closingMessage + "\r\n\r\n");
     }    
     
     showWelcomeMessage();
@@ -111,6 +110,7 @@
     async function processCommand(command) {
         if (command.trim() === "clear") {
             term.clear();
+            showWelcomeMessage();
             writePrompt();
             currentInput = "";
             cursorPosition = 0;
