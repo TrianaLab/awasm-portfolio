@@ -5,6 +5,7 @@
     border-radius: 10px;
     padding: 20px;
     overflow: hidden; /* Prevents scrollbars */
+    overflow: hidden; /* Prevents scrollbars */
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
     transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
@@ -14,6 +15,19 @@
     z-index: 1;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-color-dark) var(--background-color-dark);
+}
+
+/* Adjustments for Mobile Devices */
+@media (max-width: 768px) {
+    #terminal {
+        width: 100%; /* Utilize full screen width */
+        height: 100%; /* Utilize full screen height */
+        padding: 10px; /* Reduce padding for smaller screens */
+        overflow: hidden; /* Disable scrolling */
+    }
+    body {
+        overflow: hidden; /* Prevent page-level scrolling */
+    }
 }
 
 /* Mobile Adjustments */
