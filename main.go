@@ -43,9 +43,8 @@ func main() {
 func runCLICommand(rootCmd *cobra.Command, command string) string {
 	args := strings.Fields(command)
 
-	// Enforce the root command prefix
 	if len(args) == 0 || (args[0] != "kubectl" && args[0] != "k") {
-		return "Error: Commands must start with 'kubectl' or 'k'"
+		return fmt.Sprintf("Error: unknown command '%s'", args[0])
 	}
 
 	// Remove the root command prefix
