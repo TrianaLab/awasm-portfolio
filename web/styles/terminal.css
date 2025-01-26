@@ -4,7 +4,7 @@
     height: 70%;
     border-radius: 10px;
     padding: 20px;
-    overflow: hidden; /* Prevents scrollbars */
+    overflow: vertical;
     background-color: var(--background-color-dark);
     color: var(--text-color-dark);
     transition: transform var(--transition-duration) ease-in-out, opacity var(--transition-duration);
