@@ -53,6 +53,11 @@ func PreloadData(repo *repository.InMemoryRepository) {
 				Link:        "https://github.com/fermyon/developer/graphs/contributors",
 			},
 			{
+				Project:     "Keda",
+				Description: "A Kubernetes-based event driven autoscaler from the Cloud Native Computing Foundation",
+				Link:        "https://github.com/kedacore/keda-docs/graphs/contributors",
+			},
+			{
 				Project:     "CloudTTY",
 				Description: "A Kubernetes cloudshell operator in the Cloud Native Computing Foundation",
 				Link:        "https://cloudtty.github.io/cloudtty/#contributors",
@@ -95,7 +100,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Jobs: []types.Job{
 			{
 				Title:       "Machine Learning Operations Engineer",
-				Description: "As an MLOps Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, and Istio. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
+				Description: "As an MLOps Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
 				Company:     "Emergence AI",
 				Duration:    "July 2024 - Now",
 			},
