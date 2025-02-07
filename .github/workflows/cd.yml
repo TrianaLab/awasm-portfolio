@@ -68,4 +68,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ghcr.io/trianalab/${{ steps.lowercase_repo.outputs.repo_lower }}:${{ github.ref_name }}
+          tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo_lower }}:${{ github.ref_name }}
