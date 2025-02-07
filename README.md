@@ -18,7 +18,7 @@ But you can also check the live demo [here](https://trianalab.github.io/awasm-po
 
 2. **Docker**: Pull and run the latest release image:
    ```bash
-   docker run -p 8000:80 ghcr.io/trianalab/trianalab/awasm-portfolio:$(curl -s https://api.github.com/repos/trianalab/awasm-portfolio/releases/latest | jq -r .tag_name)
+   docker run -p 8000:80 ghcr.io/trianalab/awasm-portfolio:$(curl -s https://api.github.com/repos/trianalab/awasm-portfolio/releases/latest | jq -r .tag_name)
    ```
    Access the application at `http://127.0.0.1:8000`.
 
