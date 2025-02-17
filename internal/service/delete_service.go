@@ -70,7 +70,7 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 
 	deletedResources = append(deletedResources, r)
 	for _, res := range resources {
-		if res.GetOwnerReference().GetID() == fmt.Sprintf("%s:%s:%s", nKind, name, namespace) {
+		if res.GetOwnerReference().GetID() == strings.ToLower(nKind+":"+name+":"+namespace) {
 			deleted, err := s.repo.Delete(res.GetKind(), res.GetName(), res.GetNamespace())
 			if err != nil {
 				return "", err
