@@ -48,6 +48,11 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		OwnerRef:  ownerRef,
 		Contributions: []types.Contribution{
 			{
+				Project:     "container2wasm",
+				Description: "Container to WASM image converter that enables to run the container on WASM.",
+				Link:        "https://github.com/container2wasm/container2wasm/graphs/contributors",
+			},
+			{
 				Project:     "Spin",
 				Description: "Developer tool for building WebAssembly microservices and web applications from Fermyon",
 				Link:        "https://github.com/fermyon/developer/graphs/contributors",
