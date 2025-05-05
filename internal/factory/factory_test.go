@@ -5,7 +5,6 @@ import (
 	"testing"
 )
 
-// Helper to create test data
 func createTestData(name, namespace string) map[string]interface{} {
 	return map[string]interface{}{
 		"name":      name,
@@ -13,53 +12,69 @@ func createTestData(name, namespace string) map[string]interface{} {
 	}
 }
 
-// TestResourceFactory_Create tests the Create method for all supported resource kinds.
 func TestResourceFactory_Create(t *testing.T) {
 	factory := factory.NewResourceFactory()
 	name := "testName"
 	namespace := "testNamespace"
 
-	// List of supported resource kinds
+	// Lista actualizada de tipos de recursos soportados
 	kinds := []string{
-		"profile",
-		"namespace",
+		"resume",
+		"work",
+		"volunteer",
 		"education",
-		"experience",
-		"contact",
-		"certifications",
-		"contributions",
-		"skills",
+		"award",
+		"certificate",
+		"publication",
+		"skill",
+		"language",
+		"interest",
+		"reference",
+		"project",
 	}
 
-	// Test resource creation for each kind
 	for _, kind := range kinds {
-		resource := factory.Create(kind, createTestData(name, namespace))
-		if resource == nil {
-			t.Errorf("expected resource of kind %s to be created, but got nil", kind)
-			continue
-		}
+		t.Run(kind, func(t *testing.T) {
+			resource := factory.Create(kind, createTestData(name, namespace))
+			if resource == nil {
+				t.Fatalf("expected resource of kind %s to be created, but got nil", kind)
+			}
 
-		// Verify common properties
-		if resource.GetKind() != kind {
-			t.Errorf("expected kind %s, got %s", kind, resource.GetKind())
-		}
-		if resource.GetName() != name {
-			t.Errorf("expected name %s, got %s", name, resource.GetName())
-		}
-		if kind != "namespace" && resource.GetNamespace() != namespace {
-			t.Errorf("expected namespace %s, got %s", namespace, resource.GetNamespace())
-		}
+			// Verificar propiedades comunes
+			if resource.GetKind() != kind {
+				t.Errorf("expected kind %s, got %s", kind, resource.GetKind())
+			}
+
+			// El nombre puede variar según el tipo debido a que usamos faker
+			if resource.GetName() == "" {
+				t.Error("expected non-empty name")
+			}
+
+			if resource.GetNamespace() != namespace {
+				t.Errorf("expected namespace %s, got %s", namespace, resource.GetNamespace())
+			}
+
+			// Verificar que el timestamp de creación no esté vacío
+			if resource.GetCreationTimestamp().IsZero() {
+				t.Error("expected non-zero creation timestamp")
+			}
+
+			// Verificar que la referencia del propietario esté establecida
+			if resource.GetOwnerReference().Name != namespace {
+				t.Errorf("expected owner reference name %s, got %s", namespace, resource.GetOwnerReference().Name)
+			}
+		})
 	}
 
-	// Test unsupported resource kind
-	unsupportedKind := "unsupported"
-	resource := factory.Create(unsupportedKind, createTestData(name, namespace))
-	if resource != nil {
-		t.Errorf("expected nil for unsupported kind %s, but got resource", unsupportedKind)
-	}
+	t.Run("unsupported", func(t *testing.T) {
+		unsupportedKind := "unsupported"
+		resource := factory.Create(unsupportedKind, createTestData(name, namespace))
+		if resource != nil {
+			t.Errorf("expected nil for unsupported kind %s, but got resource", unsupportedKind)
+		}
+	})
 }
 
-// TestResourceFactory_New verifies the creation of a ResourceFactory instance.
 func TestResourceFactory_New(t *testing.T) {
 	factory := factory.NewResourceFactory()
 	if factory == nil {
