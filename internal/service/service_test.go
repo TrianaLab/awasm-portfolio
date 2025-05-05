@@ -59,7 +59,7 @@ func TestCreateService(t *testing.T) {
 	}
 
 	// Test namespace not found
-	_, err = cs.CreateResource("profile", "testName", "nonexistentNS")
+	_, err = cs.CreateResource("resume", "testName", "nonexistentNS")
 	if err == nil || !strings.Contains(err.Error(), "namespace 'nonexistentNS' not found") {
 		t.Errorf("expected namespace not found error, got %v", err)
 	}
@@ -71,11 +71,11 @@ func TestCreateService(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	msg, err := cs.CreateResource("profile", "testProfile", "test")
+	msg, err := cs.CreateResource("resume", "testResume", "test")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(msg, "profile/testProfile created") {
+	if !strings.Contains(msg, "resume/testResume created") {
 		t.Errorf("unexpected success message: %s", msg)
 	}
 }
@@ -93,13 +93,13 @@ func TestDeleteService(t *testing.T) {
 	}
 
 	// Test missing name
-	_, err = ds.DeleteResource("profile", "", "test")
+	_, err = ds.DeleteResource("resume", "", "test")
 	if err == nil || !strings.Contains(err.Error(), "no name was specified") {
 		t.Errorf("expected missing name error, got %v", err)
 	}
 
 	// Test missing namespace
-	_, err = ds.DeleteResource("profile", "testName", "")
+	_, err = ds.DeleteResource("resume", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
@@ -110,8 +110,8 @@ func TestDeleteService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	profile := newTestResource("profile", "testProfile", "test")
-	_, err = repo.Create(profile)
+	resume := newTestResource("resume", "testResume", "test")
+	_, err = repo.Create(resume)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -138,7 +138,7 @@ func TestDescribeService(t *testing.T) {
 	ds := service.NewDescribeService(repo, cmd)
 
 	// Test missing namespace
-	_, err := ds.DescribeResource("profile", "testName", "")
+	_, err := ds.DescribeResource("resume", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
@@ -149,17 +149,17 @@ func TestDescribeService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	profile := newTestResource("profile", "testProfile", "testNS")
-	_, err = repo.Create(profile)
+	resume := newTestResource("resume", "testResume", "testNS")
+	_, err = repo.Create(resume)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	msg, err2 := ds.DescribeResource("profile", "testProfile", "testNS")
+	msg, err2 := ds.DescribeResource("resume", "testResume", "testNS")
 	if err2 != nil {
 		t.Fatalf("unexpected error: %v", err2)
 	}
-	if !strings.Contains(msg, "testProfile") {
+	if !strings.Contains(msg, "testResume") {
 		t.Errorf("unexpected description output: %s", msg)
 	}
 }
@@ -175,7 +175,7 @@ func TestGetService(t *testing.T) {
 	gs := service.NewGetService(repo, cmd)
 
 	// Test missing namespace
-	_, err = gs.GetResources("profile", "testName", "")
+	_, err = gs.GetResources("resume", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
@@ -186,17 +186,17 @@ func TestGetService(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	profile := newTestResource("profile", "testProfile", "testNS")
-	_, err = repo.Create(profile)
+	resume := newTestResource("resume", "testResume", "testNS")
+	_, err = repo.Create(resume)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 
-	msg, err := gs.GetResources("profile", "", "testNS")
+	msg, err := gs.GetResources("resume", "", "testNS")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if !strings.Contains(msg, "testProfile") {
+	if !strings.Contains(msg, "testResume") {
 		t.Errorf("unexpected retrieval output: %s", msg)
 	}
 }
@@ -208,8 +208,8 @@ func TestResourceServiceImpl(t *testing.T) {
 	rs := service.NewResourceService(repo, cmd)
 
 	// Test all delegations
-	_, _ = rs.CreateResource("profile", "testProfile", "testNS")
-	_, _ = rs.DeleteResource("profile", "testProfile", "testNS")
-	_, _ = rs.GetResources("profile", "testProfile", "testNS")
-	_, _ = rs.DescribeResource("profile", "testProfile", "testNS")
+	_, _ = rs.CreateResource("resume", "testResume", "testNS")
+	_, _ = rs.DeleteResource("resume", "testResume", "testNS")
+	_, _ = rs.GetResources("resume", "testResume", "testNS")
+	_, _ = rs.DescribeResource("resume", "testResume", "testNS")
 }

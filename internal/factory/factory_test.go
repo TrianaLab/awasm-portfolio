@@ -17,7 +17,6 @@ func TestResourceFactory_Create(t *testing.T) {
 	name := "testName"
 	namespace := "testNamespace"
 
-	// Lista actualizada de tipos de recursos soportados
 	kinds := []string{
 		"resume",
 		"work",
@@ -40,12 +39,10 @@ func TestResourceFactory_Create(t *testing.T) {
 				t.Fatalf("expected resource of kind %s to be created, but got nil", kind)
 			}
 
-			// Verificar propiedades comunes
 			if resource.GetKind() != kind {
 				t.Errorf("expected kind %s, got %s", kind, resource.GetKind())
 			}
 
-			// El nombre puede variar según el tipo debido a que usamos faker
 			if resource.GetName() == "" {
 				t.Error("expected non-empty name")
 			}
@@ -54,12 +51,10 @@ func TestResourceFactory_Create(t *testing.T) {
 				t.Errorf("expected namespace %s, got %s", namespace, resource.GetNamespace())
 			}
 
-			// Verificar que el timestamp de creación no esté vacío
 			if resource.GetCreationTimestamp().IsZero() {
 				t.Error("expected non-zero creation timestamp")
 			}
 
-			// Verificar que la referencia del propietario esté establecida
 			if resource.GetOwnerReference().Name != namespace {
 				t.Errorf("expected owner reference name %s, got %s", namespace, resource.GetOwnerReference().Name)
 			}

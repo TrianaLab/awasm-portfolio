@@ -54,10 +54,10 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		return "", err
 	}
 
-	// If the resource is a profile, dynamically process nested fields
-	if profile, ok := resource.(*types.Profile); ok {
+	// If the resource is a resume, dynamically process nested fields
+	if resume, ok := resource.(*types.Resume); ok {
 		// Use reflection to iterate over fields
-		val := reflect.ValueOf(profile).Elem()
+		val := reflect.ValueOf(resume).Elem()
 		typ := val.Type()
 
 		for i := 0; i < val.NumField(); i++ {
@@ -65,18 +65,20 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 			fieldType := typ.Field(i)
 
 			// Check if the field implements the `models.Resource` interface
-			if field.Kind() == reflect.Struct && reflect.PointerTo(field.Type()).Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
-				nested := field.Addr().Interface().(models.Resource)
-				nested.SetOwnerReference(models.OwnerReference{
-					Kind:      "profile",
-					Name:      name,
-					Namespace: namespace,
-				})
-				nested.SetNamespace(namespace)
-				nested.SetName(strings.ToLower(fmt.Sprintf("%s-%s", name, fieldType.Name)))
+			if field.Kind() == reflect.Slice && field.Type().Elem().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
+				for j := 0; j < field.Len(); j++ {
+					nested := field.Index(j).Interface().(models.Resource)
+					nested.SetOwnerReference(models.OwnerReference{
+						Kind:      "resume",
+						Name:      name,
+						Namespace: namespace,
+					})
+					nested.SetNamespace(namespace)
+					nested.SetName(strings.ToLower(fmt.Sprintf("%s-%s-%d", name, fieldType.Name, j)))
 
-				if _, err := s.repo.Create(nested); err != nil {
-					return "", fmt.Errorf("failed to save %s: %w", fieldType.Name, err)
+					if _, err := s.repo.Create(nested); err != nil {
+						return "", fmt.Errorf("failed to save %s: %w", fieldType.Name, err)
+					}
 				}
 			}
 		}

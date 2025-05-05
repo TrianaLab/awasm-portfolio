@@ -183,12 +183,10 @@ func TestResumeWithAllFields(t *testing.T) {
 		},
 	}
 
-	// Validate the resume object
 	if resume.Kind != "resume" {
 		t.Errorf("expected Kind to be 'resume', got %s", resume.Kind)
 	}
 	if resume.Name != "JohnDoeResume" {
 		t.Errorf("expected Name to be 'JohnDoeResume', got %s", resume.Name)
 	}
-	// Add more assertions as needed to validate all fields
 }

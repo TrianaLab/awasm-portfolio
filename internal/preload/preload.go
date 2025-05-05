@@ -4,220 +4,242 @@ import (
 	"awasm-portfolio/internal/models"
 	"awasm-portfolio/internal/models/types"
 	"awasm-portfolio/internal/repository"
+	"reflect"
+	"time"
 )
 
 func PreloadData(repo *repository.InMemoryRepository) {
+	timestamp := time.Now()
+
 	namespace := &types.Namespace{
 		Kind: "namespace",
 		Name: "default",
 	}
+
 	ownerRef := models.OwnerReference{
-		Kind:      "profile",
-		Name:      "Profile",
+		Kind:      "resume",
+		Name:      "eduardo-diaz",
 		Namespace: namespace.Name,
 	}
-	certifications := &types.Certifications{
-		Kind:      "certifications",
-		Name:      "Certifications",
-		Namespace: namespace.Name,
-		OwnerRef:  ownerRef,
-		Certifications: []types.Certification{
+
+	basics := &types.Basics{
+		OwnerRef: ownerRef,
+		Name:     "Eduardo Díaz",
+		Label:    "Machine Learning Operations Engineer",
+		Email:    "edudiazasencio@gmail.com",
+		Url:      "https://github.com/edu-diaz",
+		Summary:  "MLOps Engineer with expertise in Kubernetes, Cloud Infrastructure and Machine Learning",
+		Location: types.Location{
+			City:        "Sevilla",
+			Region:      "Andalucía",
+			CountryCode: "ES",
+		},
+		Profiles: []types.Profile{
 			{
-				Description: "Certified Kubernetes Administrator",
-				Link:        "https://www.credly.com/badges/f1c5619d-f6a1-4988-8393-5f9a21455736/linked_in_profile",
+				Network:  "LinkedIn",
+				Username: "eduardo-diaz-asencio",
+				Url:      "https://www.linkedin.com/in/eduardo-diaz-asencio/",
 			},
 			{
-				Description: "Certified Kubernetes Security Specialist",
-				Link:        "https://www.credly.com/badges/9e2a89df-4283-4502-9834-7b11b05bb152/linked_in_profile",
+				Network:  "GitHub",
+				Username: "edu-diaz",
+				Url:      "https://github.com/edu-diaz",
 			},
 		},
 	}
-	contact := &types.Contact{
-		Kind:      "contact",
-		Name:      "Contact",
-		Namespace: namespace.Name,
-		OwnerRef:  ownerRef,
-		Email:     "edudiazasencio@gmail.com",
-		Linkedin:  "https://www.linkedin.com/in/eduardo-diaz-asencio/",
-		Github:    "https://github.com/edu-diaz",
-	}
-	contributions := &types.Contributions{
-		Kind:      "contributions",
-		Name:      "Contributions",
-		Namespace: namespace.Name,
-		OwnerRef:  ownerRef,
-		Contributions: []types.Contribution{
-			{
-				Project:     "container2wasm",
-				Description: "Container to WASM image converter that enables to run the container on WASM.",
-				Link:        "https://github.com/container2wasm/container2wasm/graphs/contributors",
-			},
-			{
-				Project:     "Spin",
-				Description: "Developer tool for building WebAssembly microservices and web applications from Fermyon",
-				Link:        "https://github.com/fermyon/developer/graphs/contributors",
-			},
-			{
-				Project:     "Keda",
-				Description: "A Kubernetes-based event driven autoscaler from the Cloud Native Computing Foundation",
-				Link:        "https://github.com/kedacore/keda-docs/graphs/contributors",
-			},
-			{
-				Project:     "CloudTTY",
-				Description: "A Kubernetes cloudshell operator in the Cloud Native Computing Foundation",
-				Link:        "https://cloudtty.github.io/cloudtty/#contributors",
-			},
-			{
-				Project:     "Jesse",
-				Description: "A Kubernetes helm chart for the Jesse AI trading bot",
-				Link:        "https://github.com/TrianaLab/jesse-chart",
-			},
-			{
-				Project:     "awasm-portfolio",
-				Description: "This portfolio, isn't it awesome?",
-				Link:        "https://github.com/TrianaLab/awasm-portfolio",
-			},
-		},
-	}
-	education := &types.Education{
-		Kind:      "education",
-		Name:      "Education",
-		Namespace: namespace.Name,
-		OwnerRef:  ownerRef,
-		Courses: []types.Course{
-			{
-				Title:       "Artificial Intelligence - M.Eng",
-				Institution: "Universidad Internacional de Valencia",
-				Duration:    "2021 - 2022",
-			},
-			{
-				Title:       "Telecommunications Engineering - B.Eng",
-				Institution: "Universidad de Sevilla",
-				Duration:    "2016 - 2021",
-			},
-		},
-	}
-	experience := &types.Experience{
-		Kind:      "experience",
-		Name:      "Experience",
-		Namespace: namespace.Name,
-		OwnerRef:  ownerRef,
-		Jobs: []types.Job{
-			{
-				Title:       "Machine Learning Operations Engineer",
-				Description: "As an MLOps Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
-				Company:     "Emergence AI",
-				Duration:    "July 2024 - Now",
-			},
-			{
-				Title:       "Product Software Engineer - Kubernetes Team",
-				Description: "Provide services that support elastic scale and allow frequent, reliable, high-impact changes to the deployed products. Reduce friction and toil surrounding data when creating new product services and features, including data lifecycle management, data retention, data analytics and providing easy-to-use APIs. Make Appian more Kubernetes-native both in cloud and self-managed environments.",
-				Company:     "Appian Corporation",
-				Duration:    "February 2024 - July 2024",
-			},
-			{
-				Title:       "Senior Solution Engineer - Infrastructure Team",
-				Description: "Provide technical support globally, address critical challenges and mentor newcomers. With a focus on data analysis and creative solutions, my role emphasizes effective troubleshooting and a comprehensive understanding of the platform’s inner infrastructure.",
-				Company:     "Appian Corporation",
-				Duration:    "October 2023 - February 2024",
-			},
-			{
-				Title:       "Solution Engineer - Infrastructure Team",
-				Description: "Hands-on support for global customers utilizing the Appian platform. With strong problem-solving skills, proficiency in Kubernetes and expertise in web services, programming, and Linux, I contribute to ongoing customer relationships by delivering effective solutions.",
-				Company:     "Appian Corportation",
-				Duration:    "October 2022 - October 2023",
-			},
-			{
-				Title:       "Associate Solution Engineer",
-				Description: "Tackle complex technical challenges, providing creative solutions and offering world-class support to customers globally. Proficient in troubleshooting, data analytics, and collaboration with internal teams, contribute to resolve Appian installations for both self-managed and Appian Cloud environments.",
-				Company:     "Appian Corporation",
-				Duration:    "November 2021 - October 2022",
-			},
-			{
-				Title:       "Software QA Automation Engineer",
-				Description: "Interface with developers and system architects to ensure applications are designed to be testable while ensuring tags, object ID’s, component and page name standards are in place. Create test plans and test cases based on defined stories. Automate those test cases and incorporate them to correspondent test suites.",
-				Company:     "Solera Inc.",
-				Duration:    "August 2020 - November 2021",
-			},
-		},
-	}
-	skills := &types.Skills{
-		Kind:      "skills",
-		Name:      "Skills",
-		Namespace: namespace.Name,
-		OwnerRef:  ownerRef,
-		Skills: []types.Skill{
-			// DevOps Tools
-			{Category: "DevOps Tools", Competence: "Jenkins", Proficiency: "Advanced"},
-			{Category: "DevOps Tools", Competence: "GitHub Actions", Proficiency: "Expert"},
-			{Category: "DevOps Tools", Competence: "ArgoCD", Proficiency: "Expert"},
-			{Category: "DevOps Tools", Competence: "Crossplane", Proficiency: "Expert"},
-			{Category: "DevOps Tools", Competence: "Ansible", Proficiency: "Advanced"},
-			{Category: "DevOps Tools", Competence: "Helm", Proficiency: "Expert"},
 
-			// Cloud Platforms
-			{Category: "Cloud Platforms", Competence: "GCP", Proficiency: "Expert"},
-			{Category: "Cloud Platforms", Competence: "AWS", Proficiency: "Advanced"},
-			{Category: "Cloud Platforms", Competence: "Cloudflares", Proficiency: "Advanced"},
-
-			// Containerization and Orchestration
-			{Category: "Containerization", Competence: "Kubernetes", Proficiency: "Expert"},
-			{Category: "Containerization", Competence: "Docker", Proficiency: "Expert"},
-			{Category: "Containerization", Competence: "Operators", Proficiency: "Advanced"},
-
-			// Service Mesh and Observability
-			{Category: "Service Mesh", Competence: "Istio", Proficiency: "Advanced"},
-			{Category: "Observability", Competence: "Prometheus", Proficiency: "Advanced"},
-			{Category: "Observability", Competence: "Grafana", Proficiency: "Advanced"},
-
-			// Programming Languages
-			{Category: "Programming Languages", Competence: "Go", Proficiency: "Advanced"},
-			{Category: "Programming Languages", Competence: "Java", Proficiency: "Advanced"},
-			{Category: "Programming Languages", Competence: "C", Proficiency: "Intemediate"},
-			{Category: "Programming Languages", Competence: "Bash", Proficiency: "Expert"},
-			{Category: "Programming Languages", Competence: "WebAssembly (Wasm)", Proficiency: "Intermediate"},
-
-			// Networking
-			{Category: "Networking", Competence: "Networking Fundamentals", Proficiency: "Expert"},
-			{Category: "Networking", Competence: "Network Security", Proficiency: "Advanced"},
-
-			// Other Skills
-			{Category: "Other Skills", Competence: "Observability", Proficiency: "Advanced"},
-			{Category: "Other Skills", Competence: "Infrastructure as Code", Proficiency: "Expert"},
-			{Category: "Other Skills", Competence: "CI/CD Pipelines", Proficiency: "Expert"},
-			{Category: "Other Skills", Competence: "Microservices Architecture", Proficiency: "Advanced"},
-
-			// Languages
-			{Category: "Languages", Competence: "Spanish", Proficiency: "Native"},
-			{Category: "Languages", Competence: "English", Proficiency: "Fluent"},
-			{Category: "Languages", Competence: "Chinese", Proficiency: "Basic"},
+	work := []types.Work{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "emergence-ai-mlops",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Position:          "Machine Learning Operations Engineer",
+			URL:               "https://emergence.ai",
+			StartDate:         "2024-07",
+			EndDate:           "",
+			Summary:           "As an MLOps Engineer at Emergence, I'm actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc.",
+			Highlights:        []string{"Provisioning GKE clusters", "Implementing advanced networking capabilities"},
 		},
 	}
 
-	profile := &types.Profile{
-		Kind:           "profile",
-		Name:           "Profile",
-		Namespace:      namespace.Name,
-		Contributions:  *contributions,
-		Contact:        *contact,
-		Certifications: *certifications,
-		Education:      *education,
-		Experience:     *experience,
-		Skills:         *skills,
+	volunteer := []types.Volunteer{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "sevilla-kubernetes",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Position:          "Community Leader",
+			URL:               "https://community.cncf.io/sevilla/",
+			StartDate:         "2023-01",
+			EndDate:           "",
+			Summary:           "Leading the Kubernetes and Cloud Native community in Sevilla",
+			Highlights:        []string{"Organizing monthly meetups", "Growing the community from 0 to 100+ members"},
+		},
 	}
 
-	resources := []models.Resource{
+	education := []types.Education{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "masters-ai",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			URL:               "",
+			Area:              "Artificial Intelligence",
+			StudyType:         "M.Eng",
+			StartDate:         "2021",
+			EndDate:           "2022",
+			Score:             "9.5",
+			Courses:           []string{"Machine Learning", "Deep Learning", "Natural Language Processing"},
+		},
+	}
+
+	awards := []types.Award{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "best-student-award",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Date:              "2022",
+			Awarder:           "Universidad Internacional de Valencia",
+			Summary:           "Awarded for achieving the highest GPA in the Master's program",
+		},
+	}
+
+	certificates := []types.Certificate{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "cka",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Date:              "2023",
+			Issuer:            "Cloud Native Computing Foundation",
+			URL:               "https://www.credly.com/badges/f1c5619d-f6a1-4988-8393-5f9a21455736/linked_in_profile",
+		},
+	}
+
+	publications := []types.Publication{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "container2wasm-paper",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Publisher:         "arXiv",
+			ReleaseDate:       "2024",
+			URL:               "https://arxiv.org/container2wasm",
+			Summary:           "Research paper about converting container images to WebAssembly modules",
+		},
+	}
+
+	skills := []types.Skill{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "kubernetes",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Level:             "Expert",
+			Keywords:          []string{"Container Orchestration", "Cloud Native", "DevOps"},
+		},
+	}
+
+	languages := []types.Language{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "spanish",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Fluency:           "Native",
+		},
+	}
+
+	interests := []types.Interest{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "cloud-native",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Keywords:          []string{"Kubernetes", "WebAssembly", "Microservices"},
+		},
+	}
+
+	references := []types.Reference{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "john-doe",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Reference:         "Eduardo is an exceptional engineer with deep knowledge in cloud technologies and machine learning infrastructure.",
+		},
+	}
+
+	projects := []types.Project{
+		{
+			OwnerRef:          ownerRef,
+			Name:              "container2wasm",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Description:       "Container to WASM image converter that enables to run the container on WASM",
+			StartDate:         "2023-06",
+			EndDate:           "",
+			URL:               "https://github.com/container2wasm/container2wasm",
+			Highlights:        []string{"Core contributor", "Integration with Docker Desktop"},
+		},
+	}
+
+	resume := &types.Resume{
+		Kind:              "resume",
+		Name:              "eduardo-diaz",
+		Namespace:         namespace.Name,
+		CreationTimestamp: timestamp,
+		Basics:            *basics,
+		Work:              work,
+		Volunteer:         volunteer,
+		Education:         education,
+		Awards:            awards,
+		Certificates:      certificates,
+		Publications:      publications,
+		Skills:            skills,
+		Languages:         languages,
+		Interests:         interests,
+		References:        references,
+		Projects:          projects,
+	}
+
+	// List all resources (both individual and slices)
+	allResourcesRaw := []interface{}{
 		namespace,
-		certifications,
-		contact,
-		contributions,
+		resume,
+		work,
+		volunteer,
 		education,
-		experience,
+		awards,
+		certificates,
+		publications,
 		skills,
-		profile,
+		languages,
+		interests,
+		references,
+		projects,
 	}
 
-	// Iterate over the resources and create them
+	var resources []models.Resource
+	for _, r := range allResourcesRaw {
+		val := reflect.ValueOf(r)
+
+		if val.Kind() == reflect.Slice {
+			for i := 0; i < val.Len(); i++ {
+				item := val.Index(i).Addr().Interface()
+				if res, ok := item.(models.Resource); ok {
+					resources = append(resources, res)
+				}
+			}
+		} else {
+			if res, ok := r.(models.Resource); ok {
+				resources = append(resources, res)
+			}
+		}
+	}
+
 	for _, resource := range resources {
 		_, err := repo.Create(resource)
 		if err != nil {
