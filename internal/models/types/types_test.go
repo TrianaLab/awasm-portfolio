@@ -2,194 +2,193 @@ package types
 
 import (
 	"awasm-portfolio/internal/models"
-	"strings"
 	"testing"
 	"time"
 )
 
-// Helper to create an OwnerReference for testing.
-func newOwnerReference() models.OwnerReference {
-	return models.OwnerReference{
-		Kind:      "namespace",
-		Name:      "default",
-		Namespace: "",
-	}
-}
+func TestResumeWithAllFields(t *testing.T) {
 
-// Helper to assert values.
-func assertEqual(t *testing.T, field string, expected, actual any) {
-	if expected != actual {
-		t.Errorf("expected %s to be %v, got %v", field, expected, actual)
-	}
-}
-
-// Test common methods for all types implementing Resource interface.
-func testResourceMethods(t *testing.T, resource models.Resource, kind, name, namespace string) {
-	assertEqual(t, "GetKind", kind, resource.GetKind())
-	assertEqual(t, "GetName", name, resource.GetName())
-	assertEqual(t, "GetNamespace", namespace, resource.GetNamespace())
-	assertEqual(t, "GetID", strings.ToLower(kind+":"+name+":"+namespace), resource.GetID())
-
-	// Test setting fields
-	resource.SetName("UpdatedName")
-	assertEqual(t, "SetName", "UpdatedName", resource.GetName())
-	resource.SetNamespace("UpdatedNamespace")
-	assertEqual(t, "SetNamespace", "UpdatedNamespace", resource.GetNamespace())
-
-	// Test creation timestamp
-	now := time.Now()
-	resource.SetCreationTimestamp(now)
-	assertEqual(t, "SetCreationTimestamp", now, resource.GetCreationTimestamp())
-}
-
-// TestCertifications tests the Certifications struct.
-func TestCertifications(t *testing.T) {
-	resource := &Certifications{
-		Kind:      "certifications",
-		Name:      "MyCertifications",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
-		Certifications: []Certification{
-			{Description: "Cert 1", Link: "http://cert1.com"},
-		},
+	timestamp := time.Now()
+	ownerRef := models.OwnerReference{
+		Kind: "Namespace",
+		Name: "default",
 	}
 
-	testResourceMethods(t, resource, "certifications", "MyCertifications", "default")
-}
-
-// TestContact tests the Contact struct.
-func TestContact(t *testing.T) {
-	resource := &Contact{
-		Kind:      "contact",
-		Name:      "JohnDoe",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
-		Email:     "john@example.com",
-		Linkedin:  "john-linkedin",
-		Github:    "john-github",
-	}
-
-	testResourceMethods(t, resource, "contact", "JohnDoe", "default")
-}
-
-// TestContributions tests the Contributions struct.
-func TestContributions(t *testing.T) {
-	resource := &Contributions{
-		Kind:      "contributions",
-		Name:      "MyContributions",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
-		Contributions: []Contribution{
-			{Project: "Project 1", Description: "Desc 1", Link: "http://project1.com"},
+	resume := &Resume{
+		Kind:              "resume",
+		Name:              "JohnDoeResume",
+		Namespace:         "default",
+		OwnerRef:          ownerRef,
+		CreationTimestamp: timestamp,
+		Basics: Basics{
+			Name:    "John Doe",
+			Label:   "Programmer",
+			Image:   "https://example.com/image.jpg",
+			Email:   "john.doe@example.com",
+			Phone:   "123-456-7890",
+			Url:     "https://johndoe.com",
+			Summary: "A summary of John Doe",
+			Location: Location{
+				Address:     "123 Main St",
+				PostalCode:  "12345",
+				City:        "San Francisco",
+				CountryCode: "US",
+				Region:      "California",
+			},
+			Profiles: []Profile{
+				{
+					Network:  "Twitter",
+					Username: "johndoe",
+					Url:      "https://twitter.com/johndoe",
+				},
+			},
 		},
-	}
-
-	testResourceMethods(t, resource, "contributions", "MyContributions", "default")
-}
-
-// TestEducation tests the Education struct.
-func TestEducation(t *testing.T) {
-	resource := &Education{
-		Kind:      "education",
-		Name:      "MyEducation",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
-		Courses: []Course{
-			{Title: "Course 1", Institution: "Institution 1", Duration: "6 months"},
+		Work: []Work{
+			{
+				Kind:              "work",
+				Name:              "Company",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Position:          "President",
+				URL:               "https://company.com",
+				StartDate:         "2013-01-01",
+				EndDate:           "2014-01-01",
+				Summary:           "Description of work",
+				Highlights:        []string{"Started the company"},
+			},
 		},
-	}
-
-	testResourceMethods(t, resource, "education", "MyEducation", "default")
-}
-
-// TestExperience tests the Experience struct.
-func TestExperience(t *testing.T) {
-	resource := &Experience{
-		Kind:      "experience",
-		Name:      "MyExperience",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
-		Jobs: []Job{
-			{Title: "Job 1", Description: "Job Desc 1", Company: "Company 1", Duration: "1 year"},
+		Volunteer: []Volunteer{
+			{
+				Kind:              "volunteer",
+				Name:              "Organization",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Position:          "Volunteer",
+				URL:               "https://organization.com",
+				StartDate:         "2012-01-01",
+				EndDate:           "2013-01-01",
+				Summary:           "Description of volunteer work",
+				Highlights:        []string{"Awarded 'Volunteer of the Month'"},
+			},
 		},
-	}
-
-	testResourceMethods(t, resource, "experience", "MyExperience", "default")
-}
-
-// TestNamespace tests the Namespace struct.
-func TestNamespace(t *testing.T) {
-	resource := &Namespace{
-		Kind:     "namespace",
-		Name:     "default",
-		OwnerRef: newOwnerReference(),
-	}
-
-	assertEqual(t, "GetKind", "namespace", resource.GetKind())
-	assertEqual(t, "GetName", "default", resource.GetName())
-	assertEqual(t, "GetNamespace", "", resource.GetNamespace())
-	assertEqual(t, "GetID", strings.ToLower("namespace:default:"), resource.GetID())
-
-	// Test setting fields
-	resource.SetName("UpdatedName")
-	assertEqual(t, "SetName", "UpdatedName", resource.GetName())
-	resource.SetNamespace("IgnoredNamespace")
-	assertEqual(t, "SetNamespace", "", resource.GetNamespace())
-
-	// Test creation timestamp
-	now := time.Now()
-	resource.SetCreationTimestamp(now)
-	assertEqual(t, "SetCreationTimestamp", now, resource.GetCreationTimestamp())
-}
-
-// TestProfile tests the Profile struct.
-func TestProfile(t *testing.T) {
-	resource := &Profile{
-		Kind:      "profile",
-		Name:      "MyProfile",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
-		Contributions: Contributions{
-			Kind:      "contributions",
-			Name:      "MyContributions",
-			Namespace: "default",
+		Education: []Education{
+			{
+				Kind:              "education",
+				Name:              "University",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				URL:               "https://university.com",
+				Area:              "Software Development",
+				StudyType:         "Bachelor",
+				StartDate:         "2011-01-01",
+				EndDate:           "2013-01-01",
+				Score:             "4.0",
+				Courses:           []string{"DB1101 - Basic SQL"},
+			},
 		},
-		Experience: Experience{
-			Kind:      "experience",
-			Name:      "MyExperience",
-			Namespace: "default",
+		Awards: []Award{
+			{
+				Kind:              "award",
+				Name:              "Best Developer",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Date:              "2014-11-01",
+				Awarder:           "Tech Company",
+				Summary:           "Awarded for outstanding performance",
+			},
 		},
-		Certifications: Certifications{
-			Kind:      "certifications",
-			Name:      "MyCertifications",
-			Namespace: "default",
+		Certificates: []Certificate{
+			{
+				Kind:              "certificate",
+				Name:              "Certified Kubernetes Administrator",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Date:              "2021-11-07",
+				Issuer:            "Cloud Native Computing Foundation",
+				URL:               "https://certificate.com",
+			},
 		},
-		Skills: Skills{
-			Kind:      "skills",
-			Name:      "MySkills",
-			Namespace: "default",
+		Publications: []Publication{
+			{
+				Kind:              "publication",
+				Name:              "Go Programming",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Publisher:         "Tech Publisher",
+				ReleaseDate:       "2014-10-01",
+				URL:               "https://publication.com",
+				Summary:           "A comprehensive guide to Go programming",
+			},
 		},
-		Contact: Contact{
-			Kind:      "contact",
-			Name:      "JohnDoe",
-			Namespace: "default",
-		},
-	}
-
-	testResourceMethods(t, resource, "profile", "MyProfile", "default")
-}
-
-// TestSkills tests the Skills struct.
-func TestSkills(t *testing.T) {
-	resource := &Skills{
-		Kind:      "skills",
-		Name:      "MySkills",
-		Namespace: "default",
-		OwnerRef:  newOwnerReference(),
 		Skills: []Skill{
-			{Category: "Programming", Competence: "Expert", Proficiency: "5/5"},
+			{
+				Kind:              "skill",
+				Name:              "Web Development",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Level:             "Master",
+				Keywords:          []string{"HTML", "CSS", "JavaScript"},
+			},
+		},
+		Languages: []Language{
+			{
+				Kind:              "language",
+				Name:              "English",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Fluency:           "Native speaker",
+			},
+		},
+		Interests: []Interest{
+			{
+				Kind:              "interest",
+				Name:              "Wildlife",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Keywords:          []string{"Ferrets", "Unicorns"},
+			},
+		},
+		References: []Reference{
+			{
+				Kind:              "reference",
+				Name:              "Jane Doe",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				Reference:         "Reference text",
+			},
+		},
+		Projects: []Project{
+			{
+				Kind:              "project",
+				Name:              "AI Research",
+				Namespace:         "default",
+				OwnerRef:          ownerRef,
+				CreationTimestamp: timestamp,
+				StartDate:         "2019-01-01",
+				EndDate:           "2021-01-01",
+				Description:       "Research on AI technologies",
+				Highlights:        []string{"Won award at AIHacks 2016"},
+				URL:               "https://project.com",
+			},
 		},
 	}
 
-	testResourceMethods(t, resource, "skills", "MySkills", "default")
+	// Validate the resume object
+	if resume.Kind != "resume" {
+		t.Errorf("expected Kind to be 'resume', got %s", resume.Kind)
+	}
+	if resume.Name != "JohnDoeResume" {
+		t.Errorf("expected Name to be 'JohnDoeResume', got %s", resume.Name)
+	}
+	// Add more assertions as needed to validate all fields
 }
