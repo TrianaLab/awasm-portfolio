@@ -23,13 +23,17 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 
 	basics := &types.Basics{
-		OwnerRef: ownerRef,
-		Name:     "Eduardo Díaz",
-		Label:    "Machine Learning Operations Engineer",
-		Email:    "edudiazasencio@gmail.com",
-		Url:      "https://github.com/edu-diaz",
-		Summary:  "MLOps Engineer with expertise in Kubernetes, Cloud Infrastructure and Machine Learning",
+		OwnerRef:  ownerRef,
+		Name:      "eduardo-diaz",
+		Namespace: namespace.Name,
+		FullName:  "Eduardo Díaz",
+		Label:     "Software Infrastructure Engineer",
+		Email:     "edudiazasencio@gmail.com",
+		Url:       "https://edudiaz.dev",
+		Phone:     "+34 622287557",
+		Summary:   "I'm a Software Infrastructure Engineer with strong interest in open-source and cloud-native technologies. I design and build scalable, robust infrastructures and actively contribute to projects that drive innovation. Most of my work and open-source contributions are managed through my personal organization, TrianaLab.",
 		Location: types.Location{
+			PostalCode:  "41010",
 			City:        "Sevilla",
 			Region:      "Andalucía",
 			CountryCode: "ES",
@@ -51,7 +55,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	work := []types.Work{
 		{
 			OwnerRef:          ownerRef,
-			Name:              "emergence-ai-mlops",
+			Name:              "Emergence AI",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
 			Position:          "Machine Learning Operations Engineer",

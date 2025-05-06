@@ -23,10 +23,11 @@ type Profile struct {
 
 type Basics struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"Name,omitempty" yaml:"Name,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	FullName          string                `json:"name" yaml:"FullName,omitempty"`
 	Label             string                `json:"label" yaml:"Label,omitempty"`
 	Image             string                `json:"image" yaml:"Image,omitempty"`
 	Email             string                `json:"email" yaml:"Email,omitempty"`

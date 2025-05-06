@@ -102,6 +102,38 @@ func GenerateSchemas() map[string]Schema {
 				func(r models.Resource) string { return calculateAge(r.GetCreationTimestamp()) },
 			},
 		},
+		"basics": {
+			Headers: []string{"NAME", "NAMESPACE", "FULL NAME", "LABEL", "EMAIL", "PHONE", "AGE"},
+			Extractors: []func(models.Resource) string{
+				func(r models.Resource) string { return r.GetName() },
+				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if basics, ok := r.(*types.Basics); ok {
+						return basics.FullName
+					}
+					return "N/A"
+				},
+				func(r models.Resource) string {
+					if basics, ok := r.(*types.Basics); ok {
+						return basics.Label
+					}
+					return "N/A"
+				},
+				func(r models.Resource) string {
+					if basics, ok := r.(*types.Basics); ok {
+						return basics.Email
+					}
+					return "N/A"
+				},
+				func(r models.Resource) string {
+					if basics, ok := r.(*types.Basics); ok {
+						return basics.Phone
+					}
+					return "N/A"
+				},
+				func(r models.Resource) string { return calculateAge(r.GetCreationTimestamp()) },
+			},
+		},
 		"work": {
 			Headers: []string{"NAME", "NAMESPACE", "POSITION", "START", "END", "AGE"},
 			Extractors: []func(models.Resource) string{
