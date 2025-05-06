@@ -135,10 +135,16 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"work": {
-			Headers: []string{"NAME", "NAMESPACE", "POSITION", "START", "END", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "COMPANY", "POSITION", "START", "END", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if work, ok := r.(*types.Work); ok {
+						return work.Company
+					}
+					return "N/A"
+				},
 				func(r models.Resource) string {
 					if work, ok := r.(*types.Work); ok {
 						return work.Position
@@ -164,19 +170,19 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"volunteer": {
-			Headers: []string{"NAME", "NAMESPACE", "POSITION", "ORGANIZATION", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "ORGANIZATION", "POSITION", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
 				func(r models.Resource) string {
 					if vol, ok := r.(*types.Volunteer); ok {
-						return vol.Position
+						return vol.Organization
 					}
 					return "N/A"
 				},
 				func(r models.Resource) string {
 					if vol, ok := r.(*types.Volunteer); ok {
-						return vol.Name
+						return vol.Position
 					}
 					return "N/A"
 				},
@@ -184,10 +190,16 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"education": {
-			Headers: []string{"NAME", "NAMESPACE", "AREA", "STUDY_TYPE", "SCORE", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "INSTITUTION", "AREA", "STUDY TYPE", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if edu, ok := r.(*types.Education); ok {
+						return edu.Institution
+					}
+					return "N/A"
+				},
 				func(r models.Resource) string {
 					if edu, ok := r.(*types.Education); ok {
 						return edu.Area
@@ -200,20 +212,20 @@ func GenerateSchemas() map[string]Schema {
 					}
 					return "N/A"
 				},
-				func(r models.Resource) string {
-					if edu, ok := r.(*types.Education); ok {
-						return edu.Score
-					}
-					return "N/A"
-				},
 				func(r models.Resource) string { return calculateAge(r.GetCreationTimestamp()) },
 			},
 		},
 		"skill": {
-			Headers: []string{"NAME", "NAMESPACE", "LEVEL", "KEYWORDS", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "SKILL", "LEVEL", "KEYWORDS", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if skill, ok := r.(*types.Skill); ok {
+						return skill.Skill
+					}
+					return "N/A"
+				},
 				func(r models.Resource) string {
 					if skill, ok := r.(*types.Skill); ok {
 						return skill.Level
@@ -233,10 +245,16 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"language": {
-			Headers: []string{"NAME", "NAMESPACE", "FLUENCY", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "LANGUAGE", "FLUENCY", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if lang, ok := r.(*types.Language); ok {
+						return lang.Language
+					}
+					return "N/A"
+				},
 				func(r models.Resource) string {
 					if lang, ok := r.(*types.Language); ok {
 						return lang.Fluency
@@ -247,22 +265,13 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"project": {
-			Headers: []string{"NAME", "NAMESPACE", "START", "END", "URL", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "PROJECT", "URL", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
 				func(r models.Resource) string {
 					if proj, ok := r.(*types.Project); ok {
-						return proj.StartDate
-					}
-					return "N/A"
-				},
-				func(r models.Resource) string {
-					if proj, ok := r.(*types.Project); ok {
-						if proj.EndDate == "" {
-							return "Present"
-						}
-						return proj.EndDate
+						return proj.Project
 					}
 					return "N/A"
 				},
@@ -276,19 +285,45 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"publication": {
-			Headers: []string{"NAME", "NAMESPACE", "PUBLISHER", "RELEASE_DATE", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "PUBLICATION", "PUBLISHER", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if pub, ok := r.(*types.Publication); ok {
+						return pub.Publication
+					}
+					return "N/A"
+				},
 				func(r models.Resource) string {
 					if pub, ok := r.(*types.Publication); ok {
 						return pub.Publisher
 					}
 					return "N/A"
 				},
+				func(r models.Resource) string { return calculateAge(r.GetCreationTimestamp()) },
+			},
+		},
+		"certificate": {
+			Headers: []string{"NAME", "NAMESPACE", "CERTIFICATE", "DATE", "ISSUER", "AGE"},
+			Extractors: []func(models.Resource) string{
+				func(r models.Resource) string { return r.GetName() },
+				func(r models.Resource) string { return r.GetNamespace() },
 				func(r models.Resource) string {
-					if pub, ok := r.(*types.Publication); ok {
-						return pub.ReleaseDate
+					if certificate, ok := r.(*types.Certificate); ok {
+						return certificate.Certificate
+					}
+					return "N/A"
+				},
+				func(r models.Resource) string {
+					if certificate, ok := r.(*types.Certificate); ok {
+						return certificate.Date
+					}
+					return "N/A"
+				},
+				func(r models.Resource) string {
+					if certificate, ok := r.(*types.Certificate); ok {
+						return certificate.Issuer
 					}
 					return "N/A"
 				},
@@ -296,33 +331,13 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"interest": {
-			Headers: []string{"NAME", "NAMESPACE", "KEYWORDS", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "INTEREST", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
 				func(r models.Resource) string {
 					if interest, ok := r.(*types.Interest); ok {
-						if len(interest.Keywords) > 3 {
-							return fmt.Sprintf("%s, ...", interest.Keywords[0:3])
-						}
-						return fmt.Sprintf("%v", interest.Keywords)
-					}
-					return "N/A"
-				},
-				func(r models.Resource) string { return calculateAge(r.GetCreationTimestamp()) },
-			},
-		},
-		"reference": {
-			Headers: []string{"NAME", "NAMESPACE", "REFERENCE", "AGE"},
-			Extractors: []func(models.Resource) string{
-				func(r models.Resource) string { return r.GetName() },
-				func(r models.Resource) string { return r.GetNamespace() },
-				func(r models.Resource) string {
-					if ref, ok := r.(*types.Reference); ok {
-						if len(ref.Reference) > 50 {
-							return ref.Reference[:47] + "..."
-						}
-						return ref.Reference
+						return interest.Interest
 					}
 					return "N/A"
 				},
@@ -330,10 +345,16 @@ func GenerateSchemas() map[string]Schema {
 			},
 		},
 		"award": {
-			Headers: []string{"NAME", "NAMESPACE", "AWARDER", "DATE", "AGE"},
+			Headers: []string{"NAME", "NAMESPACE", "TITLE", "AWARDER", "DATE", "AGE"},
 			Extractors: []func(models.Resource) string{
 				func(r models.Resource) string { return r.GetName() },
 				func(r models.Resource) string { return r.GetNamespace() },
+				func(r models.Resource) string {
+					if award, ok := r.(*types.Award); ok {
+						return award.Title
+					}
+					return "N/A"
+				},
 				func(r models.Resource) string {
 					if award, ok := r.(*types.Award); ok {
 						return award.Awarder
