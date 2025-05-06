@@ -209,6 +209,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	allResourcesRaw := []interface{}{
 		namespace,
 		resume,
+		basics,
 		work,
 		volunteer,
 		education,

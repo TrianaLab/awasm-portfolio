@@ -11,6 +11,8 @@ func SupportedResources() map[string]string {
 	return map[string]string{
 		"resume":       "resume",
 		"resumes":      "resume",
+		"basic":        "basics",
+		"basics":       "basics",
 		"namespace":    "namespace",
 		"namespaces":   "namespace",
 		"ns":           "namespace",

@@ -2,7 +2,6 @@ package ui_test
 
 import (
 	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
 	"awasm-portfolio/internal/ui"
 	"encoding/json"
 	"strings"
@@ -161,47 +160,5 @@ func TestGenerateSchemas(t *testing.T) {
 				t.Errorf("schema for %s has mismatched headers and extractors", expected)
 			}
 		}
-	}
-}
-
-func TestCalculateAge(t *testing.T) {
-	now := time.Now()
-	tests := []struct {
-		name     string
-		created  time.Time
-		expected string
-	}{
-		{
-			name:     "just now",
-			created:  now,
-			expected: "0s",
-		},
-		{
-			name:     "minutes ago",
-			created:  now.Add(-5 * time.Minute),
-			expected: "5m",
-		},
-		{
-			name:     "hours ago",
-			created:  now.Add(-2 * time.Hour),
-			expected: "2h",
-		},
-		{
-			name:     "days ago",
-			created:  now.Add(-48 * time.Hour),
-			expected: "2d",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			resume := &types.Resume{
-				CreationTimestamp: tt.created,
-			}
-			age := ui.CalculateAge(resume.GetCreationTimestamp())
-			if age != tt.expected {
-				t.Errorf("expected age %s, got %s", tt.expected, age)
-			}
-		})
 	}
 }

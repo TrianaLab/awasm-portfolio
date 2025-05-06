@@ -107,7 +107,7 @@ func TestDeleteScenarios(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 
 	// Populate repository with one valid resource.
-	validRes := newResource("profile", "user1", "ns1")
+	validRes := newResource("resume", "user1", "ns1")
 	_, _ = repo.Create(validRes)
 
 	// Delete invalid resource kind
@@ -117,17 +117,17 @@ func TestDeleteScenarios(t *testing.T) {
 	}
 
 	// Delete unexisting resource
-	_, err = repo.Delete("profile", "nonexistent", "ns1")
+	_, err = repo.Delete("resume", "nonexistent", "ns1")
 	if err == nil || !strings.Contains(err.Error(), "not found") {
 		t.Errorf("expected not found error on deleting nonexisting resource, got: %v", err)
 	}
 
 	// Delete existing resource
-	delMsg, err := repo.Delete("profile", "user1", "ns1")
+	delMsg, err := repo.Delete("resume", "user1", "ns1")
 	if err != nil {
 		t.Fatalf("unexpected error deleting existing resource: %v", err)
 	}
-	if !strings.Contains(delMsg, "profile/user1") {
+	if !strings.Contains(delMsg, "resume/user1") {
 		t.Errorf("delete message did not mention deleted resource: %s", delMsg)
 	}
 }

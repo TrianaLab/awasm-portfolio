@@ -8,11 +8,11 @@ import (
 )
 
 type Resume struct {
-	Kind              string                `json:"kind,omitempty" yaml:"Kind,omitempty"`
-	Name              string                `json:"name,omitempty" yaml:"Name,omitempty"`
-	Namespace         string                `json:"namespace,omitempty" yaml:"Namespace,omitempty"`
-	OwnerRef          models.OwnerReference `json:"ownerRef,omitempty" yaml:"OwnerRef,omitempty"`
-	CreationTimestamp time.Time             `json:"creationTimestamp,omitempty" yaml:"CreationTimestamp,omitempty"`
+	Kind              string                `json:"-" yaml:"Kind,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
+	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
+	OwnerRef          models.OwnerReference `json:"-" yaml:"OwnerRef,omitempty"`
+	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
 	Basics            Basics                `json:"basics,omitempty" yaml:"Basics,omitempty"`
 	Work              []Work                `json:"work,omitempty" yaml:"Work,omitempty"`
 	Volunteer         []Volunteer           `json:"volunteer,omitempty" yaml:"Volunteer,omitempty"`
