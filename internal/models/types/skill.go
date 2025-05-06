@@ -9,10 +9,11 @@ import (
 
 type Skill struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"name" yaml:"Name,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	Skill             string                `json:"name" yaml:"Skill,omitempty"`
 	Level             string                `json:"level" yaml:"Level,omitempty"`
 	Keywords          []string              `json:"keywords" yaml:"Keywords,omitempty"`
 }

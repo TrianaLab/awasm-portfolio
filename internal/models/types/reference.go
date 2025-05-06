@@ -9,10 +9,11 @@ import (
 
 type Reference struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"name" yaml:"Name,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	Person            string                `json:"name" yaml:"Person,omitempty"`
 	Reference         string                `json:"reference" yaml:"Reference,omitempty"`
 }
 

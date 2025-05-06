@@ -9,10 +9,11 @@ import (
 
 type Award struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"title" yaml:"Title,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	Title             string                `json:"title" yaml:"Title,omitempty"`
 	Date              string                `json:"date" yaml:"Date,omitempty"`
 	Awarder           string                `json:"awarder" yaml:"Awarder,omitempty"`
 	Summary           string                `json:"summary" yaml:"Summary,omitempty"`

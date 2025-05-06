@@ -9,10 +9,11 @@ import (
 
 type Language struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"language" yaml:"Language,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	Language          string                `json:"language" yaml:"Language,omitempty"`
 	Fluency           string                `json:"fluency" yaml:"Fluency,omitempty"`
 }
 

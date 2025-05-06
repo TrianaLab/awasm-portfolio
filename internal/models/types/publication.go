@@ -9,10 +9,11 @@ import (
 
 type Publication struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"name" yaml:"Name,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	Publication       string                `json:"name" yaml:"Publication,omitempty"`
 	Publisher         string                `json:"publisher" yaml:"Publisher,omitempty"`
 	ReleaseDate       string                `json:"releaseDate" yaml:"ReleaseDate,omitempty"`
 	URL               string                `json:"url" yaml:"URL,omitempty"`

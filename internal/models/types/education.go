@@ -9,10 +9,11 @@ import (
 
 type Education struct {
 	Kind              string                `json:"-" yaml:"Kind,omitempty"`
-	Name              string                `json:"institution" yaml:"Institution,omitempty"`
+	Name              string                `json:"-" yaml:"Name,omitempty"`
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
+	Institution       string                `json:"institution" yaml:"Institution,omitempty"`
 	URL               string                `json:"url" yaml:"URL,omitempty"`
 	Area              string                `json:"area" yaml:"Area,omitempty"`
 	StudyType         string                `json:"studyType" yaml:"StudyType,omitempty"`
