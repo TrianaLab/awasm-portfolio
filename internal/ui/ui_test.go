@@ -2,6 +2,7 @@ package ui_test
 
 import (
 	"awasm-portfolio/internal/models"
+	"awasm-portfolio/internal/models/types"
 	"awasm-portfolio/internal/ui"
 	"encoding/json"
 	"strings"
@@ -126,5 +127,81 @@ func TestFormatTableDefault(t *testing.T) {
 	// Also check that resource name appears in output.
 	if !strings.Contains(output, "ns1") {
 		t.Errorf("table output missing resource name 'ns1', got: %s", output)
+	}
+}
+
+func TestGenerateSchemas(t *testing.T) {
+	schemas := ui.GenerateSchemas()
+
+	expectedSchemas := []string{
+		"namespace",
+		"resume",
+		"work",
+		"volunteer",
+		"education",
+		"award",
+		"certificate",
+		"publication",
+		"skill",
+		"language",
+		"interest",
+		"reference",
+		"project",
+		"default",
+	}
+
+	for _, expected := range expectedSchemas {
+		if schema, exists := schemas[expected]; !exists {
+			t.Errorf("expected schema for %s not found", expected)
+		} else {
+			if len(schema.Headers) == 0 {
+				t.Errorf("schema for %s has no headers", expected)
+			}
+			if len(schema.Headers) != len(schema.Extractors) {
+				t.Errorf("schema for %s has mismatched headers and extractors", expected)
+			}
+		}
+	}
+}
+
+func TestCalculateAge(t *testing.T) {
+	now := time.Now()
+	tests := []struct {
+		name     string
+		created  time.Time
+		expected string
+	}{
+		{
+			name:     "just now",
+			created:  now,
+			expected: "0s",
+		},
+		{
+			name:     "minutes ago",
+			created:  now.Add(-5 * time.Minute),
+			expected: "5m",
+		},
+		{
+			name:     "hours ago",
+			created:  now.Add(-2 * time.Hour),
+			expected: "2h",
+		},
+		{
+			name:     "days ago",
+			created:  now.Add(-48 * time.Hour),
+			expected: "2d",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			resume := &types.Resume{
+				CreationTimestamp: tt.created,
+			}
+			age := ui.CalculateAge(resume.GetCreationTimestamp())
+			if age != tt.expected {
+				t.Errorf("expected age %s, got %s", tt.expected, age)
+			}
+		})
 	}
 }

@@ -47,17 +47,17 @@ func newResource(kind, name, namespace string) *dummyResource {
 func TestCreateInvalidAndDuplicate(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 
-	// Create valid resource
-	validRes := newResource("profile", "user1", "ns1")
+	// Crear recurso válido
+	validRes := newResource("resume", "user1", "ns1")
 	msg, err := repo.Create(validRes)
 	if err != nil {
 		t.Fatalf("unexpected error creating valid resource: %v", err)
 	}
-	if !strings.Contains(msg, "profile/user1 created") {
+	if !strings.Contains(msg, "resume/user1 created") {
 		t.Errorf("unexpected create message: %s", msg)
 	}
 
-	// Create invalid resource (unsupported kind)
+	// Crear recurso con tipo no soportado
 	invalidRes := newResource("invalidKind", "bad", "ns1")
 	msg, err = repo.Create(invalidRes)
 	if err != nil {
@@ -67,7 +67,7 @@ func TestCreateInvalidAndDuplicate(t *testing.T) {
 		t.Errorf("unexpected create message for invalid kind: %s", msg)
 	}
 
-	// Create duplicate resource
+	// Crear recurso duplicado
 	_, err = repo.Create(validRes)
 	if err == nil || !strings.Contains(err.Error(), "already exists") {
 		t.Errorf("expected duplicate creation error, got: %v", err)
@@ -77,24 +77,24 @@ func TestCreateInvalidAndDuplicate(t *testing.T) {
 func TestListScenarios(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 
-	// Populate repository with one valid resource.
-	validRes := newResource("profile", "user1", "ns1")
+	// Poblar repositorio con un recurso válido
+	validRes := newResource("resume", "user1", "ns1")
 	_, _ = repo.Create(validRes)
 
-	// List invalid resource kind
+	// Listar tipo de recurso no válido
 	_, err := repo.List("unsupportedKind", "", "")
 	if err == nil || !strings.Contains(err.Error(), "unsupported resource kind") {
 		t.Errorf("expected unsupported resource kind error, got: %v", err)
 	}
 
-	// List unexisting resource
-	_, err = repo.List("profile", "nonexistent", "ns1")
+	// Listar recurso inexistente
+	_, err = repo.List("resume", "nonexistent", "ns1")
 	if err == nil || !strings.Contains(err.Error(), "not found") {
 		t.Errorf("expected not found error for unexisting resource, got: %v", err)
 	}
 
-	// List existing valid resource
-	results, err := repo.List("profile", "user1", "ns1")
+	// Listar recurso válido existente
+	results, err := repo.List("resume", "user1", "ns1")
 	if err != nil {
 		t.Fatalf("unexpected error listing existing resource: %v", err)
 	}
@@ -133,24 +133,24 @@ func TestDeleteScenarios(t *testing.T) {
 }
 
 func TestCascadingNamespaceDelete(t *testing.T) {
-	// Use a fresh repository instance for cascading delete test.
 	repo := repository.NewInMemoryRepository()
 
-	// Create a namespace and resources within it.
+	// Crear namespace y recursos dentro de él
 	ns := newResource("namespace", "nsCascade", "")
 	if _, err := repo.Create(ns); err != nil {
 		t.Fatalf("failed to create namespace: %v", err)
 	}
-	resA := newResource("experience", "exp1", "nsCascade")
-	resB := newResource("education", "edu1", "nsCascade")
-	if _, err := repo.Create(resA); err != nil {
-		t.Fatalf("failed to create resA: %v", err)
+
+	work := newResource("work", "work1", "nsCascade")
+	education := newResource("education", "edu1", "nsCascade")
+	if _, err := repo.Create(work); err != nil {
+		t.Fatalf("failed to create work: %v", err)
 	}
-	if _, err := repo.Create(resB); err != nil {
-		t.Fatalf("failed to create resB: %v", err)
+	if _, err := repo.Create(education); err != nil {
+		t.Fatalf("failed to create education: %v", err)
 	}
 
-	// Attempt to delete cascading namespace:
+	// Intentar borrado en cascada del namespace
 	delMsg, err := repo.Delete("all", "", "nsCascade")
 	if err != nil {
 		t.Fatalf("unexpected error deleting existing resource: %v", err)
@@ -159,13 +159,13 @@ func TestCascadingNamespaceDelete(t *testing.T) {
 		t.Errorf("delete message did not mention deleted resource: %s", delMsg)
 	}
 
-	// Confirm resources inside the namespace are deleted.
-	_, err = repo.List("experience", "exp1", "nsCascade")
+	// Confirmar que los recursos dentro del namespace fueron borrados
+	_, err = repo.List("work", "work1", "nsCascade")
 	if err == nil {
-		t.Errorf("expected error listing deleted resource exp1, but resource still exists")
+		t.Errorf("expected error listing deleted work resource, but resource still exists")
 	}
 	_, err = repo.List("education", "edu1", "nsCascade")
 	if err == nil {
-		t.Errorf("expected error listing deleted resource edu1, but resource still exists")
+		t.Errorf("expected error listing deleted education resource, but resource still exists")
 	}
 }
