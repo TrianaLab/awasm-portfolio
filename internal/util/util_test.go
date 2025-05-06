@@ -9,21 +9,36 @@ import (
 func TestSupportedResources(t *testing.T) {
 	resources := util.SupportedResources()
 
-	// Check that certain keys map to expected canonical values.
 	tests := []struct {
 		input    string
 		expected string
 	}{
-		{"profile", "profile"},
-		{"profiles", "profile"},
+		{"resume", "resume"},
+		{"resumes", "resume"},
 		{"namespace", "namespace"},
 		{"ns", "namespace"},
+		{"work", "work"},
+		{"works", "work"},
+		{"volunteer", "volunteer"},
+		{"volunteers", "volunteer"},
 		{"education", "education"},
-		{"experience", "experience"},
-		{"contacts", "contact"},
-		{"certification", "certifications"},
-		{"contributions", "contributions"},
-		{"skill", "skills"},
+		{"educations", "education"},
+		{"award", "award"},
+		{"awards", "award"},
+		{"certificate", "certificate"},
+		{"certificates", "certificate"},
+		{"publication", "publication"},
+		{"publications", "publication"},
+		{"skill", "skill"},
+		{"skills", "skill"},
+		{"language", "language"},
+		{"languages", "language"},
+		{"interest", "interest"},
+		{"interests", "interest"},
+		{"reference", "reference"},
+		{"references", "reference"},
+		{"project", "project"},
+		{"projects", "project"},
 	}
 
 	for _, tc := range tests {
@@ -32,7 +47,6 @@ func TestSupportedResources(t *testing.T) {
 		}
 	}
 
-	// Check that unsupported keys are not present.
 	if _, exists := resources["unsupportedKind"]; exists {
 		t.Error("SupportedResources: unexpected key 'unsupportedKind' found")
 	}
@@ -46,13 +60,25 @@ func TestNormalizeKind(t *testing.T) {
 		expectedErrMsg string
 	}{
 		// Test valid kinds
-		{"profile", "profile", false, ""},
-		{"Profiles", "profile", false, ""},
+		{"resume", "resume", false, ""},
+		{"Resumes", "resume", false, ""},
 		{"  ns  ", "namespace", false, ""},
-		{"All", "", false, ""}, // special case for "all"
-		// Test invalid kind
+		{"work", "work", false, ""},
+		{"Works", "work", false, ""},
+		{"volunteer", "volunteer", false, ""},
+		{"education", "education", false, ""},
+		{"award", "award", false, ""},
+		{"certificate", "certificate", false, ""},
+		{"publication", "publication", false, ""},
+		{"skill", "skill", false, ""},
+		{"language", "language", false, ""},
+		{"interest", "interest", false, ""},
+		{"reference", "reference", false, ""},
+		{"project", "project", false, ""},
+		{"All", "", false, ""}, // caso especial para "all"
+		// Test invalid kinds
 		{"invalidKind", "", true, "unsupported resource kind: invalidkind"},
-		{"", "", true, "unsupported resource kind: "}, // empty string should be unsupported
+		{"", "", true, "unsupported resource kind: "}, // cadena vacía debe ser no soportada
 	}
 
 	for _, tc := range tests {
