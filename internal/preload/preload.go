@@ -409,6 +409,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Name:              "cloud-native",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
+			Interest:          "Cloud Native",
 			Keywords:          []string{"Open Source", "Kubernetes", "WebAssembly", "Microservices"},
 		},
 		{
@@ -416,6 +417,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Name:              "mountaineering",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
+			Interest:          "Mountaineering",
 			Keywords:          []string{"Mountains", "Hiking", "Trekking"},
 		},
 		{
@@ -423,6 +425,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Name:              "lego-architecture",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
+			Interest:          "Legos",
 			Keywords:          []string{"Lego", "Architectural design", "Creative builds"},
 		},
 		{
@@ -430,6 +433,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Name:              "culinary-adventures",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
+			Interest:          "Gastronomy",
 			Keywords:          []string{"Cooking", "Pucherito", "Mediterranean gastronomy"},
 		},
 	}
