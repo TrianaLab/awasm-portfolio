@@ -14,6 +14,16 @@ func TestCreate(t *testing.T) {
 		expectedKind string
 	}{
 		{
+			name: "create namespace",
+			kind: "namespace",
+			data: map[string]interface{}{
+				"name":      "test-namespace",
+				"namespace": "",
+			},
+			expectNil:    false,
+			expectedKind: "namespace",
+		},
+		{
 			name: "create resume",
 			kind: "resume",
 			data: map[string]interface{}{

@@ -27,13 +27,18 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 	}
 
 	basics := &types.Basics{
-		Name:    f.faker.Name(),
-		Label:   f.faker.JobTitle(),
-		Image:   f.faker.ImageURL(300, 300),
-		Email:   f.faker.Email(),
-		Phone:   f.faker.Phone(),
-		Url:     f.faker.URL(),
-		Summary: f.faker.Paragraph(3, 5, 10, "."),
+		Kind:              "basics",
+		Name:              data["name"].(string),
+		Namespace:         data["namespace"].(string),
+		OwnerRef:          ownerRef,
+		CreationTimestamp: timestamp,
+		FullName:          f.faker.Name(),
+		Label:             f.faker.JobTitle(),
+		Image:             f.faker.ImageURL(300, 300),
+		Email:             f.faker.Email(),
+		Phone:             f.faker.Phone(),
+		Url:               f.faker.URL(),
+		Summary:           f.faker.Paragraph(3, 5, 10, "."),
 		Location: types.Location{
 			Address:     f.faker.Address().Address,
 			PostalCode:  f.faker.Address().Zip,
@@ -57,7 +62,7 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	work := &types.Work{
 		Kind:              "work",
-		Name:              f.faker.Company(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
@@ -71,7 +76,7 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	volunteer := &types.Volunteer{
 		Kind:              "volunteer",
-		Name:              f.faker.Company(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
@@ -85,7 +90,7 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	education := &types.Education{
 		Kind:              "education",
-		Name:              f.faker.Company() + " University",
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
@@ -100,10 +105,11 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	award := &types.Award{
 		Kind:              "award",
-		Name:              "Best " + f.faker.JobTitle(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Title:             "Best " + f.faker.JobTitle(),
 		Date:              f.faker.Date().Format("2006-01-02"),
 		Awarder:           f.faker.Company(),
 		Summary:           f.faker.Sentence(15),
@@ -111,10 +117,11 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	certificate := &types.Certificate{
 		Kind:              "certificate",
-		Name:              f.faker.JobTitle() + " Certificate",
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Certificate:       f.faker.JobTitle() + " Certificate",
 		Date:              f.faker.Date().Format("2006-01-02"),
 		Issuer:            f.faker.Company(),
 		URL:               f.faker.URL(),
@@ -122,10 +129,11 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	publication := &types.Publication{
 		Kind:              "publication",
-		Name:              f.faker.JobTitle() + " Research",
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Publication:       f.faker.JobTitle() + " Research",
 		Publisher:         f.faker.Company(),
 		ReleaseDate:       f.faker.Date().Format("2006-01-02"),
 		URL:               f.faker.URL(),
@@ -134,47 +142,52 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 
 	skill := &types.Skill{
 		Kind:              "skill",
-		Name:              f.faker.ProgrammingLanguage(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Skill:             f.faker.ProgrammingLanguage(),
 		Level:             "Expert",
 		Keywords:          []string{f.faker.Word(), f.faker.Word(), f.faker.Word()},
 	}
 
 	language := &types.Language{
 		Kind:              "language",
-		Name:              f.faker.Language(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Language:          f.faker.Language(),
 		Fluency:           "Native speaker",
 	}
 
 	interest := &types.Interest{
 		Kind:              "interest",
-		Name:              f.faker.Hobby(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Interest:          f.faker.Hobby(),
 		Keywords:          []string{f.faker.Word(), f.faker.Word()},
 	}
 
 	reference := &types.Reference{
 		Kind:              "reference",
-		Name:              f.faker.Name(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Person:            f.faker.Name(),
 		Reference:         f.faker.Paragraph(1, 3, 5, "."),
 	}
 
 	project := &types.Project{
 		Kind:              "project",
-		Name:              f.faker.AppName(),
+		Name:              data["name"].(string),
 		Namespace:         data["namespace"].(string),
 		OwnerRef:          ownerRef,
 		CreationTimestamp: timestamp,
+		Project:           f.faker.AppName(),
 		StartDate:         f.faker.Date().Format("2006-01-02"),
 		EndDate:           f.faker.Date().Format("2006-01-02"),
 		Description:       f.faker.Paragraph(2, 4, 8, "."),
@@ -182,27 +195,34 @@ func (f *ResourceFactory) Create(kind string, data map[string]interface{}) model
 		URL:               f.faker.URL(),
 	}
 
+	resume := &types.Resume{
+		Kind:              kind,
+		Name:              data["name"].(string),
+		Namespace:         data["namespace"].(string),
+		OwnerRef:          ownerRef,
+		CreationTimestamp: timestamp,
+		Basics:            *basics,
+		Work:              []types.Work{*work},
+		Volunteer:         []types.Volunteer{*volunteer},
+		Education:         []types.Education{*education},
+		Awards:            []types.Award{*award},
+		Certificates:      []types.Certificate{*certificate},
+		Publications:      []types.Publication{*publication},
+		Skills:            []types.Skill{*skill},
+		Languages:         []types.Language{*language},
+		Interests:         []types.Interest{*interest},
+		References:        []types.Reference{*reference},
+		Projects:          []types.Project{*project},
+	}
+
 	switch kind {
-	case "resume":
-		return &types.Resume{
-			Kind:              kind,
-			Name:              data["name"].(string),
-			Namespace:         data["namespace"].(string),
-			OwnerRef:          ownerRef,
-			CreationTimestamp: timestamp,
-			Basics:            *basics,
-			Work:              []types.Work{*work},
-			Volunteer:         []types.Volunteer{*volunteer},
-			Education:         []types.Education{*education},
-			Awards:            []types.Award{*award},
-			Certificates:      []types.Certificate{*certificate},
-			Publications:      []types.Publication{*publication},
-			Skills:            []types.Skill{*skill},
-			Languages:         []types.Language{*language},
-			Interests:         []types.Interest{*interest},
-			References:        []types.Reference{*reference},
-			Projects:          []types.Project{*project},
+	case "namespace":
+		return &types.Namespace{
+			Kind: kind,
+			Name: data["name"].(string),
 		}
+	case "resume":
+		return resume
 	case "basics":
 		return basics
 	case "work":

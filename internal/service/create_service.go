@@ -56,28 +56,51 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 
 	// If the resource is a resume, dynamically process nested fields
 	if resume, ok := resource.(*types.Resume); ok {
-		// Use reflection to iterate over fields
 		val := reflect.ValueOf(resume).Elem()
 		typ := val.Type()
+
+		if basicsField := val.FieldByName("Basics"); basicsField.IsValid() {
+			if basics, ok := basicsField.Addr().Interface().(models.Resource); ok {
+				basics.SetOwnerReference(models.OwnerReference{
+					Kind:      "resume",
+					Name:      name,
+					Namespace: namespace,
+				})
+				basics.SetNamespace(namespace)
+				basics.SetName(strings.ToLower(fmt.Sprintf("%s-basics", name)))
+
+				if _, err := s.repo.Create(basics); err != nil {
+					return "", fmt.Errorf("failed to save basics: %w", err)
+				}
+			} else {
+			}
+		}
 
 		for i := 0; i < val.NumField(); i++ {
 			field := val.Field(i)
 			fieldType := typ.Field(i)
 
-			// Check if the field implements the `models.Resource` interface
-			if field.Kind() == reflect.Slice && field.Type().Elem().Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
-				for j := 0; j < field.Len(); j++ {
-					nested := field.Index(j).Interface().(models.Resource)
-					nested.SetOwnerReference(models.OwnerReference{
-						Kind:      "resume",
-						Name:      name,
-						Namespace: namespace,
-					})
-					nested.SetNamespace(namespace)
-					nested.SetName(strings.ToLower(fmt.Sprintf("%s-%s-%d", name, fieldType.Name, j)))
+			if fieldType.Name == "Basics" {
+				continue
+			}
 
-					if _, err := s.repo.Create(nested); err != nil {
-						return "", fmt.Errorf("failed to save %s: %w", fieldType.Name, err)
+			if field.Kind() == reflect.Slice {
+				elemType := field.Type().Elem()
+				if reflect.PointerTo(elemType).Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
+					for j := 0; j < field.Len(); j++ {
+						elem := field.Index(j).Addr().Interface().(models.Resource)
+
+						elem.SetOwnerReference(models.OwnerReference{
+							Kind:      "resume",
+							Name:      name,
+							Namespace: namespace,
+						})
+						elem.SetNamespace(namespace)
+						elem.SetName(strings.ToLower(fmt.Sprintf("%s-%s-%d", name, fieldType.Name, j)))
+
+						if _, err := s.repo.Create(elem); err != nil {
+							return "", fmt.Errorf("failed to save %s[%d]: %w", fieldType.Name, j, err)
+						}
 					}
 				}
 			}

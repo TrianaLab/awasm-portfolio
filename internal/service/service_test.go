@@ -79,6 +79,54 @@ func TestCreateService(t *testing.T) {
 	if !strings.Contains(msg, "resume/testResume created") {
 		t.Errorf("unexpected success message: %s", msg)
 	}
+
+	t.Run("Create Resume With Nested Resources", func(t *testing.T) {
+		// Crear namespace usando el recurso básico
+		namespace := newTestResource("namespace", "nested-test", "")
+		_, err := repo.Create(namespace)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Crear el resume usando el servicio
+		_, err = cs.CreateResource("resume", "test-nested", "nested-test")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Resto del test igual...
+		types := []string{
+			"work", "education", "volunteer", "award", "skill",
+			"language", "interest", "reference", "project", "basics",
+		}
+
+		for _, typ := range types {
+			resources, err := repo.List(typ, "", "nested-test")
+			if err != nil {
+				t.Errorf("error listing %s: %v", typ, err)
+			}
+			if len(resources) == 0 {
+				t.Errorf("no %s resources created", typ)
+			}
+
+			// Verificar que cada recurso tiene la referencia correcta
+			for _, res := range resources {
+				ownerRef := res.GetOwnerReference()
+				if ownerRef.Kind != "resume" {
+					t.Errorf("expected owner kind resume, got %s", ownerRef.Kind)
+				}
+				if ownerRef.Name != "test-nested" {
+					t.Errorf("expected owner name test-nested, got %s", ownerRef.Name)
+				}
+				if ownerRef.Namespace != "nested-test" {
+					t.Errorf("expected owner namespace nested-test, got %s", ownerRef.Namespace)
+				}
+				if res.GetNamespace() != "nested-test" {
+					t.Errorf("expected namespace nested-test, got %s", res.GetNamespace())
+				}
+			}
+		}
+	})
 }
 
 // Test for DeleteService
@@ -226,6 +274,61 @@ func TestDeleteService(t *testing.T) {
 		resources, _ = repo.List("education", "", "test-ns")
 		if len(resources) > 0 {
 			t.Error("child education still exists after parent deletion")
+		}
+	})
+
+	t.Run("No Resource Specified", func(t *testing.T) {
+		_, err := ds.DeleteResource("all", "", "default")
+		if err == nil {
+			t.Error("expected error for no resource specified")
+		}
+		if !strings.Contains(err.Error(), "you must specify only one resource") {
+			t.Errorf("expected 'you must specify only one resource' error, got %v", err)
+		}
+	})
+
+	t.Run("Delete Error Cases", func(t *testing.T) {
+		// Caso 1: Error al listar recursos inexistentes
+		_, err := ds.DeleteResource("resume", "nonexistent", "nonexistent")
+		if err == nil || !strings.Contains(err.Error(), "not found") {
+			t.Errorf("expected 'not found' error, got %v", err)
+		}
+
+		// Caso 2: Borrado de hijo es permitido
+		namespace := newTestResource("namespace", "test-ns2", "")
+		_, _ = repo.Create(namespace)
+
+		parent := newTestResource("resume", "parent2", "test-ns2")
+		_, _ = repo.Create(parent)
+
+		child := &dummyResource{
+			Kind:      "work",
+			Name:      "child2",
+			Namespace: "test-ns2",
+			ownerRef: models.OwnerReference{
+				Kind:      "resume",
+				Name:      "parent2",
+				Namespace: "test-ns2",
+			},
+		}
+		_, _ = repo.Create(child)
+
+		// El borrado del hijo debería ser exitoso
+		msg, err := ds.DeleteResource("work", "child2", "test-ns2")
+		if err != nil {
+			t.Errorf("unexpected error when deleting child: %v", err)
+		}
+		if !strings.Contains(msg, "work/child2") {
+			t.Error("child deletion message not found")
+		}
+
+		// Caso 3: Borrado de namespace con recursos es permitido
+		msg, err = ds.DeleteResource("namespace", "test-ns2", "")
+		if err != nil {
+			t.Errorf("unexpected error when deleting namespace: %v", err)
+		}
+		if !strings.Contains(msg, "namespace/test-ns2") {
+			t.Error("namespace deletion message not found")
 		}
 	})
 }
