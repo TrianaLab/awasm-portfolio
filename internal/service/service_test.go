@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// Dummy implementation for models.Resource
 type dummyResource struct {
 	Kind              string    `yaml:"Kind,omitempty" json:"Kind,omitempty"`
 	Name              string    `yaml:"Name,omitempty" json:"Name,omitempty"`
@@ -31,14 +30,12 @@ func (d *dummyResource) GetID() string                               { return d.
 func (d *dummyResource) GetCreationTimestamp() time.Time             { return d.CreationTimestamp }
 func (d *dummyResource) SetCreationTimestamp(t time.Time)            { d.CreationTimestamp = t }
 
-// Helper to create a dummy command for testing
 func newTestCommand() *cobra.Command {
 	cmd := &cobra.Command{}
 	cmd.Flags().String("output", "table", "output format")
 	return cmd
 }
 
-// Helper to create a test resource
 func newTestResource(kind, name, namespace string) models.Resource {
 	return &dummyResource{
 		Kind:      kind,
@@ -47,25 +44,21 @@ func newTestResource(kind, name, namespace string) models.Resource {
 	}
 }
 
-// Test for CreateService
 func TestCreateService(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	cmd := newTestCommand()
 	cs := service.NewCreateService(repo, cmd)
 
-	// Test invalid kind
 	_, err := cs.CreateResource("invalidKind", "testName", "testNS")
 	if err == nil || !strings.Contains(err.Error(), "unsupported resource kind") {
 		t.Errorf("expected unsupported resource kind error, got %v", err)
 	}
 
-	// Test namespace not found
 	_, err = cs.CreateResource("resume", "testName", "nonexistentNS")
 	if err == nil || !strings.Contains(err.Error(), "namespace 'nonexistentNS' not found") {
 		t.Errorf("expected namespace not found error, got %v", err)
 	}
 
-	// Test successful creation
 	namespace := newTestResource("namespace", "test", "")
 	_, err = repo.Create(namespace)
 	if err != nil {
@@ -81,20 +74,17 @@ func TestCreateService(t *testing.T) {
 	}
 
 	t.Run("Create Resume With Nested Resources", func(t *testing.T) {
-		// Crear namespace usando el recurso básico
 		namespace := newTestResource("namespace", "nested-test", "")
 		_, err := repo.Create(namespace)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		// Crear el resume usando el servicio
 		_, err = cs.CreateResource("resume", "test-nested", "nested-test")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// Resto del test igual...
 		types := []string{
 			"work", "education", "volunteer", "award", "skill",
 			"language", "interest", "reference", "project", "basics",
@@ -109,7 +99,6 @@ func TestCreateService(t *testing.T) {
 				t.Errorf("no %s resources created", typ)
 			}
 
-			// Verificar que cada recurso tiene la referencia correcta
 			for _, res := range resources {
 				ownerRef := res.GetOwnerReference()
 				if ownerRef.Kind != "resume" {
@@ -129,31 +118,26 @@ func TestCreateService(t *testing.T) {
 	})
 }
 
-// Test for DeleteService
 func TestDeleteService(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	cmd := newTestCommand()
 	ds := service.NewDeleteService(repo, cmd)
 
-	// Test invalid kind
 	_, err := ds.DeleteResource("invalidKind", "testName", "test")
 	if err == nil || !strings.Contains(err.Error(), "unsupported resource kind") {
 		t.Errorf("expected unsupported resource kind error, got %v", err)
 	}
 
-	// Test missing name
 	_, err = ds.DeleteResource("resume", "", "test")
 	if err == nil || !strings.Contains(err.Error(), "no name was specified") {
 		t.Errorf("expected missing name error, got %v", err)
 	}
 
-	// Test missing namespace
 	_, err = ds.DeleteResource("resume", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
 
-	// Test successful deletion
 	namespace := newTestResource("namespace", "test", "")
 	_, err = repo.Create(namespace)
 	if err != nil {
@@ -173,7 +157,6 @@ func TestDeleteService(t *testing.T) {
 		t.Errorf("unexpected success message: %s", msg)
 	}
 
-	// Test delete inexistent namespace
 	_, err = ds.DeleteResource("namespace", "inexistent", "")
 	if err == nil || !strings.Contains(err.Error(), "namespace/inexistent not found in namespace ''") {
 		t.Errorf("expected missing namespace error, got %v", err)
@@ -190,14 +173,12 @@ func TestDeleteService(t *testing.T) {
 	})
 
 	t.Run("Delete With Owner References", func(t *testing.T) {
-		// Crear namespace
 		namespace := newTestResource("namespace", "test-ns", "")
 		_, err := repo.Create(namespace)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		// Crear recurso padre
 		parent := newTestResource("resume", "parent-resume", "test-ns")
 		_, err = repo.Create(parent)
 		if err != nil {
@@ -206,7 +187,6 @@ func TestDeleteService(t *testing.T) {
 
 		parentID := strings.ToLower("resume:parent-resume:test-ns")
 
-		// Crear recursos hijos
 		child1 := &dummyResource{
 			Kind:      "work",
 			Name:      "child-work",
@@ -237,7 +217,6 @@ func TestDeleteService(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		// Verificar que los recursos tienen la referencia correcta
 		resources, _ := repo.List("work", "", "test-ns")
 		if len(resources) == 0 || resources[0].GetOwnerReference().GetID() != parentID {
 			t.Fatal("child work not created with correct owner reference")
@@ -248,13 +227,11 @@ func TestDeleteService(t *testing.T) {
 			t.Fatal("child education not created with correct owner reference")
 		}
 
-		// Borrar el padre
 		msg, err := ds.DeleteResource("resume", "parent-resume", "test-ns")
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
 
-		// Verificar el mensaje
 		if !strings.Contains(msg, "resume/parent-resume") {
 			t.Error("parent resource not mentioned in delete message")
 		}
@@ -265,7 +242,6 @@ func TestDeleteService(t *testing.T) {
 			t.Error("child education not mentioned in delete message")
 		}
 
-		// Verificar que los recursos ya no existen
 		resources, _ = repo.List("work", "", "test-ns")
 		if len(resources) > 0 {
 			t.Error("child work still exists after parent deletion")
@@ -288,13 +264,11 @@ func TestDeleteService(t *testing.T) {
 	})
 
 	t.Run("Delete Error Cases", func(t *testing.T) {
-		// Caso 1: Error al listar recursos inexistentes
 		_, err := ds.DeleteResource("resume", "nonexistent", "nonexistent")
 		if err == nil || !strings.Contains(err.Error(), "not found") {
 			t.Errorf("expected 'not found' error, got %v", err)
 		}
 
-		// Caso 2: Borrado de hijo es permitido
 		namespace := newTestResource("namespace", "test-ns2", "")
 		_, _ = repo.Create(namespace)
 
@@ -313,7 +287,6 @@ func TestDeleteService(t *testing.T) {
 		}
 		_, _ = repo.Create(child)
 
-		// El borrado del hijo debería ser exitoso
 		msg, err := ds.DeleteResource("work", "child2", "test-ns2")
 		if err != nil {
 			t.Errorf("unexpected error when deleting child: %v", err)
@@ -322,7 +295,6 @@ func TestDeleteService(t *testing.T) {
 			t.Error("child deletion message not found")
 		}
 
-		// Caso 3: Borrado de namespace con recursos es permitido
 		msg, err = ds.DeleteResource("namespace", "test-ns2", "")
 		if err != nil {
 			t.Errorf("unexpected error when deleting namespace: %v", err)
@@ -333,19 +305,16 @@ func TestDeleteService(t *testing.T) {
 	})
 }
 
-// Test for DescribeService
 func TestDescribeService(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	cmd := newTestCommand()
 	ds := service.NewDescribeService(repo, cmd)
 
-	// Test missing namespace
 	_, err := ds.DescribeResource("resume", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
 
-	// Test successful description
 	namespace := newTestResource("namespace", "testNS", "")
 	_, err = repo.Create(namespace)
 	if err != nil {
@@ -434,7 +403,6 @@ func TestDescribeService(t *testing.T) {
 	})
 }
 
-// Test for GetService
 func TestGetService(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	cmd := newTestCommand()
@@ -444,13 +412,11 @@ func TestGetService(t *testing.T) {
 	}
 	gs := service.NewGetService(repo, cmd)
 
-	// Test missing namespace
 	_, err = gs.GetResources("resume", "testName", "")
 	if err == nil || !strings.Contains(err.Error(), "cannot be retrieved by name across all namespaces") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
 
-	// Test successful retrieval
 	namespace := newTestResource("namespace", "testNS", "")
 	_, err = repo.Create(namespace)
 	if err != nil {
@@ -471,7 +437,6 @@ func TestGetService(t *testing.T) {
 	}
 
 	t.Run("Get Resources Without Namespaces", func(t *testing.T) {
-		// Crear varios namespaces y recursos
 		resources := []struct {
 			kind      string
 			name      string
@@ -491,14 +456,12 @@ func TestGetService(t *testing.T) {
 			}
 		}
 
-		// Obtener todos los recursos y verificar que los namespaces son filtrados
 		cmd.Flags().Set("output", "json")
 		msg, err := gs.GetResources("all", "", "")
 		if err != nil {
 			t.Fatalf("error getting resources: %v", err)
 		}
 
-		// Verificar que los namespaces no están incluidos pero otros recursos sí
 		if strings.Contains(msg, "\"Kind\": \"namespace\"") {
 			t.Error("namespaces should not be included in output")
 		}
@@ -511,13 +474,11 @@ func TestGetService(t *testing.T) {
 	})
 }
 
-// Test for ResourceServiceImpl
 func TestResourceServiceImpl(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	cmd := newTestCommand()
 	rs := service.NewResourceService(repo, cmd)
 
-	// Test all delegations
 	_, _ = rs.CreateResource("resume", "testResume", "testNS")
 	_, _ = rs.DeleteResource("resume", "testResume", "testNS")
 	_, _ = rs.GetResources("resume", "testResume", "testNS")
