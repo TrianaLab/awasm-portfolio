@@ -17,18 +17,19 @@ type dummyResource struct {
 	Name              string    `yaml:"Name,omitempty" json:"Name,omitempty"`
 	Namespace         string    `yaml:"Namespace,omitempty" json:"Namespace,omitempty"`
 	CreationTimestamp time.Time `yaml:"CreationTimestamp,omitempty" json:"CreationTimestamp,omitempty"`
+	ownerRef          models.OwnerReference
 }
 
-func (d *dummyResource) GetKind() string                          { return d.Kind }
-func (d *dummyResource) GetName() string                          { return d.Name }
-func (d *dummyResource) SetName(name string)                      { d.Name = name }
-func (d *dummyResource) GetNamespace() string                     { return d.Namespace }
-func (d *dummyResource) SetNamespace(namespace string)            { d.Namespace = namespace }
-func (d *dummyResource) GetOwnerReference() models.OwnerReference { return models.OwnerReference{} }
-func (d *dummyResource) SetOwnerReference(models.OwnerReference)  {}
-func (d *dummyResource) GetID() string                            { return d.Kind + ":" + d.Name + ":" + d.Namespace }
-func (d *dummyResource) GetCreationTimestamp() time.Time          { return d.CreationTimestamp }
-func (d *dummyResource) SetCreationTimestamp(t time.Time)         { d.CreationTimestamp = t }
+func (d *dummyResource) GetKind() string                             { return d.Kind }
+func (d *dummyResource) GetName() string                             { return d.Name }
+func (d *dummyResource) SetName(name string)                         { d.Name = name }
+func (d *dummyResource) GetNamespace() string                        { return d.Namespace }
+func (d *dummyResource) SetNamespace(namespace string)               { d.Namespace = namespace }
+func (d *dummyResource) GetOwnerReference() models.OwnerReference    { return d.ownerRef }
+func (d *dummyResource) SetOwnerReference(ref models.OwnerReference) { d.ownerRef = ref }
+func (d *dummyResource) GetID() string                               { return d.Kind + ":" + d.Name + ":" + d.Namespace }
+func (d *dummyResource) GetCreationTimestamp() time.Time             { return d.CreationTimestamp }
+func (d *dummyResource) SetCreationTimestamp(t time.Time)            { d.CreationTimestamp = t }
 
 // Helper to create a dummy command for testing
 func newTestCommand() *cobra.Command {
@@ -129,6 +130,104 @@ func TestDeleteService(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "namespace/inexistent not found in namespace ''") {
 		t.Errorf("expected missing namespace error, got %v", err)
 	}
+
+	t.Run("Empty Kind", func(t *testing.T) {
+		_, err := ds.DeleteResource("", "test", "default")
+		if err == nil {
+			t.Error("expected error for empty kind")
+		}
+		if !strings.Contains(err.Error(), "unsupported resource kind") {
+			t.Errorf("expected 'unsupported resource kind' error, got %v", err)
+		}
+	})
+
+	t.Run("Delete With Owner References", func(t *testing.T) {
+		// Crear namespace
+		namespace := newTestResource("namespace", "test-ns", "")
+		_, err := repo.Create(namespace)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Crear recurso padre
+		parent := newTestResource("resume", "parent-resume", "test-ns")
+		_, err = repo.Create(parent)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		parentID := strings.ToLower("resume:parent-resume:test-ns")
+
+		// Crear recursos hijos
+		child1 := &dummyResource{
+			Kind:      "work",
+			Name:      "child-work",
+			Namespace: "test-ns",
+			ownerRef: models.OwnerReference{
+				Kind:      "resume",
+				Name:      "parent-resume",
+				Namespace: "test-ns",
+			},
+		}
+		_, err = repo.Create(child1)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		child2 := &dummyResource{
+			Kind:      "education",
+			Name:      "child-edu",
+			Namespace: "test-ns",
+			ownerRef: models.OwnerReference{
+				Kind:      "resume",
+				Name:      "parent-resume",
+				Namespace: "test-ns",
+			},
+		}
+		_, err = repo.Create(child2)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Verificar que los recursos tienen la referencia correcta
+		resources, _ := repo.List("work", "", "test-ns")
+		if len(resources) == 0 || resources[0].GetOwnerReference().GetID() != parentID {
+			t.Fatal("child work not created with correct owner reference")
+		}
+
+		resources, _ = repo.List("education", "", "test-ns")
+		if len(resources) == 0 || resources[0].GetOwnerReference().GetID() != parentID {
+			t.Fatal("child education not created with correct owner reference")
+		}
+
+		// Borrar el padre
+		msg, err := ds.DeleteResource("resume", "parent-resume", "test-ns")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+
+		// Verificar el mensaje
+		if !strings.Contains(msg, "resume/parent-resume") {
+			t.Error("parent resource not mentioned in delete message")
+		}
+		if !strings.Contains(msg, "work/child-work") {
+			t.Error("child work not mentioned in delete message")
+		}
+		if !strings.Contains(msg, "education/child-edu") {
+			t.Error("child education not mentioned in delete message")
+		}
+
+		// Verificar que los recursos ya no existen
+		resources, _ = repo.List("work", "", "test-ns")
+		if len(resources) > 0 {
+			t.Error("child work still exists after parent deletion")
+		}
+
+		resources, _ = repo.List("education", "", "test-ns")
+		if len(resources) > 0 {
+			t.Error("child education still exists after parent deletion")
+		}
+	})
 }
 
 // Test for DescribeService
