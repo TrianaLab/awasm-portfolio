@@ -255,7 +255,6 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			EndDate:           "2025-03",
 			Summary:           "Added Apple Silicon build support to container2wasm, a container to WASM image converter that enables to run the container on web assembly.",
 		},
-		,
 		{
 			OwnerRef:          ownerRef,
 			Name:              "docker-docs",
