@@ -366,6 +366,46 @@ func TestGetService(t *testing.T) {
 	if !strings.Contains(msg, "testResume") {
 		t.Errorf("unexpected retrieval output: %s", msg)
 	}
+
+	t.Run("Get Resources Without Namespaces", func(t *testing.T) {
+		// Crear varios namespaces y recursos
+		resources := []struct {
+			kind      string
+			name      string
+			namespace string
+		}{
+			{"namespace", "ns1", ""},
+			{"namespace", "ns2", ""},
+			{"work", "work-1", "ns1"},
+			{"education", "edu-1", "ns1"},
+		}
+
+		for _, r := range resources {
+			res := newTestResource(r.kind, r.name, r.namespace)
+			_, err := repo.Create(res)
+			if err != nil {
+				t.Fatalf("error creating resource %s/%s: %v", r.kind, r.name, err)
+			}
+		}
+
+		// Obtener todos los recursos y verificar que los namespaces son filtrados
+		cmd.Flags().Set("output", "json")
+		msg, err := gs.GetResources("all", "", "")
+		if err != nil {
+			t.Fatalf("error getting resources: %v", err)
+		}
+
+		// Verificar que los namespaces no están incluidos pero otros recursos sí
+		if strings.Contains(msg, "\"Kind\": \"namespace\"") {
+			t.Error("namespaces should not be included in output")
+		}
+		if !strings.Contains(msg, "\"Kind\": \"work\"") {
+			t.Error("work resources should be included in output")
+		}
+		if !strings.Contains(msg, "\"Kind\": \"education\"") {
+			t.Error("education resources should be included in output")
+		}
+	})
 }
 
 // Test for ResourceServiceImpl
