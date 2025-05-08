@@ -162,6 +162,74 @@ func TestDescribeService(t *testing.T) {
 	if !strings.Contains(msg, "testResume") {
 		t.Errorf("unexpected description output: %s", msg)
 	}
+
+	t.Run("Describe All Resources", func(t *testing.T) {
+		resources := []struct {
+			kind      string
+			name      string
+			namespace string
+		}{
+			{"work", "work-1", "testNS"},
+			{"education", "edu-1", "testNS"},
+			{"skill", "skill-1", "testNS"},
+		}
+
+		for _, r := range resources {
+			res := newTestResource(r.kind, r.name, r.namespace)
+			_, err := repo.Create(res)
+			if err != nil {
+				t.Fatalf("error creating resource %s/%s: %v", r.kind, r.name, err)
+			}
+		}
+
+		for _, r := range resources {
+			msg, err := ds.DescribeResource(r.kind, "", r.namespace)
+			if err != nil {
+				t.Errorf("error describing all %s: %v", r.kind, err)
+			}
+			if !strings.Contains(msg, r.name) {
+				t.Errorf("expected %s in output, got: %s", r.name, msg)
+			}
+		}
+	})
+
+	t.Run("Describe All With Namespace", func(t *testing.T) {
+		ns1 := newTestResource("namespace", "ns1", "")
+		ns2 := newTestResource("namespace", "ns2", "")
+		_, _ = repo.Create(ns1)
+		_, _ = repo.Create(ns2)
+
+		resources := []struct {
+			kind      string
+			name      string
+			namespace string
+		}{
+			{"work", "work-1", "ns1"},
+			{"work", "work-2", "ns2"},
+			{"education", "edu-1", "ns1"},
+			{"education", "edu-2", "ns2"},
+		}
+
+		for _, r := range resources {
+			res := newTestResource(r.kind, r.name, r.namespace)
+			_, _ = repo.Create(res)
+		}
+
+		msg, err := ds.DescribeResource("all", "", "ns1")
+		if err != nil {
+			t.Fatalf("error describing all resources: %v", err)
+		}
+
+		if strings.Contains(msg, "work-2") || strings.Contains(msg, "edu-2") {
+			t.Error("found resources from wrong namespace")
+		}
+		if !strings.Contains(msg, "work-1") || !strings.Contains(msg, "edu-1") {
+			t.Error("missing resources from correct namespace")
+		}
+		if !strings.Contains(msg, "ns1") || strings.Contains(msg, "ns2") {
+			t.Error("incorrect namespace filtering")
+		}
+	})
 }
 
 // Test for GetService
