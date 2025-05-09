@@ -15,19 +15,47 @@ document.addEventListener("render-graph", (event) => {
     let simulation;
 
     function renderGraphContent() {
-        const data = globalJsonData.map((d) => {
-            const textLength = d.Name.length;
-            const estimatedRadius = (textLength * 8) / 2 + 10;
+        const yamlData = event.detail;
+        const jsonData = typeof yamlData === 'string' ? jsyaml.load(yamlData) : yamlData;
+
+        const groupedData = {};
+        jsonData.forEach((item) => {
+            const kind = item.Kind || "unknown";
+            if (!groupedData[kind]) {
+                groupedData[kind] = {
+                    kind: kind,
+                    count: 0,
+                    items: [],
+                    namespace: item.Namespace || "unknown"
+                };
+            }
+            groupedData[kind].count++;
+            groupedData[kind].items.push(item);
+        });
+
+        const data = Object.values(groupedData).map((group) => {
+            const textLength = group.kind.length + group.count.toString().length + 2;
+            const baseRadius = (textLength * 6) / 2 + 15;
+            const countFactor = Math.sqrt(group.count);
+            const estimatedRadius = baseRadius * (1 + (countFactor * 0.15));
+            
             return {
-                name: d.Name,
-                namespace: d.Namespace || "unknown",
+                name: toTitleCase(group.kind),
+                count: group.count,
+                namespace: group.namespace,
                 radius: estimatedRadius,
-                details: d,
+                details: group.items,
                 x: Math.random() * window.innerWidth,
                 y: Math.random() * window.innerHeight,
             };
         });
-    
+
+        function toTitleCase(str) {
+            return str.replace(/\w\S*/g, function(txt) {
+                return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+            });
+        }
+
         const width = window.innerWidth;
         const height = window.innerHeight;
     
@@ -43,9 +71,9 @@ document.addEventListener("render-graph", (event) => {
         simulation = d3
             .forceSimulation(data)
             .force("center", d3.forceCenter(width / 2, height / 2))
-            .force("collision", d3.forceCollide().radius((d) => d.radius))
-            .force("x", d3.forceX(width / 2))
-            .force("y", d3.forceY(height / 2))
+            .force("collision", d3.forceCollide().radius(d => d.radius))
+            .force("x", d3.forceX(width / 2).strength(0.2))
+            .force("y", d3.forceY(height / 2).strength(0.2))
             .on("tick", ticked);
     
         const node = svgSelection
@@ -64,13 +92,14 @@ document.addEventListener("render-graph", (event) => {
                 d3.select(this)
                     .transition()
                     .duration(200)
-                    .attr("r", d.radius * 1.5);
+                    .attr("r", d.radius * 1.2);
     
-                simulation.force(
-                    "collision",
-                    d3.forceCollide().radius((inner) => (inner === d ? d.radius * 1.5 : inner.radius))
-                );
-                simulation.alpha(0.8).restart();
+                simulation
+                    .force("collision", d3.forceCollide().radius(d => 
+                        d === d3.select(this).datum() ? d.radius * 1.2 : d.radius
+                    ))
+                    .alpha(0.5)
+                    .restart();
             })
             .on("mouseout", function (event, d) {
                 d3.select(this)
@@ -78,18 +107,17 @@ document.addEventListener("render-graph", (event) => {
                     .duration(200)
                     .attr("r", d.radius);
     
-                simulation.force(
-                    "collision",
-                    d3.forceCollide().radius((inner) => inner.radius)
-                );
-                simulation.alpha(0.8).restart();
+                simulation
+                    .force("collision", d3.forceCollide().radius(d => d.radius))
+                    .alpha(0.5)
+                    .restart();
             })
             .on("click", function (event, d) {
                 zoomIntoBubble(d);
             });
     
         node.append("text")
-            .text((d) => d.name)
+            .text((d) => `${d.name}: ${d.count}`)
             .attr("dy", "0.3em")
             .attr("text-anchor", "middle")
             .style("fill", "#ffffff")
@@ -113,15 +141,15 @@ document.addEventListener("render-graph", (event) => {
             overlay
                 .transition()
                 .duration(500)
-                .style("clip-path", `circle(150% at ${bubbleCenterX}px ${bubbleCenterY}px)`)
-                .style("-webkit-clip-path", `circle(150% at ${bubbleCenterX}px ${bubbleCenterY}px)`);
+                .style("clip-path", `circle(120% at ${bubbleCenterX}px ${bubbleCenterY}px)`)
+                .style("-webkit-clip-path", `circle(120% at ${bubbleCenterX}px ${bubbleCenterY}px)`);
         
             const headerContainer = overlay.append("div")
                 .attr("class", "header-container")
                 .style("display", "flex")
-                .style("align-items", "center") // Vertically center the arrow and header
-                .style("gap", "10px") // Add spacing between arrow and header
-                .style("padding-left", "10px"); // Align with details padding
+                .style("align-items", "center")
+                .style("gap", "10px")
+                .style("padding-left", "10px");
         
             headerContainer.append("div")
                 .attr("class", "back-arrow")
@@ -140,22 +168,22 @@ document.addEventListener("render-graph", (event) => {
         
             headerContainer.append("h1")
                 .text(d.name)
-                .style("margin", "0") // Remove default margin
+                .style("margin", "0")
                 .style("font-family", "Courier, monospace")
                 .style("font-size", "24px");
         
             const contentContainer = overlay.append("div")
                 .attr("class", "bubble-content")
-                .style("padding", "10px"); // Align with header
+                .style("padding", "10px");
         
-            const yamlStr = jsyaml.dump(d.details);
-        
+            const itemsList = d.details.map(item => jsyaml.dump(item)).join('\n---\n');
+            
             contentContainer.append("pre")
                 .style("text-align", "left")
                 .style("white-space", "pre-wrap")
                 .style("word-break", "break-word")
                 .style("font-family", "Courier, monospace")
-                .text(yamlStr);
+                .text(itemsList);
         }
         
     }
@@ -178,5 +206,5 @@ document.addEventListener("render-graph", (event) => {
     window.addEventListener("resize", updateGraphSize);
 
     renderGraphContent();
-    updateGraphSize(); // Ensure the initial size is correct
+    updateGraphSize();
 });

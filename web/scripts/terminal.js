@@ -88,8 +88,9 @@
         ];
     
         const welcomeMessageLines = [
-            "Welcome to \x1b[32mEdu Diaz's\x1b[0m AWASM Portfolio!",
-            'Type \x1b[32mkubectl describe profile\x1b[0m to get started or \x1b[32mkubectl --help\x1b[0m to explore all features.'
+            "Welcome to \x1b[32mEdu Diaz's\x1b[0m AWASM Portfolio! A \x1b[32mWebAssembly\x1b[0m powered terminal that emulates \x1b[32mkubectl\x1b[0m commands.",
+            "Type \x1b[32mkubectl describe resume\x1b[0m to get started or \x1b[32mkubectl --help\x1b[0m to explore all features.",
+            "You can switch to the \x1b[32mUI mode\x1b[0m or download it in the \x1b[32mJSON Resume Schema\x1b[0m standard, more info at \x1b[32mjsonresume.org\x1b[0m"
         ];
     
         // Print each line of ASCII art

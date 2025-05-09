@@ -78,6 +78,36 @@ body.light-theme #github-link {
     color: #000;
 }
 
+/* Download Button */
+#download-resume {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+    background-color: #333;
+    color: #fff;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s, color 0.3s;
+    text-align: center;
+}
+
+body.light-theme #download-resume {
+    background-color: #ddd;
+    color: #000;
+}
+
+#download-resume:hover {
+    transform: scale(1.1);
+    background-color: #555;
+}
+
+body.light-theme #download-resume:hover {
+    background-color: #bbb;
+}
+
 /* Hover Effects */
 #theme-toggle:hover, #mode-toggle:hover, #github-link:hover {
     transform: scale(1.1);

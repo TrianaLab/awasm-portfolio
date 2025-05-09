@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Use the existing global worker
     const worker = window.wasmWorker;
     if (!worker) {
         console.error("WebAssembly worker is not available.");
@@ -18,15 +17,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let wasmReady = false;
 
-    // Generate a unique correlation ID for this instance of mode.js
     const instanceCorrelationId = "mode-" + Math.random().toString(36).substr(2, 9);
 
-    // Listen for custom events dispatched by the centralized handler
+    let isDownloadRequest = false;
+
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
 
         if (correlationId && correlationId !== instanceCorrelationId) {
-            return; // Ignore messages not meant for this script
+            return;
         }
 
         if (status === "wasm-ready") {
@@ -36,24 +35,48 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error from WASM module:", error);
         } else if (output) {
             try {
-                const jsonData = JSON.parse(output);
-                renderGraph(jsonData);
+                if (isDownloadRequest) {
+                    console.log("Processing download request...");
+                    const jsonOutput = JSON.parse(output);
+                    const resumeData = Array.isArray(jsonOutput) && jsonOutput.length === 1 
+                        ? jsonOutput[0] 
+                        : jsonOutput;
+                    
+                    const blob = new Blob([JSON.stringify(resumeData, null, 2)], { 
+                        type: 'application/json' 
+                    });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'resume.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    isDownloadRequest = false;
+
+                    fetchYamlData();
+                } else {
+                    const jsonData = jsyaml.load(output);
+                    renderGraph(jsonData);
+                }
             } catch (err) {
-                console.error("Failed to parse output:", err);
+                console.error("Failed to process output:", err, output);
+                isDownloadRequest = false;
             }
         }
     });
 
-    function fetchJsonData() {
+    function fetchYamlData() {
         if (!wasmReady) {
             console.warn("WASM module is not ready yet.");
             return;
         }
 
-        console.log("Fetching JSON data...");
+        console.log("Fetching YAML data...");
         worker.postMessage({ 
             type: "command", 
-            command: "kubectl get all --all-namespaces --output json",
+            command: "kubectl get all --all-namespaces --output yaml",
             correlationId: instanceCorrelationId 
         });
     }
@@ -74,7 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
             graphContainer.style.visibility = "visible";
             graphContainer.style.opacity = "1";
 
-            fetchJsonData();
+            fetchYamlData();
             updateGraphSize();
         } else {
             modeLabel.textContent = "CLI";
@@ -86,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // New resizing functionality
     const updateGraphSize = () => {
         const svg = document.querySelector("#graph-container svg");
         if (svg) {
@@ -109,4 +131,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     window.addEventListener("resize", updateSizes);
     updateSizes();
+
+    const downloadButton = document.getElementById("download-resume");
+    if (!downloadButton) {
+        console.error("Download button not found!");
+        return;
+    }
+
+    downloadButton.addEventListener("click", async () => {
+        if (!wasmReady) {
+            console.warn("WASM module is not ready yet.");
+            return;
+        }
+
+        console.log("Fetching resume data...");
+        isDownloadRequest = true;
+        worker.postMessage({ 
+            type: "command", 
+            command: "kubectl get resume eduardo-diaz -o json",
+            correlationId: instanceCorrelationId 
+        });
+    });
 });
