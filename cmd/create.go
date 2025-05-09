@@ -13,11 +13,11 @@ func NewCreateCommand(service service.ResourceService) *cobra.Command {
 		SilenceErrors: false,
 		Args:          cobra.ExactArgs(2),
 		Example: `
-# Create a profile in the default namespace
-kubectl create profile john-doe
-
 # Create a namespace
 kubectl create namespace dev
+
+# Create a profile in the dev namespace
+kubectl create profile john-doe -n dev
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			kind, name := args[0], args[1]

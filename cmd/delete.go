@@ -12,11 +12,11 @@ func NewDeleteCommand(service service.ResourceService) *cobra.Command {
 		Short: "Delete a resource",
 		Args:  cobra.ExactArgs(2),
 		Example: `
-# Delete the profile jane-doe in the dev namespace
-kubectl delete profile jane-doe -n dev
+# Delete the profile john-doe in the dev namespace
+kubectl delete profile john-doe -n dev
 
 # Delete a namespace
-kubectl delete namespace test
+kubectl delete namespace dev
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			kind, name := args[0], args[1]
