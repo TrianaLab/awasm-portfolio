@@ -72,7 +72,6 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 				if _, err := s.repo.Create(basics); err != nil {
 					return "", fmt.Errorf("failed to save basics: %w", err)
 				}
-			} else {
 			}
 		}
 

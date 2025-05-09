@@ -456,7 +456,11 @@ func TestGetService(t *testing.T) {
 			}
 		}
 
-		cmd.Flags().Set("output", "json")
+		err := cmd.Flags().Set("output", "json")
+		if err != nil {
+			t.Fatalf("error setting flag: %v", err)
+		}
+
 		msg, err := gs.GetResources("all", "", "")
 		if err != nil {
 			t.Fatalf("error getting resources: %v", err)

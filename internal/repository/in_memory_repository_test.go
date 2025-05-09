@@ -73,12 +73,12 @@ func TestInMemoryRepository(t *testing.T) {
 			name:              "default",
 			creationTimestamp: now,
 		}
-		msg, err := repo.Create(namespace)
+		_, err := repo.Create(namespace)
 		if err != nil {
 			t.Fatalf("unexpected error creating namespace: %v", err)
 		}
 
-		msg, err = repo.Create(resource)
+		msg, err := repo.Create(resource)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -86,7 +86,7 @@ func TestInMemoryRepository(t *testing.T) {
 			t.Errorf("expected created message, got: %s", msg)
 		}
 
-		msg, err = repo.Create(resource)
+		_, err = repo.Create(resource)
 		if err == nil {
 			t.Error("expected error creating duplicate resource")
 		}
@@ -104,7 +104,7 @@ func TestInMemoryRepository(t *testing.T) {
 			t.Errorf("expected ID %s, got %s", resource.GetID(), resources[0].GetID())
 		}
 
-		resources, err = repo.List("nonexistent", "", "")
+		_, err = repo.List("nonexistent", "", "")
 		if err == nil {
 			t.Error("expected error for invalid kind")
 		}
@@ -127,12 +127,12 @@ func TestInMemoryRepository(t *testing.T) {
 			t.Errorf("expected deleted message, got: %s", msg)
 		}
 
-		msg, err = repo.Delete("resume", "nonexistent", "default")
+		_, err = repo.Delete("resume", "nonexistent", "default")
 		if err == nil {
 			t.Error("expected error deleting nonexistent resource")
 		}
 
-		msg, err = repo.Delete("invalid", "name", "default")
+		_, err = repo.Delete("invalid", "name", "default")
 		if err == nil {
 			t.Error("expected error for invalid kind")
 		}
