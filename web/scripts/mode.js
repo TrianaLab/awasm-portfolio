@@ -9,7 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    // Use the existing global worker
     const worker = window.wasmWorker;
     if (!worker) {
         console.error("WebAssembly worker is not available.");
@@ -18,18 +17,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let wasmReady = false;
 
-    // Generate a unique correlation ID for this instance of mode.js
     const instanceCorrelationId = "mode-" + Math.random().toString(36).substr(2, 9);
 
-    // Añade una variable para rastrear el tipo de petición actual
     let isDownloadRequest = false;
 
-    // Listen for custom events dispatched by the centralized handler
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
 
         if (correlationId && correlationId !== instanceCorrelationId) {
-            return; // Ignore messages not meant for this script
+            return;
         }
 
         if (status === "wasm-ready") {
@@ -39,12 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error from WASM module:", error);
         } else if (output) {
             try {
-                // Maneja la respuesta según el tipo de petición
                 if (isDownloadRequest) {
                     console.log("Processing download request...");
-                    // Asegúrate de que la respuesta es JSON válido
                     const jsonOutput = JSON.parse(output);
-                    // Si es un array con un solo elemento, toma ese elemento
                     const resumeData = Array.isArray(jsonOutput) && jsonOutput.length === 1 
                         ? jsonOutput[0] 
                         : jsonOutput;
@@ -60,15 +53,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     a.click();
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
-                    isDownloadRequest = false; // Resetea el flag
+                    isDownloadRequest = false;
+
+                    fetchYamlData();
                 } else {
-                    // Para peticiones de visualización
                     const jsonData = jsyaml.load(output);
                     renderGraph(jsonData);
                 }
             } catch (err) {
                 console.error("Failed to process output:", err, output);
-                isDownloadRequest = false; // Resetea el flag en caso de error
+                isDownloadRequest = false;
             }
         }
     });
@@ -115,7 +109,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // New resizing functionality
     const updateGraphSize = () => {
         const svg = document.querySelector("#graph-container svg");
         if (svg) {
@@ -139,7 +132,6 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("resize", updateSizes);
     updateSizes();
 
-    // Download resume functionality
     const downloadButton = document.getElementById("download-resume");
     if (!downloadButton) {
         console.error("Download button not found!");
@@ -153,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         console.log("Fetching resume data...");
-        isDownloadRequest = true; // Marca que esta es una petición de descarga
+        isDownloadRequest = true;
         worker.postMessage({ 
             type: "command", 
             command: "kubectl get resume eduardo-diaz -o json",
