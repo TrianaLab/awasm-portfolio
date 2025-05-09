@@ -36,24 +36,27 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Error from WASM module:", error);
         } else if (output) {
             try {
-                const jsonData = JSON.parse(output);
+                // Convert YAML to JSON
+                const jsonData = jsyaml.load(output);
+
+                // Dispatch the render-graph event with the JSON data
                 renderGraph(jsonData);
             } catch (err) {
-                console.error("Failed to parse output:", err);
+                console.error("Failed to parse YAML output:", err);
             }
         }
     });
 
-    function fetchJsonData() {
+    function fetchYamlData() {
         if (!wasmReady) {
             console.warn("WASM module is not ready yet.");
             return;
         }
 
-        console.log("Fetching JSON data...");
+        console.log("Fetching YAML data...");
         worker.postMessage({ 
             type: "command", 
-            command: "kubectl get all --all-namespaces --output json",
+            command: "kubectl get all --all-namespaces --output yaml",
             correlationId: instanceCorrelationId 
         });
     }
@@ -74,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
             graphContainer.style.visibility = "visible";
             graphContainer.style.opacity = "1";
 
-            fetchJsonData();
+            fetchYamlData();
             updateGraphSize();
         } else {
             modeLabel.textContent = "CLI";
