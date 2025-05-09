@@ -23,6 +23,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 	}
 
 	basics := &types.Basics{
+		Kind:      "basics",
 		OwnerRef:  ownerRef,
 		Name:      "eduardo-diaz",
 		Namespace: namespace.Name,
@@ -54,6 +55,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	work := []types.Work{
 		{
+			Kind:              "work",
 			OwnerRef:          ownerRef,
 			Name:              "mlops-emergenceai",
 			Namespace:         namespace.Name,
@@ -66,6 +68,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "As an MLOps Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
 		},
 		{
+			Kind:              "work",
 			OwnerRef:          ownerRef,
 			Name:              "prodeng-appian",
 			Namespace:         namespace.Name,
@@ -78,6 +81,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Provide services that support elastic scale and allow frequent, reliable, high-impact changes to the deployed products. Reduce friction and toil surrounding data when creating new product services and features, including data lifecycle management, data retention, data analytics and providing easy-to-use APIs. Make Appian more Kubernetes-native both in cloud and self-managed environments.",
 		},
 		{
+			Kind:              "work",
 			OwnerRef:          ownerRef,
 			Name:              "ssoleng-appian",
 			Namespace:         namespace.Name,
@@ -90,6 +94,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Provide technical support globally, address critical challenges and mentor newcomers. With a focus on data analysis and creative solutions, my role emphasizes effective troubleshooting and a comprehensive understanding of the platform’s inner infrastructure.",
 		},
 		{
+			Kind:              "work",
 			OwnerRef:          ownerRef,
 			Name:              "soleng-appian",
 			Namespace:         namespace.Name,
@@ -102,6 +107,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Hands-on support for global customers utilizing the Appian platform. With strong problem-solving skills, proficiency in Kubernetes and expertise in web services, programming, and Linux, I contribute to ongoing customer relationships by delivering effective solutions.",
 		},
 		{
+			Kind:              "work",
 			OwnerRef:          ownerRef,
 			Name:              "asoleng-appian",
 			Namespace:         namespace.Name,
@@ -114,6 +120,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Tackle complex technical challenges, providing creative solutions and offering world-class support to customers globally. Proficient in troubleshooting, data analytics, and collaboration with internal teams, contribute to resolve Appian installations for both self-managed and Appian Cloud environments.",
 		},
 		{
+			Kind:              "work",
 			OwnerRef:          ownerRef,
 			Name:              "qaeng-solera",
 			Namespace:         namespace.Name,
@@ -129,6 +136,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	education := []types.Education{
 		{
+			Kind:              "education",
 			OwnerRef:          ownerRef,
 			Name:              "miar-viu",
 			Namespace:         namespace.Name,
@@ -152,6 +160,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			},
 		},
 		{
+			Kind:              "education",
 			OwnerRef:          ownerRef,
 			Name:              "gitt-us",
 			Namespace:         namespace.Name,
@@ -184,6 +193,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	volunteer := []types.Volunteer{
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "jesse-chart",
 			Namespace:         namespace.Name,
@@ -196,6 +206,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Created a Kubernetes helm chart for the Jesse AI trading bot.",
 		},
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "trianalab-awasmportfolio",
 			Namespace:         namespace.Name,
@@ -208,6 +219,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "A webassembly powered application that shows developer’s portoflio using kubernetes-like commands.",
 		},
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "keda-docs",
 			Namespace:         namespace.Name,
@@ -220,6 +232,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Improved GCP PubSub scaler documentation from KEDA, a Kubernetes-based event driven autoscaler from the Cloud Native Computing Foundation.",
 		},
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "cloudtty-bug",
 			Namespace:         namespace.Name,
@@ -232,6 +245,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Fixed a bug from CloudTTY, a Kubernetes cloudshell operator from the Cloud Native Computing Foundation.",
 		},
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "spin-docs",
 			Namespace:         namespace.Name,
@@ -244,6 +258,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Improved documenation from Spin, a developer tool for building WebAssembly microservices and web applications from Fermyon.",
 		},
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "container2wasm-feat",
 			Namespace:         namespace.Name,
@@ -256,6 +271,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Summary:           "Added Apple Silicon build support to container2wasm, a container to WASM image converter that enables to run the container on web assembly.",
 		},
 		{
+			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
 			Name:              "docker-docs",
 			Namespace:         namespace.Name,
@@ -271,6 +287,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	certificates := []types.Certificate{
 		{
+			Kind:              "certificate",
 			OwnerRef:          ownerRef,
 			Name:              "tlf-cka",
 			Namespace:         namespace.Name,
@@ -281,6 +298,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://www.credly.com/badges/f1c5619d-f6a1-4988-8393-5f9a21455736/linked_in_profile",
 		},
 		{
+			Kind:              "certificate",
 			OwnerRef:          ownerRef,
 			Name:              "tlf-cks",
 			Namespace:         namespace.Name,
@@ -291,6 +309,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://www.credly.com/badges/9e2a89df-4283-4502-9834-7b11b05bb152/linked_in_profile",
 		},
 		{
+			Kind:              "certificate",
 			OwnerRef:          ownerRef,
 			Name:              "confluent-cf",
 			Namespace:         namespace.Name,
@@ -304,6 +323,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	awards := []types.Award{
 		{
+			Kind:              "award",
 			OwnerRef:          ownerRef,
 			Name:              "impact-appian",
 			Namespace:         namespace.Name,
@@ -314,22 +334,9 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		},
 	}
 
-	publications := []types.Publication{
-		{
-			OwnerRef:          ownerRef,
-			Name:              "trianalab-homelab",
-			Namespace:         namespace.Name,
-			CreationTimestamp: timestamp,
-			Publication:       "Step by step guide: K3s on Raspberry Pi 5 cluster",
-			Publisher:         "TrianaLab",
-			ReleaseDate:       "2024-01",
-			URL:               "https://edudiaz.trianalab.net/2024/01/12/step-by-step-guide-k3s-on-raspberry-pi-5-cluster/",
-			Summary:           "Guide to create a 3 raspberry pi K3s kubernetes cluster in your home to host your workloads.",
-		},
-	}
-
 	skills := []types.Skill{
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "devops-tools",
 			Namespace:         namespace.Name,
@@ -339,6 +346,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Jenkins", "GitHub Actions", "ArgoCD", "Crossplane", "Ansible", "Helm"},
 		},
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "cloud-platforms",
 			Namespace:         namespace.Name,
@@ -348,6 +356,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"GCP", "AWS", "Cloudflare"},
 		},
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "containerization",
 			Namespace:         namespace.Name,
@@ -357,6 +366,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Kubernetes", "Helm", "Docker", "Docker Compose", "Operators"},
 		},
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "service-mesh-observability",
 			Namespace:         namespace.Name,
@@ -366,6 +376,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Istio", "Prometheus", "Grafana", "Open Telemetry"},
 		},
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "programming-languages",
 			Namespace:         namespace.Name,
@@ -375,6 +386,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Go", "Java", "Python", "C", "Bash", "WebAssembly (Wasm)"},
 		},
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "networking",
 			Namespace:         namespace.Name,
@@ -384,6 +396,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Networking Fundamentals", "Network Security"},
 		},
 		{
+			Kind:              "skill",
 			OwnerRef:          ownerRef,
 			Name:              "other-skills",
 			Namespace:         namespace.Name,
@@ -396,6 +409,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	languages := []types.Language{
 		{
+			Kind:              "language",
 			OwnerRef:          ownerRef,
 			Name:              "spanish",
 			Namespace:         namespace.Name,
@@ -404,6 +418,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Fluency:           "Native",
 		},
 		{
+			Kind:              "language",
 			OwnerRef:          ownerRef,
 			Name:              "english",
 			Namespace:         namespace.Name,
@@ -412,6 +427,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Fluency:           "Advanced - C1",
 		},
 		{
+			Kind:              "language",
 			OwnerRef:          ownerRef,
 			Name:              "chinese",
 			Namespace:         namespace.Name,
@@ -423,6 +439,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	interests := []types.Interest{
 		{
+			Kind:              "interest",
 			OwnerRef:          ownerRef,
 			Name:              "cloud-native",
 			Namespace:         namespace.Name,
@@ -431,6 +448,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Open Source", "Kubernetes", "WebAssembly", "Microservices"},
 		},
 		{
+			Kind:              "interest",
 			OwnerRef:          ownerRef,
 			Name:              "mountaineering",
 			Namespace:         namespace.Name,
@@ -439,6 +457,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Mountains", "Hiking", "Trekking"},
 		},
 		{
+			Kind:              "interest",
 			OwnerRef:          ownerRef,
 			Name:              "lego-architecture",
 			Namespace:         namespace.Name,
@@ -447,37 +466,13 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Keywords:          []string{"Lego", "Architectural design", "Creative builds"},
 		},
 		{
+			Kind:              "interest",
 			OwnerRef:          ownerRef,
 			Name:              "culinary-adventures",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
 			Interest:          "Gastronomy",
 			Keywords:          []string{"Cooking", "Pucherito", "Mediterranean gastronomy"},
-		},
-	}
-
-	references := []types.Reference{
-		{
-			OwnerRef:          ownerRef,
-			Name:              "john-doe",
-			Namespace:         namespace.Name,
-			CreationTimestamp: timestamp,
-			Person:            "Pepito",
-			Reference:         "Viva er beti.",
-		},
-	}
-
-	projects := []types.Project{
-		{
-			OwnerRef:          ownerRef,
-			Name:              "trianalab",
-			Namespace:         namespace.Name,
-			CreationTimestamp: timestamp,
-			Project:           "TrianaLab",
-			Description:       "TrianaLab is my personal GitHub organization where I create my open source projects and contributions.",
-			StartDate:         "2024-12",
-			EndDate:           "",
-			URL:               "https://github.com/TrianaLab",
 		},
 	}
 
@@ -492,12 +487,9 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Education:         education,
 		Awards:            awards,
 		Certificates:      certificates,
-		Publications:      publications,
 		Skills:            skills,
 		Languages:         languages,
 		Interests:         interests,
-		References:        references,
-		Projects:          projects,
 	}
 
 	// List all resources (both individual and slices)
@@ -510,12 +502,9 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		education,
 		awards,
 		certificates,
-		publications,
 		skills,
 		languages,
 		interests,
-		references,
-		projects,
 	}
 
 	var resources []models.Resource
