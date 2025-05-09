@@ -15,11 +15,9 @@ document.addEventListener("render-graph", (event) => {
     let simulation;
 
     function renderGraphContent() {
-        // Primero, convertimos el YAML a JSON si es necesario
         const yamlData = event.detail;
         const jsonData = typeof yamlData === 'string' ? jsyaml.load(yamlData) : yamlData;
 
-        // Agrupar por Kind
         const groupedData = {};
         jsonData.forEach((item) => {
             const kind = item.Kind || "unknown";
@@ -35,13 +33,11 @@ document.addEventListener("render-graph", (event) => {
             groupedData[kind].items.push(item);
         });
 
-        // Convertir el objeto agrupado en un array
         const data = Object.values(groupedData).map((group) => {
             const textLength = group.kind.length + group.count.toString().length + 2;
-            // Reducir el tamaño base y el factor de escala
-            const baseRadius = (textLength * 6) / 2 + 15; // Reducido de 10 a 6 y de 20 a 15
+            const baseRadius = (textLength * 6) / 2 + 15;
             const countFactor = Math.sqrt(group.count);
-            const estimatedRadius = baseRadius * (1 + (countFactor * 0.15)); // Reducido de 0.3 a 0.15
+            const estimatedRadius = baseRadius * (1 + (countFactor * 0.15));
             
             return {
                 name: toTitleCase(group.kind),
@@ -54,7 +50,6 @@ document.addEventListener("render-graph", (event) => {
             };
         });
 
-        // Añadir función helper para Title Case
         function toTitleCase(str) {
             return str.replace(/\w\S*/g, function(txt) {
                 return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
@@ -76,7 +71,6 @@ document.addEventListener("render-graph", (event) => {
         simulation = d3
             .forceSimulation(data)
             .force("center", d3.forceCenter(width / 2, height / 2))
-            // Hacer que la fuerza de colisión inicial coincida con el radio visual
             .force("collision", d3.forceCollide().radius(d => d.radius))
             .force("x", d3.forceX(width / 2).strength(0.2))
             .force("y", d3.forceY(height / 2).strength(0.2))
@@ -95,7 +89,6 @@ document.addEventListener("render-graph", (event) => {
             .attr("stroke", "#ffffff")
             .attr("stroke-width", 1)
             .on("mouseover", function (event, d) {
-                // Al hacer hover, expandir tanto el radio visual como la colisión
                 d3.select(this)
                     .transition()
                     .duration(200)
@@ -109,7 +102,6 @@ document.addEventListener("render-graph", (event) => {
                     .restart();
             })
             .on("mouseout", function (event, d) {
-                // Al quitar el hover, restaurar tanto el radio visual como la colisión
                 d3.select(this)
                     .transition()
                     .duration(200)
@@ -125,7 +117,7 @@ document.addEventListener("render-graph", (event) => {
             });
     
         node.append("text")
-            .text((d) => `${d.name}: ${d.count}`) // Cambiar formato del texto
+            .text((d) => `${d.name}: ${d.count}`)
             .attr("dy", "0.3em")
             .attr("text-anchor", "middle")
             .style("fill", "#ffffff")
@@ -149,15 +141,15 @@ document.addEventListener("render-graph", (event) => {
             overlay
                 .transition()
                 .duration(500)
-                .style("clip-path", `circle(120% at ${bubbleCenterX}px ${bubbleCenterY}px)`) // Reducido de 150% a 120%
+                .style("clip-path", `circle(120% at ${bubbleCenterX}px ${bubbleCenterY}px)`)
                 .style("-webkit-clip-path", `circle(120% at ${bubbleCenterX}px ${bubbleCenterY}px)`);
         
             const headerContainer = overlay.append("div")
                 .attr("class", "header-container")
                 .style("display", "flex")
-                .style("align-items", "center") // Vertically center the arrow and header
-                .style("gap", "10px") // Add spacing between arrow and header
-                .style("padding-left", "10px"); // Align with details padding
+                .style("align-items", "center")
+                .style("gap", "10px")
+                .style("padding-left", "10px");
         
             headerContainer.append("div")
                 .attr("class", "back-arrow")
@@ -176,13 +168,13 @@ document.addEventListener("render-graph", (event) => {
         
             headerContainer.append("h1")
                 .text(d.name)
-                .style("margin", "0") // Remove default margin
+                .style("margin", "0")
                 .style("font-family", "Courier, monospace")
                 .style("font-size", "24px");
         
             const contentContainer = overlay.append("div")
                 .attr("class", "bubble-content")
-                .style("padding", "10px"); // Align with header
+                .style("padding", "10px");
         
             const itemsList = d.details.map(item => jsyaml.dump(item)).join('\n---\n');
             
@@ -214,5 +206,5 @@ document.addEventListener("render-graph", (event) => {
     window.addEventListener("resize", updateGraphSize);
 
     renderGraphContent();
-    updateGraphSize(); // Ensure the initial size is correct
+    updateGraphSize();
 });
