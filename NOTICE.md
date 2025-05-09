@@ -13,6 +13,7 @@ This project includes third-party software under the following licenses:
    - gopkg.in/yaml.v3: https://gopkg.in/yaml.v3
    - xterm.js: https://github.com/xtermjs/xterm.js
    - js-yaml: https://github.com/nodeca/js-yaml
+   - json-resume-schema: https://github.com/jsonresume/resume-schema
 
 ## 3. BSD-3-Clause Licensed Components:
    - D3.js: https://d3js.org
