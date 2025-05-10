@@ -13,9 +13,9 @@ type Skill struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Skill             string                `json:"name" yaml:"Skill,omitempty"`
-	Level             string                `json:"level" yaml:"Level,omitempty"`
-	Keywords          []string              `json:"keywords" yaml:"Keywords,omitempty"`
+	Skill             string                `json:"name,omitempty" yaml:"Skill,omitempty"`
+	Level             string                `json:"level,omitempty" yaml:"Level,omitempty"`
+	Keywords          []string              `json:"keywords,omitempty" yaml:"Keywords,omitempty"`
 }
 
 func (s *Skill) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*s).Name()) }

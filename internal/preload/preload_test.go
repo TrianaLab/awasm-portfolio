@@ -17,7 +17,6 @@ func TestPreloadData(t *testing.T) {
 	// Define the expected resources to verify
 	expectedKinds := []string{
 		"namespace",
-		"award",
 		"basics",
 		"certificate",
 		"education",

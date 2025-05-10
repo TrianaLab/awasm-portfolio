@@ -13,8 +13,8 @@ type Reference struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Person            string                `json:"name" yaml:"Person,omitempty"`
-	Reference         string                `json:"reference" yaml:"Reference,omitempty"`
+	Person            string                `json:"name,omitempty" yaml:"Person,omitempty"`
+	Reference         string                `json:"reference,omitempty" yaml:"Reference,omitempty"`
 }
 
 func (r *Reference) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*r).Name()) }

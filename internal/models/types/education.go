@@ -13,14 +13,14 @@ type Education struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Institution       string                `json:"institution" yaml:"Institution,omitempty"`
-	URL               string                `json:"url" yaml:"URL,omitempty"`
-	Area              string                `json:"area" yaml:"Area,omitempty"`
-	StudyType         string                `json:"studyType" yaml:"StudyType,omitempty"`
-	StartDate         string                `json:"startDate" yaml:"StartDate,omitempty"`
-	EndDate           string                `json:"endDate" yaml:"EndDate,omitempty"`
-	Score             string                `json:"score" yaml:"Score,omitempty"`
-	Courses           []string              `json:"courses" yaml:"Courses,omitempty"`
+	Institution       string                `json:"institution,omitempty" yaml:"Institution,omitempty"`
+	URL               string                `json:"url,omitempty" yaml:"URL,omitempty"`
+	Area              string                `json:"area,omitempty" yaml:"Area,omitempty"`
+	StudyType         string                `json:"studyType,omitempty" yaml:"StudyType,omitempty"`
+	StartDate         string                `json:"startDate,omitempty" yaml:"StartDate,omitempty"`
+	EndDate           string                `json:"endDate,omitempty" yaml:"EndDate,omitempty"`
+	Score             string                `json:"score,omitempty" yaml:"Score,omitempty"`
+	Courses           []string              `json:"courses,omitempty" yaml:"Courses,omitempty"`
 }
 
 func (e *Education) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*e).Name()) }
