@@ -13,10 +13,10 @@ type Certificate struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Certificate       string                `json:"name" yaml:"Certificate,omitempty"`
-	Date              string                `json:"date" yaml:"Date,omitempty"`
-	Issuer            string                `json:"issuer" yaml:"Issuer,omitempty"`
-	URL               string                `json:"url" yaml:"URL,omitempty"`
+	Certificate       string                `json:"name,omitempty" yaml:"Certificate,omitempty"`
+	Date              string                `json:"date,omitempty" yaml:"Date,omitempty"`
+	Issuer            string                `json:"issuer,omitempty" yaml:"Issuer,omitempty"`
+	URL               string                `json:"url,omitempty" yaml:"URL,omitempty"`
 }
 
 func (c *Certificate) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*c).Name()) }
