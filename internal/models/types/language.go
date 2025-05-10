@@ -13,8 +13,8 @@ type Language struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Language          string                `json:"language" yaml:"Language,omitempty"`
-	Fluency           string                `json:"fluency" yaml:"Fluency,omitempty"`
+	Language          string                `json:"language,omitempty" yaml:"Language,omitempty"`
+	Fluency           string                `json:"fluency,omitempty" yaml:"Fluency,omitempty"`
 }
 
 func (l *Language) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*l).Name()) }

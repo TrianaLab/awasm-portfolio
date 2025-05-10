@@ -13,12 +13,12 @@ type Project struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Project           string                `json:"name" yaml:"Project,omitempty"`
-	StartDate         string                `json:"startDate" yaml:"StartDate,omitempty"`
-	EndDate           string                `json:"endDate" yaml:"EndDate,omitempty"`
-	Description       string                `json:"description" yaml:"Description,omitempty"`
-	Highlights        []string              `json:"highlights" yaml:"Highlights,omitempty"`
-	URL               string                `json:"url" yaml:"URL,omitempty"`
+	Project           string                `json:"name,omitempty" yaml:"Project,omitempty"`
+	StartDate         string                `json:"startDate,omitempty" yaml:"StartDate,omitempty"`
+	EndDate           string                `json:"endDate,omitempty" yaml:"EndDate,omitempty"`
+	Description       string                `json:"description,omitempty" yaml:"Description,omitempty"`
+	Highlights        []string              `json:"highlights,omitempty" yaml:"Highlights,omitempty"`
+	URL               string                `json:"url,omitempty" yaml:"URL,omitempty"`
 }
 
 func (p *Project) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*p).Name()) }

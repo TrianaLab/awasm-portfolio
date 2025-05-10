@@ -13,11 +13,11 @@ type Publication struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Publication       string                `json:"name" yaml:"Publication,omitempty"`
-	Publisher         string                `json:"publisher" yaml:"Publisher,omitempty"`
-	ReleaseDate       string                `json:"releaseDate" yaml:"ReleaseDate,omitempty"`
-	URL               string                `json:"url" yaml:"URL,omitempty"`
-	Summary           string                `json:"summary" yaml:"Summary,omitempty"`
+	Publication       string                `json:"name,omitempty" yaml:"Publication,omitempty"`
+	Publisher         string                `json:"publisher,omitempty" yaml:"Publisher,omitempty"`
+	ReleaseDate       string                `json:"releaseDate,omitempty" yaml:"ReleaseDate,omitempty"`
+	URL               string                `json:"url,omitempty" yaml:"URL,omitempty"`
+	Summary           string                `json:"summary,omitempty" yaml:"Summary,omitempty"`
 }
 
 func (p *Publication) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*p).Name()) }

@@ -13,10 +13,10 @@ type Award struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Title             string                `json:"title" yaml:"Title,omitempty"`
-	Date              string                `json:"date" yaml:"Date,omitempty"`
-	Awarder           string                `json:"awarder" yaml:"Awarder,omitempty"`
-	Summary           string                `json:"summary" yaml:"Summary,omitempty"`
+	Title             string                `json:"title,omitempty" yaml:"Title,omitempty"`
+	Date              string                `json:"date,omitempty" yaml:"Date,omitempty"`
+	Awarder           string                `json:"awarder,omitempty" yaml:"Awarder,omitempty"`
+	Summary           string                `json:"summary,omitempty" yaml:"Summary,omitempty"`
 }
 
 func (a *Award) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*a).Name()) }

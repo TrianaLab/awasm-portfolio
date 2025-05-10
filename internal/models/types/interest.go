@@ -13,8 +13,8 @@ type Interest struct {
 	Namespace         string                `json:"-" yaml:"Namespace,omitempty"`
 	OwnerRef          models.OwnerReference `json:"-" yaml:"Owner,omitempty"`
 	CreationTimestamp time.Time             `json:"-" yaml:"CreationTimestamp,omitempty"`
-	Interest          string                `json:"name" yaml:"Interest,omitempty"`
-	Keywords          []string              `json:"keywords" yaml:"Keywords,omitempty"`
+	Interest          string                `json:"name,omitempty" yaml:"Interest,omitempty"`
+	Keywords          []string              `json:"keywords,omitempty" yaml:"Keywords,omitempty"`
 }
 
 func (i *Interest) GetKind() string                                { return strings.ToLower(reflect.TypeOf(*i).Name()) }
