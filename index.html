@@ -18,79 +18,26 @@
   <script type="module">
     import 'https://unpkg.com/jsonresume-component';
   </script>
+  <style>
+    /* Personalización del estilo del componente json-resume */
+    json-resume {
+      --font-family: 'Courier New', monospace;
+      --color-background-light: #ffffff; /* Fondo blanco para tema claro */
+      --color-secondary-light: rgb(84, 140, 33); /* Letras destacadas en tema oscuro */
+      --color-link-light: rgb(84, 140, 33); /* Letras destacadas en tema oscuro */
+      --color-background-dark: rgb(28, 28, 28); /* Fondo oscuro para tema oscuro */
+      --color-secondary-dark: rgb(84, 140, 33); /* Letras destacadas en tema oscuro */
+      --color-link-dark: rgb(84, 140, 33); /* Letras destacadas en tema oscuro */
+    }
+  </style>
 </head>
 <body style="margin:0; padding:0; background:rgb(26, 26, 26);">
 
   <json-resume></json-resume>
 
   <script type="module">
-    const terminalCSS = `
-      :host {
-        all: unset;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        grid-gap: 2rem;
-        background: rgb(26, 26, 26);
-        color: #c9d1d9;
-        font-family: 'Fira Code', Menlo, monospace;
-        font-size: 1rem;
-        line-height: 1.5;
-        padding: 1rem 2rem;
-      }      
-
-      /* Colorea y posiciona encabezados con prompt verde */
-      h1, h2, h3 {
-        position: relative;
-        padding-left: 2ch;
-        margin: 1.5rem 0 0.75rem;
-        color: rgb(97,152,45);
-      }
-      h1::before, h2::before, h3::before {
-        content: '$ ';
-        position: absolute;
-        left: 0;
-        color: rgb(97,152,45);
-      }
-      h1::after, h2::after, h3::after {
-        content: '_';
-        margin-left: .25ch;
-        animation: blink 1s steps(2) infinite;
-        color: rgb(97,152,45);
-      }
-      @keyframes blink {
-        0%,50% { opacity: 1; }
-        51%,100% { opacity: 0; }
-      }
-
-      /* Texto de párrafos e ítems */
-      p, li, dd {
-        color: #c9d1d9;
-        margin: 0.5rem 0;
-      }
-
-      /* Enlaces en verde */
-      a {
-        color: rgb(97,152,45);
-        text-decoration: none;
-        border-bottom: 1px dotted rgb(97,152,45);
-      }
-      a:hover {
-        text-decoration: underline;
-      }
-
-      /* Listas indentadas */
-      ul, ol {
-        margin: 0 0 1rem 4ch;
-        padding: 0;
-      }
-      li {
-        margin-bottom: 0.5rem;
-      }
-    `;
-
     window.addEventListener('DOMContentLoaded', () => {
       const resume = document.querySelector('json-resume');
-      resume.stylesheet = terminalCSS;
       resume.gist_id  = 'a64ea654c8510c1ed71d14f4aaf48b8d';
     });
   </script>
