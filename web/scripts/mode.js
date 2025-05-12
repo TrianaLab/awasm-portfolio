@@ -27,19 +27,35 @@ document.addEventListener("DOMContentLoaded", () => {
         const isUI = modeLabel.textContent === "UI";
 
         if (isUI) {
-            // Cambiamos a modo UI, por lo que el botón mostrará CLI
+            // Cambiamos a modo UI
             modeLabel.textContent = "CLI";
             terminal.style.visibility = "hidden";
             terminal.style.opacity = "0";
-            window.resumeUtils.loadResumeComponent();
+            // Obtener datos antes de cargar el componente
+            fetchResumeData();
         } else {
-            // Cambiamos a modo CLI, por lo que el botón mostrará UI
+            // Cambiamos a modo CLI
             modeLabel.textContent = "UI";
             terminal.style.visibility = "visible";
             terminal.style.opacity = "1";
             window.resumeUtils.unloadResumeComponent();
         }
     });
+
+    // Función para obtener los datos del resume
+    function fetchResumeData() {
+        if (!wasmReady) {
+            console.warn("WASM module is not ready yet.");
+            return;
+        }
+
+        console.log("Fetching resume data...");
+        worker.postMessage({ 
+            type: "command", 
+            command: "kubectl get resume eduardo-diaz --output json",
+            correlationId: instanceCorrelationId 
+        });
+    }
 
     // Eliminar la verificación del json-resume aquí
     // let jsonResume = document.querySelector("json-resume");
@@ -55,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         jsonResume.style.opacity = "0";
     }
 
+    // Modificar el event listener del worker
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
 
@@ -91,7 +108,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     fetchJsonData();
                 } else {
-                    const jsonData = jsyaml.load(output);
+                    const jsonData = JSON.parse(output);
+                    const resumeData = Array.isArray(jsonData) && jsonData.length === 1 
+                        ? jsonData[0] 
+                        : jsonData;
+                    window.resumeUtils.loadResumeComponent(resumeData);
                 }
             } catch (err) {
                 console.error("Failed to process output:", err, output);
@@ -109,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Fetching YAML data...");
         worker.postMessage({ 
             type: "command", 
-            command: "kubectl get profile eduardo-diaz --output json",
+            command: "kubectl get resume eduardo-diaz --output json",
             correlationId: instanceCorrelationId 
         });
     }

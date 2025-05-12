@@ -1,23 +1,29 @@
 let resumeComponent = null;
 
-function loadResumeComponent() {
+function loadResumeComponent(jsonData = null) {
     if (!resumeComponent) {
         resumeComponent = document.createElement('json-resume');
-        resumeComponent.gist_id = 'a64ea654c8510c1ed71d14f4aaf48b8d';
         
-        // Aplicar estilos CSS personalizados
+        // Si tenemos datos JSON, los usamos directamente
+        if (jsonData) {
+            resumeComponent.resumejson = jsonData;
+        }
+        
         resumeComponent.style.cssText = `
             position: absolute;
-            top: 0;
+            top: 80px;
             left: 0;
             width: 100%;
-            height: 100vh;
+            height: calc(100vh - 80px);
             overflow-y: auto;
             box-sizing: border-box;
             background: transparent;
         `;
 
         document.body.appendChild(resumeComponent);
+    } else if (jsonData) {
+        // Actualizar datos si el componente ya existe
+        resumeComponent.resumejson = jsonData;
     }
 }
 
