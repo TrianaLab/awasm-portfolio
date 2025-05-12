@@ -123,6 +123,22 @@ json-resume {
     padding: 0; /* Eliminar el padding negro */
     box-sizing: border-box;
     background: transparent; /* Hacer el fondo transparente */
+    scrollbar-width: thin; /* Para Firefox */
+    scrollbar-color: var(--scrollbar-color-dark) transparent; /* Para Firefox - por defecto tema oscuro */
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+json-resume::-webkit-scrollbar {
+    width: 8px;
+}
+
+json-resume::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+json-resume::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-dark);
+    border-radius: 4px;
 }
 
 /* Añadir estilos específicos para el tema claro */
@@ -137,6 +153,11 @@ body.light-theme json-resume {
     --color-secondary-dark: rgb(84, 140, 33);
     --color-link-light: rgb(84, 140, 33);
     --color-link-dark: rgb(84, 140, 33);
+    scrollbar-color: var(--scrollbar-color-light) transparent; /* Para Firefox */
+}
+
+body.light-theme json-resume::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-light);
 }
 
 /* Añadir estilos específicos para el tema oscuro */
@@ -151,4 +172,8 @@ body:not(.light-theme) json-resume {
     --color-secondary-dark: rgb(84, 140, 33);
     --color-link-light: rgb(84, 140, 33);
     --color-link-dark: rgb(84, 140, 33);
+}
+
+body:not(.light-theme) json-resume::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-dark);
 }
