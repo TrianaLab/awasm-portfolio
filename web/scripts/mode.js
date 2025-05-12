@@ -2,8 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const modeToggle = document.getElementById("mode-toggle");
     const modeLabel = document.getElementById("mode-label");
     const terminal = document.getElementById("terminal");
+    const downloadButton = document.getElementById("download-resume");
 
-    if (!modeToggle || !modeLabel || !terminal) {
+    if (!modeToggle || !modeLabel || !terminal || !downloadButton) {
         console.error("Required elements not found!");
         return;
     }
@@ -40,16 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    let jsonResume = document.querySelector("json-resume");
-
-    if (!jsonResume) {
-        console.error("Required elements not found!");
-        return;
-    }
+    // Eliminar la verificación del json-resume aquí
+    // let jsonResume = document.querySelector("json-resume");
+    // if (!jsonResume) {
+    //     console.error("Required elements not found!");
+    //     return;
+    // }
 
     // Configuración inicial: UI (json-resume) oculto
-    jsonResume.style.visibility = "hidden";
-    jsonResume.style.opacity = "0";
+    let jsonResume = document.querySelector("json-resume");
+    if (jsonResume) {
+        jsonResume.style.visibility = "hidden";
+        jsonResume.style.opacity = "0";
+    }
 
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
@@ -108,12 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
             command: "kubectl get profile eduardo-diaz --output json",
             correlationId: instanceCorrelationId 
         });
-    }
-
-    const downloadButton = document.getElementById("download-resume");
-    if (!downloadButton) {
-        console.error("Download button not found!");
-        return;
     }
 
     downloadButton.addEventListener("click", async () => {
