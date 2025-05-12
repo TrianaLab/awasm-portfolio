@@ -17,13 +17,6 @@ body.light-theme #ui-canvas {
     color: var(--text-color-light);
 }
 
-/* Center "Coming Soon" message */
-#ui-canvas p {
-    font-family: 'Courier New', monospace;
-    font-size: 24px;
-    text-align: center;
-    margin: 0;
-}
 
 /* Header Container */
 #icon-container {
@@ -118,4 +111,18 @@ body.light-theme #theme-toggle:hover,
 body.light-theme #mode-toggle:hover, 
 body.light-theme #github-link:hover {
     background-color: #bbb;
+}
+
+json-resume {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+}
+
+json-resume {
+    overflow-y: auto;
+    padding: 20px;
+    box-sizing: border-box;
 }

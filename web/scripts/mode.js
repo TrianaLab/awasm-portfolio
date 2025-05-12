@@ -8,6 +8,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // Configuración inicial: CLI visible
+    terminal.style.visibility = "visible";
+    terminal.style.opacity = "1";
+
     const worker = window.wasmWorker;
     if (!worker) {
         console.error("WebAssembly worker is not available.");
@@ -15,10 +19,35 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let wasmReady = false;
-
     const instanceCorrelationId = "mode-" + Math.random().toString(36).substr(2, 9);
-
     let isDownloadRequest = false;
+
+    modeToggle.addEventListener("click", () => {
+        const isCLI = modeLabel.textContent === "CLI";
+
+        if (isCLI) {
+            modeLabel.textContent = "UI";
+            terminal.style.visibility = "hidden";
+            terminal.style.opacity = "0";
+            window.resumeUtils.loadResumeComponent();
+        } else {
+            modeLabel.textContent = "CLI";
+            terminal.style.visibility = "visible";
+            terminal.style.opacity = "1";
+            window.resumeUtils.unloadResumeComponent();
+        }
+    });
+
+    let jsonResume = document.querySelector("json-resume");
+
+    if (!jsonResume) {
+        console.error("Required elements not found!");
+        return;
+    }
+
+    // Configuración inicial: UI (json-resume) oculto
+    jsonResume.style.visibility = "hidden";
+    jsonResume.style.opacity = "0";
 
     document.addEventListener("workerMessage", (event) => {
         const { output, error, status, correlationId } = event.detail;
@@ -78,22 +107,6 @@ document.addEventListener("DOMContentLoaded", () => {
             correlationId: instanceCorrelationId 
         });
     }
-
-    modeToggle.addEventListener("click", () => {
-        const isCLI = modeLabel.textContent === "CLI";
-
-        if (isCLI) {
-            modeLabel.textContent = "UI";
-
-            terminal.style.visibility = "hidden";
-            terminal.style.opacity = "0";
-        } else {
-            modeLabel.textContent = "CLI";
-
-            terminal.style.visibility = "visible";
-            terminal.style.opacity = "1";
-        }
-    });
 
     const downloadButton = document.getElementById("download-resume");
     if (!downloadButton) {
