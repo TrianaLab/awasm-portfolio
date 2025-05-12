@@ -1,10 +1,21 @@
 let resumeComponent = null;
 
 function loadResumeComponent(jsonData = null) {
+    // Guardar la función original de console.log
+    const originalConsoleLog = console.log;
+    
+    // Sobrescribir console.log para filtrar los mensajes del componente
+    console.log = function() {
+        // Si el mensaje viene del json-resume.js, lo ignoramos
+        const stack = new Error().stack;
+        if (stack && !stack.includes('json-resume.js')) {
+            originalConsoleLog.apply(console, arguments);
+        }
+    };
+
     if (!resumeComponent) {
         resumeComponent = document.createElement('json-resume');
         
-        // Si tenemos datos JSON, los usamos directamente
         if (jsonData) {
             resumeComponent.resumejson = jsonData;
         }
@@ -22,9 +33,13 @@ function loadResumeComponent(jsonData = null) {
 
         document.body.appendChild(resumeComponent);
     } else if (jsonData) {
-        // Actualizar datos si el componente ya existe
         resumeComponent.resumejson = jsonData;
     }
+
+    // Restaurar la función original de console.log después de un breve delay
+    setTimeout(() => {
+        console.log = originalConsoleLog;
+    }, 100);
 }
 
 function unloadResumeComponent() {
