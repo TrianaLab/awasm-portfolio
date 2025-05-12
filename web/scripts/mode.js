@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!wasmReady) return;
         worker.postMessage({ 
             type: "command",
-            command: "kubectl get resume eduardo-diaz --output json",
+            command: "kubectl get resume main-resume --output json",
             correlationId 
         });
     }
@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
         isDownloadRequest = true;
         worker.postMessage({ 
             type: "command",
-            command: "kubectl get resume eduardo-diaz -o json",
+            command: "kubectl get resume main-resume -o json",
             correlationId 
         });
     });

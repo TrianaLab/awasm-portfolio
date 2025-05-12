@@ -457,7 +457,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	resume := &types.Resume{
 		Kind:              "resume",
-		Name:              "eduardo-diaz",
+		Name:              "main-resume",
 		Namespace:         namespace.Name,
 		CreationTimestamp: timestamp,
 		Basics:            *basics,
