@@ -164,8 +164,8 @@ body.light-theme json-resume::-webkit-scrollbar-thumb {
 
 body:not(.light-theme) json-resume {
     --font-family: 'Courier New', monospace;
-    --color-background-light: rgb(26, 26, 26);
-    --color-background-dark: rgb(26, 26, 26);
+    --color-background-light: rgb(30, 30, 30);
+    --color-background-dark: rgb(30, 30, 30);
     --color-dimmed-light: rgba(85, 140, 33, 0.2);
     --color-dimmed-dark: rgba(85, 140, 33, 0.2);
     --color-primary-light: #ffffff;
