@@ -1,10 +1,8 @@
 cff-version: 1.2.0
 message: >
-  If you use this portfolio, please cite it as follows:
-title: "AWASM Portfolio!"
+  If you use this portfolio or build upon it, please cite this project using the metadata below.
+title: "AWASM Portfolio"
 authors:
-  - family-names: "TrianaLab"
-    given-names: ""
   - family-names: "Díaz Asencio"
     given-names: "Eduardo"
     affiliation: "TrianaLab"
@@ -12,12 +10,12 @@ date-released: "2025-01-18"
 url: "https://edudiaz.dev"
 repository-code: "https://github.com/TrianaLab/awasm-portfolio"
 keywords:
-  - Web Assembly
+  - WebAssembly
   - WASM
   - Go
   - Kubernetes
   - Open Source
-license: "AGPL-3.0-or-later"
+license: "MIT"
 abstract: >
   This project is a WebAssembly (WASM) powered portfolio application designed to emulate a console, 
   allowing users to interact with the developer's resume using Kubernetes-like commands.
