@@ -56,7 +56,6 @@ The frontend features two primary modes of interaction, both synchronized with t
     *   Supports `kubectl` commands to interact with a virtual cluster.
 
 2.  **UI Mode** :sparkles:
-    *   Displays data as interactive, physics-based bubbles.
     *   Offers a dynamic, modern visualization of CV information.
 
 ### Backend :gear:
