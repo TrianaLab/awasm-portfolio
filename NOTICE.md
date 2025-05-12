@@ -6,7 +6,6 @@ This project includes third-party software under the following licenses:
    - spf13/cobra: https://github.com/spf13/cobra
    - spf13/pflag: https://github.com/spf13/pflag
    - inconshreveable/mousetrap: https://github.com/inconshreveable/mousetrap
-   - Roboto Font: https://fonts.google.com/specimen/Roboto
 
 ## 2. MIT Licensed Components:
    - brianvoe/gofakeit: https://github.com/brianvoe/gofakeit
@@ -14,9 +13,7 @@ This project includes third-party software under the following licenses:
    - xterm.js: https://github.com/xtermjs/xterm.js
    - js-yaml: https://github.com/nodeca/js-yaml
    - json-resume-schema: https://github.com/jsonresume/resume-schema
-
-## 3. BSD-3-Clause Licensed Components:
-   - D3.js: https://d3js.org
+   - jsonresume-component: https://github.com/scottnath/jsonresume-component
 
 ## 4. CC BY 4.0 Licensed Components:
    - Font Awesome Icons: https://fontawesome.com

@@ -31,7 +31,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Label:     "Software Infrastructure Engineer",
 		Email:     "edudiazasencio@gmail.com",
 		Url:       "https://edudiaz.dev",
-		Phone:     "+34 622287557",
+		Phone:     "622287557",
 		Summary:   "I'm a Software Infrastructure Engineer with strong interest in open-source and cloud-native technologies. I design and build scalable, robust infrastructures and actively contribute to projects that drive innovation. Most of my work and open-source contributions are managed through my personal organization, TrianaLab.",
 		Location: types.Location{
 			PostalCode:  "41010",
@@ -457,7 +457,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 
 	resume := &types.Resume{
 		Kind:              "resume",
-		Name:              "eduardo-diaz",
+		Name:              "main-resume",
 		Namespace:         namespace.Name,
 		CreationTimestamp: timestamp,
 		Basics:            *basics,

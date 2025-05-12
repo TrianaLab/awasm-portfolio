@@ -17,13 +17,6 @@ body.light-theme #ui-canvas {
     color: var(--text-color-light);
 }
 
-/* Center "Coming Soon" message */
-#ui-canvas p {
-    font-family: 'Courier New', monospace;
-    font-size: 24px;
-    text-align: center;
-    margin: 0;
-}
 
 /* Header Container */
 #icon-container {
@@ -37,7 +30,7 @@ body.light-theme #ui-canvas {
 }
 
 /* Toggle Buttons */
-#theme-toggle, #mode-toggle {
+#theme-toggle, #mode-toggle, #download-resume {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -53,7 +46,8 @@ body.light-theme #ui-canvas {
 }
 
 body.light-theme #theme-toggle, 
-body.light-theme #mode-toggle {
+body.light-theme #mode-toggle, 
+body.light-theme #download-resume {
     background-color: #ddd;
     color: #000;
 }
@@ -109,13 +103,77 @@ body.light-theme #download-resume:hover {
 }
 
 /* Hover Effects */
-#theme-toggle:hover, #mode-toggle:hover, #github-link:hover {
+#theme-toggle:hover, #mode-toggle:hover, #github-link:hover, #download-resume:hover {
     transform: scale(1.1);
     background-color: #555;
 }
 
 body.light-theme #theme-toggle:hover, 
 body.light-theme #mode-toggle:hover, 
-body.light-theme #github-link:hover {
+body.light-theme #github-link:hover, 
+body.light-theme #download-resume:hover {
     background-color: #bbb;
+}
+
+json-resume {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 0;
+    box-sizing: border-box;
+    background: transparent;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-color-dark) transparent;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+json-resume::-webkit-scrollbar {
+    width: 8px;
+}
+
+json-resume::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+json-resume::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-dark);
+    border-radius: 4px;
+}
+
+body.light-theme json-resume {
+    --color-background-light: #ffffff;
+    --color-background-dark: #ffffff;
+    --color-dimmed-light: rgba(85, 140, 33, 0.2);
+    --color-dimmed-dark: rgba(85, 140, 33, 0.2);
+    --color-primary-light: #000000;
+    --color-primary-dark: #000000;
+    --color-secondary-light: rgb(84, 140, 33);
+    --color-secondary-dark: rgb(84, 140, 33);
+    --color-link-light: rgb(84, 140, 33);
+    --color-link-dark: rgb(84, 140, 33);
+    scrollbar-color: var(--scrollbar-color-light) transparent;
+}
+
+body.light-theme json-resume::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-light);
+}
+
+body:not(.light-theme) json-resume {
+    --color-background-light: rgb(28, 28, 28);
+    --color-background-dark: rgb(28, 28, 28);
+    --color-dimmed-light: rgba(85, 140, 33, 0.2);
+    --color-dimmed-dark: rgba(85, 140, 33, 0.2);
+    --color-primary-light: #ffffff;
+    --color-primary-dark: #ffffff;
+    --color-secondary-light: rgb(84, 140, 33);
+    --color-secondary-dark: rgb(84, 140, 33);
+    --color-link-light: rgb(84, 140, 33);
+    --color-link-dark: rgb(84, 140, 33);
+}
+
+body:not(.light-theme) json-resume::-webkit-scrollbar-thumb {
+    background-color: var(--scrollbar-color-dark);
 }
