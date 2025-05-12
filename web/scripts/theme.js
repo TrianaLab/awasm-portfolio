@@ -55,5 +55,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 uiCanvas.style.color = theme === "light-theme" ? "#000000" : "#ffffff";
             }
         }
+
+        // Añadir observer para actualizar el tema del json-resume
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.target.classList.contains('light-theme')) {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                }
+            });
+        });
+
+        observer.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
     })();
 });

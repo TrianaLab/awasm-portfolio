@@ -119,10 +119,36 @@ json-resume {
     left: 0;
     width: 100%;
     height: 100vh;
+    overflow-y: auto;
+    padding: 0; /* Eliminar el padding negro */
+    box-sizing: border-box;
+    background: transparent; /* Hacer el fondo transparente */
 }
 
-json-resume {
-    overflow-y: auto;
-    padding: 20px;
-    box-sizing: border-box;
+/* Añadir estilos específicos para el tema claro */
+body.light-theme json-resume {
+    --color-background-light: #ffffff;
+    --color-background-dark: #ffffff;
+    --color-dimmed-light: rgba(85, 140, 33, 0.2);
+    --color-dimmed-dark: rgba(85, 140, 33, 0.2);
+    --color-primary-light: #000000;
+    --color-primary-dark: #000000;
+    --color-secondary-light: rgb(84, 140, 33);
+    --color-secondary-dark: rgb(84, 140, 33);
+    --color-link-light: rgb(84, 140, 33);
+    --color-link-dark: rgb(84, 140, 33);
+}
+
+/* Añadir estilos específicos para el tema oscuro */
+body:not(.light-theme) json-resume {
+    --color-background-light: rgb(28, 28, 28);
+    --color-background-dark: rgb(28, 28, 28);
+    --color-dimmed-light: rgba(85, 140, 33, 0.2);
+    --color-dimmed-dark: rgba(85, 140, 33, 0.2);
+    --color-primary-light: #ffffff;
+    --color-primary-dark: #ffffff;
+    --color-secondary-light: rgb(84, 140, 33);
+    --color-secondary-dark: rgb(84, 140, 33);
+    --color-link-light: rgb(84, 140, 33);
+    --color-link-dark: rgb(84, 140, 33);
 }

@@ -13,20 +13,9 @@ function loadResumeComponent() {
             width: 100%;
             height: 100vh;
             overflow-y: auto;
-            margin: 0;
-            padding: 20px;
             box-sizing: border-box;
-            background: rgb(26, 26, 26);
+            background: transparent;
         `;
-
-        // Aplicar las variables CSS del componente
-        resumeComponent.style.setProperty('--font-family', "'Courier New', Menlo, monospace");
-        resumeComponent.style.setProperty('--color-background-light', '#ffffff');
-        resumeComponent.style.setProperty('--color-secondary-light', 'rgb(84, 140, 33)');
-        resumeComponent.style.setProperty('--color-link-light', 'rgb(84, 140, 33)');
-        resumeComponent.style.setProperty('--color-background-dark', 'rgb(28, 28, 28)');
-        resumeComponent.style.setProperty('--color-secondary-dark', 'rgb(84, 140, 33)');
-        resumeComponent.style.setProperty('--color-link-dark', 'rgb(84, 140, 33)');
 
         document.body.appendChild(resumeComponent);
     }
