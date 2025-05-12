@@ -144,6 +144,7 @@ json-resume::-webkit-scrollbar-thumb {
 }
 
 body.light-theme json-resume {
+    --font-family: 'Courier New', monospace;
     --color-background-light: #ffffff;
     --color-background-dark: #ffffff;
     --color-dimmed-light: rgba(85, 140, 33, 0.2);
@@ -162,8 +163,9 @@ body.light-theme json-resume::-webkit-scrollbar-thumb {
 }
 
 body:not(.light-theme) json-resume {
-    --color-background-light: rgb(28, 28, 28);
-    --color-background-dark: rgb(28, 28, 28);
+    --font-family: 'Courier New', monospace;
+    --color-background-light: rgb(26, 26, 26);
+    --color-background-dark: rgb(26, 26, 26);
     --color-dimmed-light: rgba(85, 140, 33, 0.2);
     --color-dimmed-dark: rgba(85, 140, 33, 0.2);
     --color-primary-light: #ffffff;
