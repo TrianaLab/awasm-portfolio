@@ -23,15 +23,17 @@ document.addEventListener("DOMContentLoaded", () => {
     let isDownloadRequest = false;
 
     modeToggle.addEventListener("click", () => {
-        const isCLI = modeLabel.textContent === "CLI";
+        const isUI = modeLabel.textContent === "UI";
 
-        if (isCLI) {
-            modeLabel.textContent = "UI";
+        if (isUI) {
+            // Cambiamos a modo UI, por lo que el botón mostrará CLI
+            modeLabel.textContent = "CLI";
             terminal.style.visibility = "hidden";
             terminal.style.opacity = "0";
             window.resumeUtils.loadResumeComponent();
         } else {
-            modeLabel.textContent = "CLI";
+            // Cambiamos a modo CLI, por lo que el botón mostrará UI
+            modeLabel.textContent = "UI";
             terminal.style.visibility = "visible";
             terminal.style.opacity = "1";
             window.resumeUtils.unloadResumeComponent();
