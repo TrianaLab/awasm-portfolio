@@ -27,6 +27,8 @@ jobs:
         uses: Devleaps/jsonresume-generator@v1.1.0
         with:
           output-type: "pdf"
+          theme-local: false
+          theme-name: jsonresume-theme-modern
 
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4

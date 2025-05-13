@@ -4,11 +4,13 @@ on:
   pull_request:
     paths:
       - "**/*.go"
+      - "!cli.go"
   push:
     branches:
       - "main"
     paths:
       - "**/*.go"
+      - "!cli.go"
 
 permissions:
   contents: write
