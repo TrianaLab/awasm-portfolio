@@ -28,7 +28,7 @@ jobs:
         with:
           output-type: "pdf"
           theme-local: false
-          theme-name: jsonresume-theme-modern
+          theme-name: jsonresume-theme-class
 
       - name: Upload PDF artifact
         uses: actions/upload-artifact@v4
