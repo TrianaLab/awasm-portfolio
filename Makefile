@@ -84,4 +84,4 @@ fetch-wasm-exec:
 # Get resume.json
 resume:
 	@echo "Generating resume.json..."
-	$(GO) run cli.go get resume main-resume -o json 2>&1 | jq '.[0]' > resume.json
+	$(GO) run cli.go get resume main-resume -o json | jq '.[0]' > resume.json
