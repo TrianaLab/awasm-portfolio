@@ -181,14 +181,14 @@
                 cursorPosition--;
                 updateInput();
             }
-        } else if (char === "\u001b[A") { // Up arrow (history)
+        } else if (char === "\u001b[A") { // Up arrow
             if (historyIndex > 0) {
                 historyIndex--;
                 currentInput = commandHistory[historyIndex];
                 cursorPosition = currentInput.length;
                 updateInput();
             }
-        } else if (char === "\u001b[B") { // Down arrow (history)
+        } else if (char === "\u001b[B") { // Down arrow
             if (historyIndex < commandHistory.length - 1) {
                 historyIndex++;
                 currentInput = commandHistory[historyIndex];
@@ -211,16 +211,24 @@
                 term.write("\u001b[C");
             }
         } else if (char === '\u0003') { // Ctrl+C
-            term.write("^C\r\n"); // Display "^C" and move to a new line
-            currentInput = ""; // Clear the current input
-            cursorPosition = 0; // Reset cursor position
-            writePrompt(); // Display a new prompt
+            term.write("^C\r\n");
+            currentInput = "";
+            cursorPosition = 0;
+            writePrompt();
         } else if (char.length === 1) { // Regular character input
             currentInput = currentInput.slice(0, cursorPosition) + char + currentInput.slice(cursorPosition);
             cursorPosition++;
-            updateInput();
+
+            if (cursorPosition === currentInput.length) {
+                // Fast path: just write the char (no redraw)
+                term.write(char);
+            } else {
+                // Fallback: if typing in the middle, do a full redraw
+                updateInput();
+            }
         }
     });
+
 
     term.textarea.addEventListener("paste", function (event) {
         const pasteText = event.clipboardData.getData("text");
