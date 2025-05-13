@@ -1,0 +1,36 @@
+name: Generate PDF resume
+
+on:
+  workflow_dispatch:
+
+env:
+  GO_VERSION: 1.23.6
+
+permissions:
+  contents: read
+
+jobs:
+  generate-resume:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Generate resume.json
+        run: make resume
+
+      - name: Generate resume.pdf
+        uses: Devleaps/jsonresume-generator@v1.1.0
+        with:
+          output-type: "pdf"
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: resume
+          path: resume.pdf
+

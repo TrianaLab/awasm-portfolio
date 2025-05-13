@@ -80,3 +80,8 @@ ensure-deps:
 fetch-wasm-exec:
 	@echo "Fetching wasm_exec.js from local Go installation..."
 	cp "$$(go env GOROOT)/misc/wasm/wasm_exec.js" $(WASM_EXEC_JS)
+
+# Get resume.json
+resume:
+	@echo "Generating resume.json..."
+	$(GO) run cli.go get resume main-resume -o json 2>&1 | jq '.[0]' > resume.json
