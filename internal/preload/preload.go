@@ -194,6 +194,18 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		{
 			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
+			Name:              "volunteer-remake",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Organization:      "TrianaLab",
+			Position:          "Owner",
+			URL:               "https://github.com/TrianaLab/remake",
+			StartDate:         "2025-05-23",
+			Summary:           "A lightweight CLI tool that lets you package and share Makefiles as OCI artifacts.",
+		},
+  {
+			Kind:              "volunteer",
+			OwnerRef:          ownerRef,
 			Name:              "volunteer-jesse-chart",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
