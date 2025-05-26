@@ -2,7 +2,7 @@
 #ui-canvas {
     display: flex !important;
     width: 100vw !important;
-    height: 100vh !important;
+    height: 100dvh !important;
     visibility: visible !important;
     opacity: 1 !important;
     position: absolute !important;
