@@ -1,5 +1,5 @@
 # Stage 1: Build the WebAssembly binary
-FROM golang:1.23.4 AS builder
+FROM golang:1.24.3 AS builder
 
 # ---- Build Arguments ----
 # These can be overridden at build time using --build-arg
