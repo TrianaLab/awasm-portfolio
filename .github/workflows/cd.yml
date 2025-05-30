@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  GO_VERSION: 1.23.6
+  GO_VERSION: stable
 
 permissions:
   contents: read
