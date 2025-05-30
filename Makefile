@@ -79,7 +79,7 @@ ensure-deps:
 # Fetch wasm_exec.js from Local Go Installation
 fetch-wasm-exec:
 	@echo "Fetching wasm_exec.js from local Go installation..."
-	cp "$$(go env GOROOT)/misc/wasm/wasm_exec.js" $(WASM_EXEC_JS)
+	cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(WASM_EXEC_JS)
 
 # Get resume.json
 resume:

@@ -22,7 +22,7 @@ function loadResumeComponent(jsonData = null) {
             top: 80px;
             left: 0;
             width: 100%;
-            height: calc(100vh - 80px);
+            height: calc(100dvh - 80px);
             overflow-y: auto;
             box-sizing: border-box;
             background: transparent;
