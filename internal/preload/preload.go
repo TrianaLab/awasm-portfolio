@@ -165,7 +165,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
 			Institution:       "Universidad de Sevilla",
-			URL:               "https://www.universidadviu.com/es/master-inteligencia-artificial",
+			URL:               "https://etsi.us.es/en/studies-and-qualifications/degrees/degree-in-telecommunications-technology-engineering",
 			Area:              "Telecommunications",
 			StudyType:         "B.Eng",
 			StartDate:         "2021-09-01",
