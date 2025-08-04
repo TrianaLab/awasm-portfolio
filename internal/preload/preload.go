@@ -31,8 +31,8 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Label:     "Software Infrastructure Engineer",
 		Email:     "edudiazasencio@gmail.com",
 		Url:       "https://edudiaz.dev",
-		Phone:     "622287557",
-		Summary:   "I'm a Software Infrastructure Engineer with strong interest in open-source and cloud-native technologies. I design and build scalable, robust infrastructures and actively contribute to projects that drive innovation. Most of my work and open-source contributions are managed through my personal organization, TrianaLab.",
+		Phone:     "+34 622287557",
+		Summary:   "I’m a Software Infrastructure Engineer with a strong interest in open-source, cloud-native technologies, WebAssembly, and operating systems development. I enjoy designing and building scalable, resilient infrastructure systems with a focus on maintainability and developer experience. Most of my work—including experimental projects and open-source contributions—is organized under my personal lab, TrianaLab.",
 		Location: types.Location{
 			PostalCode:  "41010",
 			City:        "Sevilla",
@@ -61,10 +61,10 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
 			Company:           "Emergence AI",
-			Position:          "Machine Learning Operations Engineer",
+			Position:          "Platform Engineer",
 			URL:               "https://emergence.ai",
 			StartDate:         "2024-07-29",
-			Summary:           "As an MLOps Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
+			Summary:           "As an Platform Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
 		},
 		{
 			Kind:              "work",
@@ -90,7 +90,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2023-10-01",
 			EndDate:           "2024-02-01",
-			Summary:           "Provide technical support globally, address critical challenges and mentor newcomers. With a focus on data analysis and creative solutions, my role emphasizes effective troubleshooting and a comprehensive understanding of the platform’s inner infrastructure.",
+			Summary:           "Provided technical expertise and troubleshooting support for complex infrastructure issues impacting enterprise clients. Actively contributed to improving platform observability, network reliability, and automation. Recognized as a go-to engineer within a specialized team handling escalated Kubernetes and cloud-related incidents.",
 		},
 		{
 			Kind:              "work",
@@ -103,7 +103,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2022-10-01",
 			EndDate:           "2023-10-01",
-			Summary:           "Hands-on support for global customers utilizing the Appian platform. With strong problem-solving skills, proficiency in Kubernetes and expertise in web services, programming, and Linux, I contribute to ongoing customer relationships by delivering effective solutions.",
+			Summary:           "Supported customers operating Appian on Kubernetes across cloud and on-premise environments. Worked on platform observability, performance tuning, and cluster-level troubleshooting. Collaborated with product and engineering teams to streamline infrastructure reliability and delivery workflows.",
 		},
 		{
 			Kind:              "work",
@@ -116,7 +116,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2021-11-01",
 			EndDate:           "2022-10-01",
-			Summary:           "Tackle complex technical challenges, providing creative solutions and offering world-class support to customers globally. Proficient in troubleshooting, data analytics, and collaboration with internal teams, contribute to resolve Appian installations for both self-managed and Appian Cloud environments.",
+			Summary:           "Worked on the infrastructure support team helping customers resolve issues related to networking, storage, and observability in Appian's self-managed deployments. Gained strong operational experience in containerized environments and troubleshooting Kubernetes-based setups.",
 		},
 		{
 			Kind:              "work",
@@ -432,11 +432,11 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		{
 			Kind:              "interest",
 			OwnerRef:          ownerRef,
-			Name:              "interest-cloud-native",
+			Name:              "interest-open-source",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
 			Interest:          "Cloud Native",
-			Keywords:          []string{"Open Source", "Kubernetes", "WebAssembly", "Microservices"},
+			Keywords:          []string{"Open Source", "Kubernetes", "WebAssembly", "OSDev"},
 		},
 		{
 			Kind:              "interest",
@@ -463,7 +463,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
 			Interest:          "Gastronomy",
-			Keywords:          []string{"Cooking", "Pucherito", "Mediterranean gastronomy"},
+			Keywords:          []string{"Cooking", "Mediterranean gastronomy"},
 		},
 	}
 
