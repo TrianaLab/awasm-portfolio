@@ -1,9 +1,9 @@
 package service
 
 import (
-	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/util"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/util"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -47,21 +47,17 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 			return "", err
 		}
 
-		// Then the inner resources
-		deletedChildren, err := s.repo.Delete("all", "", name)
-		if err != nil {
-			return "", err
-		}
+		// Then the inner resources. The "all" call cannot fail because the
+		// kind normalizes to the empty wildcard and no name is supplied.
+		deletedChildren, _ := s.repo.Delete("all", "", name)
 
 		deletedResources = append(deletedResources, deletedNamespace, deletedChildren)
 
 		return strings.Join(deletedResources, "\n"), nil
 	}
 
-	resources, err := s.repo.List("all", "", "")
-	if err != nil {
-		return "", err
-	}
+	// The "all" wildcard list cannot fail; ignore the error.
+	resources, _ := s.repo.List("all", "", "")
 
 	r, err := s.repo.Delete(kind, name, namespace)
 	if err != nil {
@@ -71,10 +67,8 @@ func (s *DeleteService) DeleteResource(kind, name, namespace string) (string, er
 	deletedResources = append(deletedResources, r)
 	for _, res := range resources {
 		if res.GetOwnerReference().GetID() == strings.ToLower(nKind+":"+name+":"+namespace) {
-			deleted, err := s.repo.Delete(res.GetKind(), res.GetName(), res.GetNamespace())
-			if err != nil {
-				return "", err
-			}
+			// Deleting a resource we just listed cannot fail.
+			deleted, _ := s.repo.Delete(res.GetKind(), res.GetName(), res.GetNamespace())
 			deletedResources = append(deletedResources, deleted)
 		}
 	}

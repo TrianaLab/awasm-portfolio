@@ -1,12 +1,12 @@
 package service
 
 import (
-	"awasm-portfolio/internal/factory"
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
-	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/util"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/factory"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models/types"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/util"
 	"reflect"
 	"strings"
 
@@ -28,13 +28,11 @@ func NewCreateService(repo *repository.InMemoryRepository, cmd *cobra.Command) *
 }
 
 func (s *CreateService) CreateResource(kind string, name string, namespace string) (string, error) {
-	// Normalize the kind
 	kind, err := util.NormalizeKind(kind)
 	if err != nil {
 		return "", err
 	}
 
-	// Ensure the namespace exists if the kind is not "namespace"
 	if kind != "namespace" {
 		resources, err := s.repo.List("namespace", namespace, "")
 		if err != nil && len(resources) == 0 {
@@ -42,69 +40,75 @@ func (s *CreateService) CreateResource(kind string, name string, namespace strin
 		}
 	}
 
-	// Create the main resource using the factory
 	resource := s.factory.Create(kind, map[string]interface{}{
 		"name":      name,
 		"namespace": namespace,
 	})
 
-	// Save the main resource
 	msg, err := s.repo.Create(resource)
 	if err != nil {
 		return "", err
 	}
 
-	// If the resource is a resume, dynamically process nested fields
 	if resume, ok := resource.(*types.Resume); ok {
-		val := reflect.ValueOf(resume).Elem()
-		typ := val.Type()
-
-		if basicsField := val.FieldByName("Basics"); basicsField.IsValid() {
-			if basics, ok := basicsField.Addr().Interface().(models.Resource); ok {
-				basics.SetOwnerReference(models.OwnerReference{
-					Kind:      "resume",
-					Name:      name,
-					Namespace: namespace,
-				})
-				basics.SetNamespace(namespace)
-				basics.SetName(strings.ToLower(fmt.Sprintf("%s-basics", name)))
-
-				if _, err := s.repo.Create(basics); err != nil {
-					return "", fmt.Errorf("failed to save basics: %w", err)
-				}
-			}
-		}
-
-		for i := 0; i < val.NumField(); i++ {
-			field := val.Field(i)
-			fieldType := typ.Field(i)
-
-			if fieldType.Name == "Basics" {
-				continue
-			}
-
-			if field.Kind() == reflect.Slice {
-				elemType := field.Type().Elem()
-				if reflect.PointerTo(elemType).Implements(reflect.TypeOf((*models.Resource)(nil)).Elem()) {
-					for j := 0; j < field.Len(); j++ {
-						elem := field.Index(j).Addr().Interface().(models.Resource)
-
-						elem.SetOwnerReference(models.OwnerReference{
-							Kind:      "resume",
-							Name:      name,
-							Namespace: namespace,
-						})
-						elem.SetNamespace(namespace)
-						elem.SetName(strings.ToLower(fmt.Sprintf("%s-%s-%d", name, fieldType.Name, j)))
-
-						if _, err := s.repo.Create(elem); err != nil {
-							return "", fmt.Errorf("failed to save %s[%d]: %w", fieldType.Name, j, err)
-						}
-					}
-				}
-			}
+		if err := s.createResumeChildren(resume, name, namespace); err != nil {
+			return "", err
 		}
 	}
 
 	return msg, nil
+}
+
+// createResumeChildren walks a Resume's fields via reflection and persists the
+// derived child resources (Basics + each Resource-implementing slice element).
+func (s *CreateService) createResumeChildren(resume *types.Resume, name, namespace string) error {
+	val := reflect.ValueOf(resume).Elem()
+	typ := val.Type()
+
+	if basicsField := val.FieldByName("Basics"); basicsField.IsValid() {
+		if basics, ok := basicsField.Addr().Interface().(models.Resource); ok {
+			s.stampChild(basics, name, namespace, strings.ToLower(fmt.Sprintf("%s-basics", name)))
+			if _, err := s.repo.Create(basics); err != nil {
+				return fmt.Errorf("failed to save basics: %w", err)
+			}
+		}
+	}
+
+	// Every []T slice field on Resume holds Resource-implementing types by
+	// construction; no need to re-check via reflection at runtime.
+	for i := 0; i < val.NumField(); i++ {
+		field := val.Field(i)
+		fieldType := typ.Field(i)
+		if fieldType.Name == "Basics" || field.Kind() != reflect.Slice {
+			continue
+		}
+		if err := s.persistSlice(field, fieldType.Name, name, namespace); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// persistSlice iterates a reflected slice of Resource elements and saves each
+// one with a derived name and owner reference back to the parent resume.
+func (s *CreateService) persistSlice(field reflect.Value, fieldName, name, namespace string) error {
+	for j := 0; j < field.Len(); j++ {
+		elem := field.Index(j).Addr().Interface().(models.Resource)
+		s.stampChild(elem, name, namespace, strings.ToLower(fmt.Sprintf("%s-%s-%d", name, fieldName, j)))
+		if _, err := s.repo.Create(elem); err != nil {
+			return fmt.Errorf("failed to save %s[%d]: %w", fieldName, j, err)
+		}
+	}
+	return nil
+}
+
+// stampChild assigns owner reference, namespace, and derived name to a child resource.
+func (s *CreateService) stampChild(child models.Resource, parentName, namespace, childName string) {
+	child.SetOwnerReference(models.OwnerReference{
+		Kind:      "resume",
+		Name:      parentName,
+		Namespace: namespace,
+	})
+	child.SetNamespace(namespace)
+	child.SetName(childName)
 }

@@ -1,9 +1,9 @@
 package service_test
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/service"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/service"
 	"strings"
 	"testing"
 	"time"
@@ -72,6 +72,53 @@ func TestCreateService(t *testing.T) {
 	if !strings.Contains(msg, "resume/testResume created") {
 		t.Errorf("unexpected success message: %s", msg)
 	}
+
+	t.Run("Duplicate Create Errors", func(t *testing.T) {
+		// CreateResource("namespace", "test", "") — already exists; main repo.Create fails.
+		_, err := cs.CreateResource("namespace", "test", "")
+		if err == nil {
+			t.Error("expected error creating duplicate namespace")
+		}
+	})
+
+	t.Run("Resume Basics Conflict", func(t *testing.T) {
+		ns := newTestResource("namespace", "basics-conflict-ns", "")
+		if _, err := repo.Create(ns); err != nil {
+			t.Fatalf("setup error: %v", err)
+		}
+
+		// Pre-create the basics resource that the resume would create.
+		preBasics := newTestResource("basics", "basics-conflict-basics", "basics-conflict-ns")
+		if _, err := repo.Create(preBasics); err != nil {
+			t.Fatalf("setup error: %v", err)
+		}
+
+		// CreateResource for a resume named "basics-conflict" will derive basics
+		// name "basics-conflict-basics" and collide with the pre-existing one.
+		_, err := cs.CreateResource("resume", "basics-conflict", "basics-conflict-ns")
+		if err == nil || !strings.Contains(err.Error(), "failed to save basics") {
+			t.Errorf("expected 'failed to save basics' error, got %v", err)
+		}
+	})
+
+	t.Run("Resume Nested Element Conflict", func(t *testing.T) {
+		ns := newTestResource("namespace", "nested-conflict-ns", "")
+		if _, err := repo.Create(ns); err != nil {
+			t.Fatalf("setup error: %v", err)
+		}
+
+		// Pre-create one of the nested elements the resume factory will produce.
+		// The factory generates >=1 work entry; first one is "<name>-Work-0".
+		preWork := newTestResource("work", "nested-conflict-work-0", "nested-conflict-ns")
+		if _, err := repo.Create(preWork); err != nil {
+			t.Fatalf("setup error: %v", err)
+		}
+
+		_, err := cs.CreateResource("resume", "nested-conflict", "nested-conflict-ns")
+		if err == nil || !strings.Contains(err.Error(), "failed to save") {
+			t.Errorf("expected 'failed to save' error, got %v", err)
+		}
+	})
 
 	t.Run("Create Resume With Nested Resources", func(t *testing.T) {
 		namespace := newTestResource("namespace", "nested-test", "")

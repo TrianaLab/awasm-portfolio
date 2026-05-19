@@ -1,9 +1,9 @@
 package service
 
 import (
-	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/ui"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/ui"
 	"strings"
 
 	"github.com/spf13/cobra"

@@ -1,7 +1,7 @@
 package service
 
 import (
-	"awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 
 	"github.com/spf13/cobra"
 )

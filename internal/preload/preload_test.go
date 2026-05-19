@@ -1,8 +1,8 @@
 package preload_test
 
 import (
-	"awasm-portfolio/internal/preload"
-	"awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/preload"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"testing"
 )
 
@@ -51,4 +51,18 @@ func TestPreloadData(t *testing.T) {
 	if namespace[0].GetName() != "default" {
 		t.Errorf("expected namespace resource name to be 'default', got %s", namespace[0].GetName())
 	}
+}
+
+// TestPreloadData_PanicsOnDuplicate ensures the panic guard fires when a
+// resource can't be created (here: by preloading twice into the same repo).
+func TestPreloadData_PanicsOnDuplicate(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	preload.PreloadData(repo)
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Error("expected panic on duplicate preload, got none")
+		}
+	}()
+	preload.PreloadData(repo)
 }

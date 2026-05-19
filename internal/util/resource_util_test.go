@@ -1,7 +1,7 @@
 package util_test
 
 import (
-	"awasm-portfolio/internal/util"
+	"github.com/TrianaLab/awasm-portfolio/internal/util"
 	"testing"
 )
 

@@ -1,7 +1,7 @@
 package ui
 
 import (
-	"awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
 	"strings"
 )
 

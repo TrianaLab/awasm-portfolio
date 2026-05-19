@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"awasm-portfolio/internal/models"
 	"encoding/json"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
 	"strings"
 	"time"
 
@@ -29,7 +29,7 @@ func calculateColumnWidths(headers []string, rows [][]string) []int {
 // formatHeaders formats the table headers
 func formatHeaders(sb *strings.Builder, headers []string, colWidths []int) {
 	for i, header := range headers {
-		sb.WriteString(fmt.Sprintf("%-*s", colWidths[i], header))
+		fmt.Fprintf(sb, "%-*s", colWidths[i], header)
 		if i < len(headers)-1 {
 			sb.WriteString("  ")
 		}
@@ -41,7 +41,7 @@ func formatHeaders(sb *strings.Builder, headers []string, colWidths []int) {
 func formatRows(sb *strings.Builder, rows [][]string, colWidths []int) {
 	for _, row := range rows {
 		for i, cell := range row {
-			sb.WriteString(fmt.Sprintf("%-*s", colWidths[i], cell))
+			fmt.Fprintf(sb, "%-*s", colWidths[i], cell)
 			if i < len(row)-1 {
 				sb.WriteString("  ")
 			}

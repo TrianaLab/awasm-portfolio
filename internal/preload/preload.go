@@ -1,9 +1,9 @@
 package preload
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
-	"awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models/types"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"reflect"
 	"time"
 )
@@ -28,11 +28,11 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		Name:      "basics-eduardo-diaz",
 		Namespace: namespace.Name,
 		FullName:  "Eduardo Díaz",
-		Label:     "Software Infrastructure Engineer",
+		Label:     "Platform Engineer",
 		Email:     "edudiazasencio@gmail.com",
 		Url:       "https://edudiaz.dev",
 		Phone:     "+34 622287557",
-		Summary:   "I’m a Software Infrastructure Engineer with a strong interest in open-source, cloud-native technologies, WebAssembly, and operating systems development. I enjoy designing and building scalable, resilient infrastructure systems with a focus on maintainability and developer experience. Most of my work—including experimental projects and open-source contributions—is organized under my personal lab, TrianaLab.",
+		Summary:   "Platform Engineer focused on cloud-native infrastructure, WebAssembly, and operating-systems development. I design and operate the platforms — Kubernetes, observability, networking, CI/CD — that other engineering teams build on, with an emphasis on reliability, developer experience, and long-term maintainability. I sustain a steady cadence of upstream open-source contributions (KEDA, Docker, Artifact Hub, container2wasm, Spin, CloudTTY) and run TrianaLab, where I design and ship original cloud-native tooling (pacto, awasm-portfolio, remake).",
 		Location: types.Location{
 			PostalCode:  "41010",
 			City:        "Sevilla",
@@ -64,7 +64,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Platform Engineer",
 			URL:               "https://emergence.ai",
 			StartDate:         "2024-07-29",
-			Summary:           "As an Platform Engineer at Emergence, I’m actively involved in building scalable and efficient AI infrastructure utilizing technologies like Terraform, Crossplane, Prometheus, Istio, Keda, Kyverno, etc. My responsibilities include provisioning GKE clusters, orchestrating additional infrastructure components, ensuring robust observability and implementing advanced networking capabilities.",
+			Summary:           "Design and operate the AI platform on GKE. Lead workstreams across cluster provisioning (Terraform, Crossplane), service mesh and ingress (Istio), event-driven autoscaling (KEDA), policy and admission control (Kyverno), and end-to-end observability (Prometheus, OpenTelemetry). Focus on making the platform safe, scalable, and self-service for the AI engineering teams that depend on it.",
 		},
 		{
 			Kind:              "work",
@@ -77,7 +77,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2024-02-01",
 			EndDate:           "2024-07-29",
-			Summary:           "Provide services that support elastic scale and allow frequent, reliable, high-impact changes to the deployed products. Reduce friction and toil surrounding data when creating new product services and features, including data lifecycle management, data retention, data analytics and providing easy-to-use APIs. Make Appian more Kubernetes-native both in cloud and self-managed environments.",
+			Summary:           "Built platform services on Kubernetes that let product teams ship elastic, high-impact changes safely across cloud and self-managed environments. Owned data-platform primitives (lifecycle, retention, analytics APIs) that reduced toil for downstream service teams, and drove the broader push to make Appian more Kubernetes-native.",
 		},
 		{
 			Kind:              "work",
@@ -90,7 +90,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2023-10-01",
 			EndDate:           "2024-02-01",
-			Summary:           "Provided technical expertise and troubleshooting support for complex infrastructure issues impacting enterprise clients. Actively contributed to improving platform observability, network reliability, and automation. Recognized as a go-to engineer within a specialized team handling escalated Kubernetes and cloud-related incidents.",
+			Summary:           "Senior engineer on the team handling escalated Kubernetes and cloud incidents for enterprise customers. Diagnosed and resolved complex platform issues across observability, networking, and automation, and fed recurring failure modes back into platform-level improvements.",
 		},
 		{
 			Kind:              "work",
@@ -103,7 +103,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2022-10-01",
 			EndDate:           "2023-10-01",
-			Summary:           "Supported customers operating Appian on Kubernetes across cloud and on-premise environments. Worked on platform observability, performance tuning, and cluster-level troubleshooting. Collaborated with product and engineering teams to streamline infrastructure reliability and delivery workflows.",
+			Summary:           "Supported enterprise customers running Appian on Kubernetes across cloud and on-prem deployments. Owned observability tuning, performance investigations, and cluster-level troubleshooting, partnering with product and engineering to harden infrastructure reliability and delivery.",
 		},
 		{
 			Kind:              "work",
@@ -116,7 +116,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://appian.com",
 			StartDate:         "2021-11-01",
 			EndDate:           "2022-10-01",
-			Summary:           "Worked on the infrastructure support team helping customers resolve issues related to networking, storage, and observability in Appian's self-managed deployments. Gained strong operational experience in containerized environments and troubleshooting Kubernetes-based setups.",
+			Summary:           "Joined the infrastructure support team focused on networking, storage, and observability for Appian's self-managed Kubernetes deployments. Built deep operational fluency in containerized environments and customer-incident response.",
 		},
 		{
 			Kind:              "work",
@@ -129,7 +129,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://solera.com",
 			StartDate:         "2020-08-01",
 			EndDate:           "2021-11-01",
-			Summary:           "Interface with developers and system architects to ensure applications are designed to be testable while ensuring tags, object ID’s, component and page name standards are in place. Create test plans and test cases based on defined stories. Automate those test cases and incorporate them to correspondent test suites.",
+			Summary:           "Partnered with developers and architects to bake testability into applications at design time, defining and enforcing tagging, naming, and component standards. Authored test plans, automated regression suites, and integrated them into the team's CI workflows.",
 		},
 	}
 
@@ -194,6 +194,18 @@ func PreloadData(repo *repository.InMemoryRepository) {
 		{
 			Kind:              "volunteer",
 			OwnerRef:          ownerRef,
+			Name:              "volunteer-trianalab-pacto",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Organization:      "TrianaLab: pacto",
+			Position:          "Owner",
+			URL:               "https://github.com/TrianaLab/pacto",
+			StartDate:         "2026-03-03",
+			Summary:           "An OCI-distributed contract system for cloud-native services. Pacto pairs a CLI, dashboard, and Kubernetes operator so teams can describe a service's operational behavior once — interfaces, dependencies, runtime semantics, configuration, scaling — then validate it, diff it, distribute it via OCI registries, and verify alignment against running workloads.",
+		},
+		{
+			Kind:              "volunteer",
+			OwnerRef:          ownerRef,
 			Name:              "volunteer-remake",
 			Namespace:         namespace.Name,
 			CreationTimestamp: timestamp,
@@ -202,18 +214,6 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			URL:               "https://github.com/TrianaLab/remake",
 			StartDate:         "2025-05-23",
 			Summary:           "A lightweight CLI tool that lets you package and share Makefiles as OCI artifacts.",
-		},
-  {
-			Kind:              "volunteer",
-			OwnerRef:          ownerRef,
-			Name:              "volunteer-jesse-chart",
-			Namespace:         namespace.Name,
-			CreationTimestamp: timestamp,
-			Organization:      "Jesse",
-			Position:          "Open-source contributor",
-			URL:               "https://jesse.trade/",
-			StartDate:         "2024-12-29",
-			Summary:           "Created a Kubernetes helm chart for the Jesse AI trading bot.",
 		},
 		{
 			Kind:              "volunteer",
@@ -225,7 +225,19 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Owner",
 			URL:               "https://edudiaz.dev",
 			StartDate:         "2025-01-19",
-			Summary:           "A webassembly powered application that shows developer’s portoflio using kubernetes-like commands.",
+			Summary:           "A WebAssembly-powered application that exposes the developer's portfolio through kubectl-style commands.",
+		},
+		{
+			Kind:              "volunteer",
+			OwnerRef:          ownerRef,
+			Name:              "volunteer-jesse-chart",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Organization:      "Jesse",
+			Position:          "Open-source contributor",
+			URL:               "https://jesse.trade/",
+			StartDate:         "2024-12-29",
+			Summary:           "Created a Kubernetes Helm chart for the Jesse AI trading bot.",
 		},
 		{
 			Kind:              "volunteer",
@@ -237,7 +249,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Open-source contributor",
 			URL:               "https://github.com/kedacore/keda-docs/commits/main/?author=edu-diaz",
 			StartDate:         "2025-02-06",
-			Summary:           "Improved GCP PubSub scaler documentation from KEDA, a Kubernetes-based event driven autoscaler from the Cloud Native Computing Foundation.",
+			Summary:           "Improved the GCP Pub/Sub scaler documentation for KEDA, the CNCF Kubernetes event-driven autoscaler.",
 		},
 		{
 			Kind:              "volunteer",
@@ -249,7 +261,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Open-source contributor",
 			URL:               "https://github.com/cloudtty/cloudtty/commits/main/?author=edu-diaz",
 			StartDate:         "2024-02-01",
-			Summary:           "Fixed a bug from CloudTTY, a Kubernetes cloudshell operator from the Cloud Native Computing Foundation.",
+			Summary:           "Fixed a bug in CloudTTY, the CNCF Kubernetes cloud-shell operator.",
 		},
 		{
 			Kind:              "volunteer",
@@ -261,7 +273,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Open-source contributor",
 			URL:               "https://github.com/fermyon/developer/commits/main/?author=edu-diaz",
 			StartDate:         "2024-11-27",
-			Summary:           "Improved documenation from Spin, a developer tool for building WebAssembly microservices and web applications from Fermyon.",
+			Summary:           "Improved documentation for Spin, Fermyon's developer tool for building WebAssembly microservices and web applications.",
 		},
 		{
 			Kind:              "volunteer",
@@ -273,7 +285,7 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Open-source contributor",
 			URL:               "https://github.com/container2wasm/container2wasm/commits/main/?author=edu-diaz",
 			StartDate:         "2025-03-08",
-			Summary:           "Added Apple Silicon build support to container2wasm, a container to WASM image converter that enables to run the container on web assembly.",
+			Summary:           "Added Apple Silicon build support to container2wasm, a tool that converts container images into WebAssembly so they can run in the browser.",
 		},
 		{
 			Kind:              "volunteer",
@@ -285,7 +297,19 @@ func PreloadData(repo *repository.InMemoryRepository) {
 			Position:          "Open-source contributor",
 			URL:               "https://github.com/docker/docs/commits/main/?author=edu-diaz",
 			StartDate:         "2025-05-01",
-			Summary:           "Improved docker compose OCI artifacts documentation.",
+			Summary:           "Improved the Docker Compose OCI artifacts documentation.",
+		},
+		{
+			Kind:              "volunteer",
+			OwnerRef:          ownerRef,
+			Name:              "volunteer-artifacthub-mermaid",
+			Namespace:         namespace.Name,
+			CreationTimestamp: timestamp,
+			Organization:      "Artifact Hub",
+			Position:          "Open-source contributor",
+			URL:               "https://github.com/artifacthub/hub/commits/main/?author=edu-diaz",
+			StartDate:         "2026-04-13",
+			Summary:           "Added Mermaid diagram rendering to package README files in Artifact Hub, a CNCF project for finding, installing, and publishing cloud-native packages.",
 		},
 	}
 
