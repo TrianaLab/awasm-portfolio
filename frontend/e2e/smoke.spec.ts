@@ -177,6 +177,76 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(card).toContainText('TrianaLab/awasm-portfolio');
   });
 
+  test('window manager: double-clicking the chrome toggles maximize', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    const win = page.locator('[role="dialog"]').first();
+    const before = await win.boundingBox();
+    const desktop = await page.locator('.desktop').boundingBox();
+    expect(before!.width).toBeLessThan(desktop!.width);
+
+    // Window uses manual double-click detection (350 ms window). Two
+    // quick clicks on the chrome bar must trigger maximize.
+    const chrome = win.locator('.chrome');
+    await chrome.click({ position: { x: 300, y: 10 } });
+    await chrome.click({ position: { x: 300, y: 10 } });
+    await page.waitForTimeout(150);
+    let now = await win.boundingBox();
+    expect(Math.abs(now!.width - desktop!.width)).toBeLessThan(3);
+
+    await chrome.click({ position: { x: 300, y: 10 } });
+    await chrome.click({ position: { x: 300, y: 10 } });
+    await page.waitForTimeout(150);
+    now = await win.boundingBox();
+    expect(Math.abs(now!.width - before!.width)).toBeLessThan(3);
+  });
+
+  test('window manager: resize from the left edge changes width and x', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    const win = page.locator('[role="dialog"]').first();
+    const before = await win.boundingBox();
+
+    const handle = await win.locator('.rz-w').boundingBox();
+    const startX = handle!.x + handle!.width / 2;
+    const y = handle!.y + handle!.height / 2;
+    await page.mouse.move(startX, y);
+    await page.mouse.down();
+    await page.mouse.move(startX + 60, y, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+
+    const after = await win.boundingBox();
+    expect(after!.x - before!.x).toBeGreaterThan(40);
+    expect(before!.width - after!.width).toBeGreaterThan(40);
+  });
+
+  test('window manager: resize from the top edge changes height and y', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    const win = page.locator('[role="dialog"]').first();
+    const before = await win.boundingBox();
+
+    const handle = await win.locator('.rz-n').boundingBox();
+    const x = handle!.x + handle!.width / 2;
+    const startY = handle!.y + handle!.height / 2;
+    await page.mouse.move(x, startY);
+    await page.mouse.down();
+    await page.mouse.move(x, startY + 50, { steps: 6 });
+    await page.mouse.up();
+    await page.waitForTimeout(150);
+
+    const after = await win.boundingBox();
+    expect(after!.y - before!.y).toBeGreaterThan(30);
+    expect(before!.height - after!.height).toBeGreaterThan(30);
+  });
+
   test('window manager: maximize fills the desktop and toggles back', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');

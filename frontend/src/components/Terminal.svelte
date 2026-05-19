@@ -168,7 +168,13 @@
     term.open(container);
     fit.fit();
 
-    resizeObserver = new ResizeObserver(() => fit.fit());
+    resizeObserver = new ResizeObserver(() => {
+      fit.fit();
+      // fit() reflows xterm asynchronously — defer scrollToBottom to the
+      // next animation frame so it sees the new buffer geometry. Without
+      // this, maximize after long output leaves the prompt off-screen.
+      requestAnimationFrame(() => term.scrollToBottom());
+    });
     resizeObserver.observe(container);
 
     for (const line of WELCOME) {

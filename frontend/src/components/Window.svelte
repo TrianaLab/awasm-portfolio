@@ -14,14 +14,19 @@
     children: Snippet;
   } = $props();
 
+  const MIN_W = 360;
+  const MIN_H = 220;
+
   function maximize() {
     const w = desktopEl?.clientWidth ?? window.innerWidth;
     const h = desktopEl?.clientHeight ?? window.innerHeight;
     manager.toggleMaximize(win.id, w, h);
   }
 
-  // Drag from the chrome bar.
+  // ─── Drag from the chrome bar ───────────────────────────────────────
   let dragOffset: { x: number; y: number } | null = null;
+  let lastChromeClickAt = 0;
+  const DBL_CLICK_MS = 350;
 
   function desktopRect(): { left: number; top: number; w: number; h: number } | null {
     if (!desktopEl) return null;
@@ -32,6 +37,16 @@
   function onChromePointerDown(event: PointerEvent) {
     if ((event.target as HTMLElement).closest('.traffic')) return; // dot click
     manager.focus(win.id);
+    // Manual double-click detection: setPointerCapture below swallows
+    // the native dblclick event, so we track click cadence ourselves
+    // (matching macOS / Windows: double-click chrome → toggle maximize).
+    const now = performance.now();
+    if (now - lastChromeClickAt < DBL_CLICK_MS) {
+      lastChromeClickAt = 0;
+      maximize();
+      return;
+    }
+    lastChromeClickAt = now;
     dragOffset = { x: event.clientX - win.x, y: event.clientY - win.y };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   }
@@ -39,8 +54,6 @@
   function onChromePointerMove(event: PointerEvent) {
     if (!dragOffset) return;
     manager.move(win.id, event.clientX - dragOffset.x, event.clientY - dragOffset.y);
-
-    // Snap-zone detection: translate the pointer into desktop-local coords.
     const desk = desktopRect();
     if (desk) {
       manager.updateSnapHint(event.clientX - desk.left, event.clientY - desk.top, desk.w, desk.h);
@@ -58,27 +71,77 @@
     }
   }
 
-  // Resize from the SE corner.
-  let resizeOffset: { x: number; y: number; w: number; h: number } | null = null;
+  // ─── Resize from any edge or corner ─────────────────────────────────
+  type Edge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+  type ResizeState = {
+    edge: Edge;
+    startPointerX: number;
+    startPointerY: number;
+    startX: number;
+    startY: number;
+    startW: number;
+    startH: number;
+  };
+  let resizeState: ResizeState | null = null;
 
-  function onResizePointerDown(event: PointerEvent) {
+  function onResizePointerDown(edge: Edge, event: PointerEvent) {
     event.stopPropagation();
     manager.focus(win.id);
-    resizeOffset = { x: event.clientX, y: event.clientY, w: win.w, h: win.h };
+    resizeState = {
+      edge,
+      startPointerX: event.clientX,
+      startPointerY: event.clientY,
+      startX: win.x,
+      startY: win.y,
+      startW: win.w,
+      startH: win.h,
+    };
     (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   }
 
   function onResizePointerMove(event: PointerEvent) {
-    if (!resizeOffset) return;
-    manager.resize(
-      win.id,
-      resizeOffset.w + (event.clientX - resizeOffset.x),
-      resizeOffset.h + (event.clientY - resizeOffset.y),
-    );
+    if (!resizeState) return;
+    const dx = event.clientX - resizeState.startPointerX;
+    const dy = event.clientY - resizeState.startPointerY;
+    const { edge, startX, startY, startW, startH } = resizeState;
+
+    let newX = startX;
+    let newY = startY;
+    let newW = startW;
+    let newH = startH;
+
+    // Horizontal axis
+    if (edge.includes('e')) {
+      newW = Math.max(MIN_W, startW + dx);
+    } else if (edge.includes('w')) {
+      // Clamp so the right edge stays put; the left edge can't push past
+      // the min-width frontier.
+      const proposedW = Math.max(MIN_W, startW - dx);
+      const consumedDx = startW - proposedW;
+      newX = startX + consumedDx;
+      newW = proposedW;
+    }
+
+    // Vertical axis
+    if (edge.includes('s')) {
+      newH = Math.max(MIN_H, startH + dy);
+    } else if (edge.includes('n')) {
+      const proposedH = Math.max(MIN_H, startH - dy);
+      const consumedDy = startH - proposedH;
+      newY = Math.max(0, startY + consumedDy);
+      newH = proposedH;
+    }
+
+    if (newX !== startX || newY !== startY) {
+      manager.move(win.id, newX, newY);
+    }
+    if (newW !== startW || newH !== startH) {
+      manager.resize(win.id, newW, newH);
+    }
   }
 
   function onResizePointerUp(event: PointerEvent) {
-    resizeOffset = null;
+    resizeState = null;
     (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
   }
 </script>
@@ -107,37 +170,30 @@
       onpointercancel={onChromePointerUp}
     >
       <div class="traffic">
-        <button
-          class="dot dot-red"
-          aria-label="Close window"
-          onclick={() => manager.close(win.id)}
-        ></button>
-        <button
-          class="dot dot-yellow"
-          aria-label="Minimize window"
-          onclick={() => manager.minimize(win.id)}
-        ></button>
-        <button
-          class="dot dot-green"
-          aria-label="Maximize window"
-          onclick={maximize}
-        ></button>
+        <button class="dot dot-red" aria-label="Close window" onclick={() => manager.close(win.id)}></button>
+        <button class="dot dot-yellow" aria-label="Minimize window" onclick={() => manager.minimize(win.id)}></button>
+        <button class="dot dot-green" aria-label="Maximize window" onclick={maximize}></button>
       </div>
       <span class="title">{win.title}</span>
     </div>
 
     <div class="content">{@render children()}</div>
 
-    <div
-      class="resize-handle"
-      role="separator"
-      aria-label="Resize"
-      aria-orientation="horizontal"
-      onpointerdown={onResizePointerDown}
-      onpointermove={onResizePointerMove}
-      onpointerup={onResizePointerUp}
-      onpointercancel={onResizePointerUp}
-    ></div>
+    <!-- 4 edges + 4 corners; each one is a thin transparent strip with
+         the appropriate resize cursor and a pointer-handler that drives
+         the same generic resize logic. -->
+    {#each ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as const as edge (edge)}
+      <div
+        class="rz rz-{edge}"
+        role="separator"
+        aria-label="Resize {edge}"
+        aria-orientation={edge === 'n' || edge === 's' ? 'horizontal' : 'vertical'}
+        onpointerdown={(e) => onResizePointerDown(edge, e)}
+        onpointermove={onResizePointerMove}
+        onpointerup={onResizePointerUp}
+        onpointercancel={onResizePointerUp}
+      ></div>
+    {/each}
   </div>
 {/if}
 
@@ -162,8 +218,6 @@
     padding: 0.55rem 0.8rem;
     background: var(--color-bg-subtle);
     border-bottom: 1px solid var(--color-border);
-    /* Stay with the system arrow over the header — only swap to a
-       grabbing cursor while the user is actively dragging. */
     cursor: default;
     user-select: none;
     touch-action: none;
@@ -175,8 +229,6 @@
   .traffic {
     display: flex;
     gap: 0.4rem;
-    /* When the user hovers any dot, surface the macOS-style symbol on
-       every dot in the group (matches the real macOS chrome behaviour). */
   }
   .traffic:hover .dot::before {
     opacity: 1;
@@ -191,7 +243,6 @@
     cursor: pointer;
     transition: filter var(--transition);
   }
-  /* macOS-style hover glyph inside each traffic light. */
   .dot::before {
     content: '';
     position: absolute;
@@ -229,7 +280,6 @@
     background: #27c93f;
   }
   .dot-green::before {
-    /* Two opposite-corner triangles — the macOS maximize glyph. */
     content: '⛶';
     font-size: 9px;
   }
@@ -243,7 +293,6 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Compensate for the traffic lights on the left so the title is visually centred. */
     margin-right: 60px;
   }
 
@@ -254,13 +303,76 @@
     overflow: hidden;
   }
 
-  .resize-handle {
+  /* ─── Resize handles ───────────────────────────────────────────────
+     Hit areas are 6 px thick along edges, 12 px at corners. Corners
+     sit on top of edges so diagonal cursors win at the intersection. */
+  .rz {
     position: absolute;
+    touch-action: none;
+    background: transparent;
+    z-index: 2;
+  }
+  .rz-n {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    cursor: ns-resize;
+  }
+  .rz-s {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    cursor: ns-resize;
+  }
+  .rz-e {
+    top: 0;
     right: 0;
     bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+  }
+  .rz-w {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: ew-resize;
+  }
+  .rz-nw {
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nwse-resize;
+    z-index: 3;
+  }
+  .rz-ne {
+    top: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nesw-resize;
+    z-index: 3;
+  }
+  .rz-sw {
+    bottom: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    cursor: nesw-resize;
+    z-index: 3;
+  }
+  .rz-se {
+    bottom: 0;
+    right: 0;
     width: 14px;
     height: 14px;
     cursor: nwse-resize;
+    z-index: 3;
+    /* Keep the classic visible grip on the SE corner so users know
+       the window is resizable. */
     background: linear-gradient(
       135deg,
       transparent 50%,
@@ -273,9 +385,8 @@
       transparent 80%
     );
     opacity: 0.45;
-    touch-action: none;
   }
-  .resize-handle:hover {
+  .rz-se:hover {
     opacity: 0.9;
   }
 </style>
