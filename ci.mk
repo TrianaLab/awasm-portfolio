@@ -20,11 +20,7 @@ ci-vet:
 ci-cyclo:
 	@echo "==> Checking cyclomatic complexity..."
 	@go install github.com/fzipp/gocyclo/cmd/gocyclo@latest
-	@# Test files are excluded — setup/assert blocks inflate cyclomatic
-	@# complexity without meaningful insight. schema.go is a data-driven
-	@# map literal; the apparent complexity reflects the number of resource
-	@# kinds, not branching logic.
-	@gocyclo -over 15 -ignore '(_test\.go|/schema\.go)$$' $$(find . -name '*.go' -not -path './web/*')
+	@gocyclo -over 15 $$(find . -name '*.go' -not -path './web/*')
 
 ci-lint:
 	@echo "==> Running golangci-lint..."
