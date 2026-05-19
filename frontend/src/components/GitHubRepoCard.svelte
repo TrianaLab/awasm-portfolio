@@ -7,14 +7,17 @@
   let stars = $state<number | null>(null);
   let forks = $state<number | null>(null);
 
-  const CACHE_KEY = `awasm.gh.${repo}`;
   const CACHE_TTL_MS = 15 * 60 * 1000;
+
+  // Read repo inside a closure so Svelte 5 tracks the prop properly
+  // (top-level template-literal reads only capture the initial value).
+  const cacheKey = () => `awasm.gh.${repo}`;
 
   type Cached = { tag: string | null; stars: number | null; forks: number | null; at: number };
 
   function readCache(): Cached | null {
     try {
-      const raw = localStorage.getItem(CACHE_KEY);
+      const raw = localStorage.getItem(cacheKey());
       if (!raw) return null;
       const parsed = JSON.parse(raw) as Cached;
       if (Date.now() - parsed.at > CACHE_TTL_MS) return null;
@@ -26,7 +29,7 @@
 
   function writeCache(data: Cached) {
     try {
-      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(cacheKey(), JSON.stringify(data));
     } catch {
       /* quota / private mode — best-effort cache */
     }
