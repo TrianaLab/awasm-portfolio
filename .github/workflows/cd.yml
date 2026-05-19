@@ -3,7 +3,14 @@ name: Deploy to GitHub Pages and GHCR
 on:
   release:
     types: [published]
+  workflow_run:
+    workflows: ['Auto release']
+    types: [completed]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to deploy (e.g. v1.0.0)'
+        required: false
 
 permissions:
   contents: read
@@ -16,20 +23,50 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      skip: ${{ steps.tag.outputs.skip }}
+    steps:
+      - name: Resolve tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            tag="${{ github.event.release.tag_name }}"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.tag }}" ]; then
+            tag="${{ inputs.tag }}"
+          else
+            tag=$(gh release view --repo ${{ github.repository }} --json tagName -q .tagName)
+          fi
+          if ! [[ "$tag" =~ ^v ]]; then
+            echo "Skipping: tag '$tag' does not start with v"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
   pages:
+    needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
 
       - uses: actions/setup-go@v6.4.0
         with:
           go-version: '1.26'
 
       - name: Build WebAssembly bundle
-        run: make build VERSION=${{ github.event.release.tag_name || github.ref_name }}
+        run: make build VERSION=${{ needs.resolve.outputs.tag }}
 
       - uses: actions/configure-pages@v5
 
@@ -41,20 +78,17 @@ jobs:
         uses: actions/deploy-pages@v4
 
   docker:
+    needs: resolve
+    if: needs.resolve.outputs.skip != 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ needs.resolve.outputs.tag }}
 
       - name: Compute lowercase repo
         id: repo
         run: echo "name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve tag
-        id: tag
-        run: |
-          tag="${{ github.event.release.tag_name }}"
-          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
-          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - uses: docker/setup-buildx-action@v4.0.0
 
@@ -71,10 +105,10 @@ jobs:
           context: .
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ghcr.io/${{ steps.repo.outputs.name }}:${{ steps.tag.outputs.tag }}
+          tags: ghcr.io/${{ steps.repo.outputs.name }}:${{ needs.resolve.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VERSION=${{ steps.tag.outputs.tag }}
+            VERSION=${{ needs.resolve.outputs.tag }}
             GIT_COMMIT=${{ github.sha }}
-            BUILD_DATE=${{ github.event.release.published_at }}
+            BUILD_DATE=${{ github.event.release.published_at || github.event.workflow_run.updated_at }}

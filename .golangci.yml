@@ -1,0 +1,18 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - misspell
+
+  settings:
+    misspell:
+      locale: US
+      # Proper nouns (e.g. Spanish university names) that look like
+      # English misspellings but must stay verbatim.
+      ignore-rules:
+        - Internacional
+
+formatters:
+  enable:
+    - gofmt

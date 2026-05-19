@@ -8,7 +8,7 @@ import (
 func TestSupportedResources(t *testing.T) {
 	resources := util.SupportedResources()
 
-	// Verificar que algunos recursos clave están presentes
+	// Verify that some key resources are present
 	expectedResources := map[string]string{
 		"resume":      "resume",
 		"resumes":     "resume",
