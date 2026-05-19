@@ -12,7 +12,9 @@ let workerPromise: Promise<Worker> | null = null;
 const pending = new Map<string, Pending>();
 
 function spawnWorker(): Promise<Worker> {
-  const worker = new Worker(new URL('./wasm.worker.ts', import.meta.url), { type: 'module' });
+  // Classic (non-module) worker — `importScripts` (used inside the
+  // worker to load wasm_exec.js) is only available in classic workers.
+  const worker = new Worker(new URL('./wasm.worker.ts', import.meta.url));
 
   return new Promise<Worker>((resolve, reject) => {
     const ready = (event: MessageEvent) => {

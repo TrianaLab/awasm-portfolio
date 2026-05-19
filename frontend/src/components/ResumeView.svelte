@@ -51,7 +51,7 @@
       </ul>
       {#if basics.profiles && basics.profiles.length > 0}
         <ul class="profiles">
-          {#each basics.profiles as p (p.network)}
+          {#each basics.profiles as p, i (i)}
             <li>
               <a href={p.url} target="_blank" rel="noreferrer">{p.network}</a>
             </li>
@@ -63,7 +63,7 @@
 
   {#if resume.work && resume.work.length > 0}
     <Section title="Experience">
-      {#each resume.work as w (w.name)}
+      {#each resume.work as w, i (i)}
         <TimelineEntry
           title={w.position}
           subtitle={w.name}
@@ -79,7 +79,7 @@
 
   {#if resume.education && resume.education.length > 0}
     <Section title="Education">
-      {#each resume.education as e (e.institution)}
+      {#each resume.education as e, i (i)}
         <TimelineEntry
           title={e.studyType ? `${e.studyType} · ${e.area ?? ''}` : e.area}
           subtitle={e.institution}
@@ -95,7 +95,7 @@
 
   {#if resume.volunteer && resume.volunteer.length > 0}
     <Section title="Open source & volunteering">
-      {#each resume.volunteer as v (v.organization)}
+      {#each resume.volunteer as v, i (i)}
         <TimelineEntry
           title={v.position}
           subtitle={v.organization}
@@ -111,7 +111,7 @@
 
   {#if resume.projects && resume.projects.length > 0}
     <Section title="Projects">
-      {#each resume.projects as p (p.name)}
+      {#each resume.projects as p, i (i)}
         <TimelineEntry
           title={p.name}
           startDate={p.startDate}
@@ -126,7 +126,7 @@
 
   {#if resume.certificates && resume.certificates.length > 0}
     <Section title="Certificates">
-      {#each resume.certificates as c (c.name)}
+      {#each resume.certificates as c, i (i)}
         <TimelineEntry
           title={c.name}
           subtitle={c.issuer}
@@ -139,7 +139,7 @@
 
   {#if resume.awards && resume.awards.length > 0}
     <Section title="Awards">
-      {#each resume.awards as a (a.title)}
+      {#each resume.awards as a, i (i)}
         <TimelineEntry
           title={a.title}
           subtitle={a.awarder}
@@ -152,7 +152,7 @@
 
   {#if resume.publications && resume.publications.length > 0}
     <Section title="Publications">
-      {#each resume.publications as p (p.name)}
+      {#each resume.publications as p, i (i)}
         <TimelineEntry
           title={p.name}
           subtitle={p.publisher}

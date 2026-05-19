@@ -20,6 +20,8 @@ export default defineConfig({
     },
   },
   worker: {
-    format: 'es',
+    // Classic IIFE — the WASM worker uses importScripts() which is only
+    // available in non-module workers.
+    format: 'iife',
   },
 });

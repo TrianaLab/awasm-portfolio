@@ -264,21 +264,37 @@ function formatDate(d?: string): string {
  * `<basics.name>.pdf` (or resume.pdf if no name).
  */
 export async function downloadResumePdf(resume: Resume): Promise<void> {
-  // pdfmake ships its build as a default-exported object that needs its
-  // companion font file loaded too. Dynamic import keeps this out of the
-  // first paint critical path.
-  const [{ default: pdfMake }, { default: pdfFonts }] = await Promise.all([
-    import('pdfmake/build/pdfmake'),
-    import('pdfmake/build/vfs_fonts'),
-  ]);
-  // The shape exported by vfs_fonts has shifted across versions; both
-  // {pdfMake:{vfs}} and {vfs} forms appear in the wild.
-  const vfs =
-    (pdfFonts as { pdfMake?: { vfs?: Record<string, string> } }).pdfMake?.vfs ??
-    (pdfFonts as { vfs?: Record<string, string> }).vfs;
-  if (vfs) {
-    (pdfMake as { vfs?: Record<string, string> }).vfs = vfs;
+  // pdfmake is ~1.4 MB so it's lazy-imported on download. The companion
+  // vfs_fonts module ships the embedded Roboto fonts that pdfmake uses
+  // by default.
+  const pdfMakeMod = await import('pdfmake/build/pdfmake');
+  const vfsMod = await import('pdfmake/build/vfs_fonts');
+
+  // pdfmake's vfs export shape differs across versions/bundlers:
+  //   - newer CJS:  the module IS the vfs object
+  //   - older:      { vfs: {...} }
+  //   - legacy:     { pdfMake: { vfs: {...} } }
+  // Search every plausible location for the dict containing Roboto.
+  const looksLikeVfs = (v: unknown): v is Record<string, string> =>
+    typeof v === 'object' && v !== null && 'Roboto-Regular.ttf' in v;
+
+  const candidates: unknown[] = [
+    (vfsMod as { default?: unknown }).default,
+    (vfsMod as { vfs?: unknown }).vfs,
+    (vfsMod as { pdfMake?: { vfs?: unknown } }).pdfMake?.vfs,
+    (vfsMod as { default?: { vfs?: unknown } }).default?.vfs,
+    (vfsMod as { default?: { pdfMake?: { vfs?: unknown } } }).default?.pdfMake?.vfs,
+    vfsMod,
+  ];
+  const vfs = candidates.find(looksLikeVfs);
+  if (!vfs) {
+    throw new Error('pdfmake: failed to locate vfs_fonts dictionary');
   }
+
+  type PdfMake = { createPdf: (d: TDocumentDefinitions) => { download: (f: string) => void }; vfs?: Record<string, string> };
+  const maybeWrapped = pdfMakeMod as unknown as { default?: PdfMake };
+  const pdfMake: PdfMake = maybeWrapped.default ?? (pdfMakeMod as unknown as PdfMake);
+  pdfMake.vfs = vfs;
 
   const docDef = buildResumeDocDef(resume);
   const filename = (resume.basics?.name ?? 'resume').replace(/\s+/g, '-').toLowerCase() + '.pdf';
