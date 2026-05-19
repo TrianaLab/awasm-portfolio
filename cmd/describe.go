@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"github.com/TrianaLab/awasm-portfolio/internal/service"
 
 	"github.com/spf13/cobra"
 )
 
-func NewDescribeCommand(service service.ResourceService) *cobra.Command {
+func NewDescribeCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "describe [kind] [name]",
 		Short: "Describe a specific resource",
@@ -21,31 +22,23 @@ kubectl describe profile john-doe -n dev
 				return
 			}
 
+			flags := readFlags(cmd)
+			if flags.output != "" {
+				cmd.Println("Error: output flag is not supported in this command")
+				return
+			}
+
 			kind := args[0]
 			name := ""
 			if len(args) > 1 {
 				name = args[1]
 			}
 
-			namespace, _ := cmd.Flags().GetString("namespace")
-			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
-			formatOutput, _ := cmd.Flags().GetString("output")
-
-			if formatOutput != "" {
-				cmd.Println("Error: output flag is not supported in this command")
-				return
-			}
-
-			if allNamespaces {
-				namespace = ""
-			}
-
-			result, err := service.DescribeResource(kind, name, namespace)
+			result, err := service.Describe(repo, kind, name, flags.namespace)
 			if err != nil {
 				cmd.Println("Error: ", err)
 				return
 			}
-
 			cmd.Println(result)
 		},
 	}

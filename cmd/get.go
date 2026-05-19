@@ -1,13 +1,15 @@
 package cmd
 
 import (
-	"github.com/TrianaLab/awasm-portfolio/internal/service"
 	"strings"
+
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/service"
 
 	"github.com/spf13/cobra"
 )
 
-func NewGetCommand(service service.ResourceService) *cobra.Command {
+func NewGetCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get [kind] [name]",
 		Short: "Get resources of a specific kind or a specific resource",
@@ -28,31 +30,24 @@ kubectl get all -A
 				return
 			}
 
+			flags := readFlags(cmd)
+			lower := strings.ToLower(flags.output)
+			if flags.output != "" && lower != "json" && lower != "yaml" {
+				cmd.Printf("Error: wrong format '%s', valid ones are 'json' or 'yaml'\n", flags.output)
+				return
+			}
+
 			kind := args[0]
 			name := ""
 			if len(args) > 1 {
 				name = args[1]
 			}
 
-			namespace, _ := cmd.Flags().GetString("namespace")
-			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
-			formatOutput, _ := cmd.Flags().GetString("output")
-
-			if formatOutput != "" && strings.ToLower(formatOutput) != "json" && strings.ToLower(formatOutput) != "yaml" {
-				cmd.Printf("Error: wrong format '%s', valid ones are 'json' or 'yaml'\n", formatOutput)
-				return
-			}
-
-			if allNamespaces {
-				namespace = ""
-			}
-
-			result, err := service.GetResources(kind, name, namespace)
+			result, err := service.Get(repo, kind, name, flags.namespace, flags.output)
 			if err != nil {
 				cmd.Println("Error: ", err)
 				return
 			}
-
 			cmd.Println(result)
 		},
 	}
