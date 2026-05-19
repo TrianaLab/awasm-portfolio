@@ -1,18 +1,17 @@
 <script lang="ts">
   import { fetchResume } from '../lib/wasm';
   import { downloadResumePdf } from '../lib/pdf';
-  import type { Resume } from '../lib/schema';
-
-  let { resume }: { resume: Resume | null } = $props();
 
   let downloading = $state(false);
 
+  // Always refetch on click so the PDF reflects the in-WASM state at
+  // download time (the user can mutate it via the terminal between views).
   async function handleClick() {
     if (downloading) return;
     downloading = true;
     try {
-      const data = resume ?? (await fetchResume());
-      await downloadResumePdf(data);
+      const fresh = await fetchResume();
+      await downloadResumePdf(fresh);
     } finally {
       downloading = false;
     }

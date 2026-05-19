@@ -114,6 +114,35 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('body')).toContainText('Experience');
   });
 
+  test('resume view re-fetches after a delete + create in the terminal', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+
+    // Snapshot the preloaded resume content first.
+    await page.getByRole('tab', { name: /resume/i }).click();
+    await expect(page.locator('body')).toContainText('Eduardo', { timeout: 10_000 });
+
+    // Mutate via the terminal: delete + recreate the resume.
+    await page.getByRole('tab', { name: /terminal/i }).click();
+    const helper = page.locator('.xterm-helper-textarea');
+    await helper.focus();
+    await page.keyboard.type('kubectl delete resume main-resume');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+    await page.keyboard.type('kubectl create resume main-resume');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+
+    // Switch back to the resume view; refreshResume must refetch and the
+    // recreated (empty) resume should render — no Experience section.
+    await page.getByRole('tab', { name: /resume/i }).click();
+    await page.waitForTimeout(500);
+    const body = await page.locator('body').innerText();
+    expect(body, 'after recreate the resume should be empty — no Experience section').not.toContain(
+      'Experience',
+    );
+  });
+
   test('download button triggers a PDF download', async ({ page }) => {
     const errs: string[] = [];
     page.on('console', (msg) => {
