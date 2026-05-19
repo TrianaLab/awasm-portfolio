@@ -33,6 +33,38 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('.xterm')).toContainText('default', { timeout: 10_000 });
   });
 
+  // Run at a few viewport sizes so we catch regressions on smaller windows.
+  for (const viewport of [
+    { width: 1280, height: 720 },
+    { width: 1024, height: 600 },
+    { width: 800, height: 500 },
+  ]) {
+    test(`prompt stays visible after a long-output command @ ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto('/');
+      await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+
+      const helper = page.locator('.xterm-helper-textarea');
+      await helper.focus();
+      await page.keyboard.type('kubectl get all -A');
+      await page.keyboard.press('Enter');
+      await page.waitForTimeout(800);
+
+      const result = await page.evaluate(() => {
+        const v = document.querySelector('.xterm-viewport') as HTMLElement | null;
+        if (!v) return { ok: false, reason: 'no viewport' };
+        const slack = v.scrollHeight - v.scrollTop - v.clientHeight;
+        return { ok: slack < 24, slack, scrollHeight: v.scrollHeight, clientHeight: v.clientHeight };
+      });
+      expect(
+        result.ok,
+        `terminal must auto-scroll to the prompt after output (slack=${JSON.stringify(result)})`,
+      ).toBe(true);
+    });
+  }
+
   test('terminal mode does not grow the page height indefinitely', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');

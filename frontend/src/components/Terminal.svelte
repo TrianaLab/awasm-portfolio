@@ -35,6 +35,9 @@
     input = '';
     cursor = 0;
     term.write(`\r\n${PROMPT}`);
+    // Force the viewport to follow the new prompt — xterm doesn't always
+    // scroll on its own when output overflows the visible region.
+    term.scrollToBottom();
   }
 
   function redrawInput() {
