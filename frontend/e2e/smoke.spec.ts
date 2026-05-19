@@ -114,6 +114,57 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('body')).toContainText('Experience');
   });
 
+  test('window manager: opens a second window via the + button', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('[role="dialog"]')).toHaveCount(1);
+
+    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+  });
+
+  test('window manager: close removes the window', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+
+    await page.locator('[role="dialog"]').last().getByRole('button', { name: /close window/i }).click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(1);
+  });
+
+  test('window manager: minimize hides the window and dock entry restores it', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('button', { name: /minimize window/i }).first().click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(0);
+
+    await page.getByRole('toolbar', { name: /minimized windows/i }).getByRole('button').first().click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(1);
+  });
+
+  test('window manager: focus brings background window to front', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+
+    const zBefore = await page.evaluate(() => {
+      const ds = Array.from(document.querySelectorAll('[role="dialog"]')) as HTMLElement[];
+      return ds.map((d) => parseInt(d.style.zIndex, 10));
+    });
+    expect(zBefore[1]).toBeGreaterThan(zBefore[0]);
+
+    // Click the first window's chrome — should raise it above the second.
+    await page.locator('[role="dialog"]').first().click({ position: { x: 100, y: 5 } });
+    const zAfter = await page.evaluate(() => {
+      const ds = Array.from(document.querySelectorAll('[role="dialog"]')) as HTMLElement[];
+      return ds.map((d) => parseInt(d.style.zIndex, 10));
+    });
+    expect(zAfter[0]).toBeGreaterThan(zAfter[1]);
+  });
+
   test('resume view re-fetches after a delete + create in the terminal', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });

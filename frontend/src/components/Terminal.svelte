@@ -210,55 +210,24 @@
 </script>
 
 <div class="terminal-wrap">
-  <div class="terminal-chrome">
-    <span class="dot dot-red"></span>
-    <span class="dot dot-yellow"></span>
-    <span class="dot dot-green"></span>
-  </div>
   <div class="terminal" bind:this={container}></div>
 </div>
 
 <style>
   .terminal-wrap {
     flex: 1;
-    min-height: 0; /* let the flex item shrink so xterm cannot expand its parent */
+    min-height: 0;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     background: var(--color-bg-elevated);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
-  }
-
-  .terminal-chrome {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.6rem 0.8rem;
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-subtle);
-  }
-
-  .dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-  }
-  .dot-red {
-    background: #ff5f56;
-  }
-  .dot-yellow {
-    background: #ffbd2e;
-  }
-  .dot-green {
-    background: #27c93f;
   }
 
   .terminal {
     flex: 1;
     min-height: 0;
-    padding: 0.8rem;
+    padding: 0.6rem;
     overflow: hidden;
   }
 

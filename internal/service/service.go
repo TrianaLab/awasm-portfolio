@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/TrianaLab/awasm-portfolio/internal/factory"
 	"github.com/TrianaLab/awasm-portfolio/internal/models"
 	"github.com/TrianaLab/awasm-portfolio/internal/models/types"
 	"github.com/TrianaLab/awasm-portfolio/internal/repository"
@@ -30,11 +31,69 @@ func Create(repo *repository.InMemoryRepository, kind, name, namespace string) (
 		}
 	}
 
-	resource, err := newResource(kind, name, namespace)
+	resource, err := factory.New(kind, name, namespace)
 	if err != nil {
 		return "", err
 	}
-	return repo.Create(resource)
+	msg, err := repo.Create(resource)
+	if err != nil {
+		return "", err
+	}
+
+	// Resumes aggregate child resources — persist each one so kubectl get
+	// <child-kind> shows them and the resume view sees a real graph.
+	if resume, ok := resource.(*types.Resume); ok {
+		if err := persistResumeChildren(repo, resume); err != nil {
+			return "", err
+		}
+	}
+	return msg, nil
+}
+
+// persistResumeChildren writes Basics + every slice element to the
+// repository. Each child carries its own Meta (populated by the
+// factory) including the owner reference back to the resume.
+func persistResumeChildren(repo *repository.InMemoryRepository, r *types.Resume) error {
+	children := []models.Resource{&r.Basics}
+	for i := range r.Work {
+		children = append(children, &r.Work[i])
+	}
+	for i := range r.Volunteer {
+		children = append(children, &r.Volunteer[i])
+	}
+	for i := range r.Education {
+		children = append(children, &r.Education[i])
+	}
+	for i := range r.Awards {
+		children = append(children, &r.Awards[i])
+	}
+	for i := range r.Certificates {
+		children = append(children, &r.Certificates[i])
+	}
+	for i := range r.Publications {
+		children = append(children, &r.Publications[i])
+	}
+	for i := range r.Skills {
+		children = append(children, &r.Skills[i])
+	}
+	for i := range r.Languages {
+		children = append(children, &r.Languages[i])
+	}
+	for i := range r.Interests {
+		children = append(children, &r.Interests[i])
+	}
+	for i := range r.References {
+		children = append(children, &r.References[i])
+	}
+	for i := range r.Projects {
+		children = append(children, &r.Projects[i])
+	}
+	for _, c := range children {
+		if _, err := repo.Create(c); err != nil {
+			return fmt.Errorf("failed to save %s/%s: %w", c.GetKind(), c.GetName(), err)
+		}
+	}
+	return nil
 }
 
 // Delete removes a resource (and, for namespaces, every resource within
@@ -150,44 +209,4 @@ func onlyInNamespace(in []models.Resource, namespace string) []models.Resource {
 		out = append(out, r)
 	}
 	return out
-}
-
-// newResource constructs an empty resource of the given kind with the
-// requested identity. Replaces the old reflection-heavy factory + gofakeit
-// dependency. Returns an error for unsupported kinds.
-func newResource(kind, name, namespace string) (models.Resource, error) {
-	meta := models.Meta{Kind: kind, Name: name, Namespace: namespace}
-	switch kind {
-	case "namespace":
-		// Namespaces are cluster-scoped; force an empty namespace value.
-		return &types.Namespace{Meta: models.Meta{Kind: kind, Name: name}}, nil
-	case "resume":
-		return &types.Resume{Meta: meta}, nil
-	case "basics":
-		return &types.Basics{Meta: meta}, nil
-	case "work":
-		return &types.Work{Meta: meta}, nil
-	case "volunteer":
-		return &types.Volunteer{Meta: meta}, nil
-	case "education":
-		return &types.Education{Meta: meta}, nil
-	case "award":
-		return &types.Award{Meta: meta}, nil
-	case "certificate":
-		return &types.Certificate{Meta: meta}, nil
-	case "publication":
-		return &types.Publication{Meta: meta}, nil
-	case "skill":
-		return &types.Skill{Meta: meta}, nil
-	case "language":
-		return &types.Language{Meta: meta}, nil
-	case "interest":
-		return &types.Interest{Meta: meta}, nil
-	case "reference":
-		return &types.Reference{Meta: meta}, nil
-	case "project":
-		return &types.Project{Meta: meta}, nil
-	default:
-		return nil, fmt.Errorf("unsupported resource kind: %s", kind)
-	}
 }

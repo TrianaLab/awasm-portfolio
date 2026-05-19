@@ -103,12 +103,26 @@ func TestCreate_AllKinds(t *testing.T) {
 }
 
 // "all" passes NormalizeKind (returns empty kind) but is rejected by
-// newResource — exercises the post-NormalizeKind error path in Create.
+// factory.New — exercises the post-NormalizeKind error path in Create.
 func TestCreate_AllRejected(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	mustCreate(t, repo, newTestResource("namespace", "ns", ""))
 	_, err := service.Create(repo, "all", "x", "ns")
 	assertErrContains(t, err, "unsupported resource kind")
+}
+
+// TestCreate_ResumeChildConflict ensures Create surfaces the error
+// when persistResumeChildren can't write a child (because one of the
+// derived child names already exists in the repository).
+func TestCreate_ResumeChildConflict(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	mustCreate(t, repo, newTestResource("namespace", "ns", ""))
+	// The factory derives child names like "<resume>-work-0"; pre-create
+	// that exact name so the Create call fails inside persistResumeChildren.
+	mustCreate(t, repo, newTestResource("work", "demo-work-0", "ns"))
+
+	_, err := service.Create(repo, "resume", "demo", "ns")
+	assertErrContains(t, err, "failed to save")
 }
 
 // ---------------- Delete ----------------
