@@ -169,6 +169,32 @@ test.describe('awasm-portfolio smoke', () => {
     expect(Math.abs(restored!.height - before!.height)).toBeLessThan(3);
   });
 
+  test('window manager: prompt stays visible after maximizing during long output', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+
+    const helper = page.locator('.xterm-helper-textarea');
+    await helper.focus();
+    await page.keyboard.type('kubectl get all -A');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(600);
+
+    await page
+      .locator('[role="dialog"]')
+      .first()
+      .getByRole('button', { name: /maximize window/i })
+      .click();
+    await page.waitForTimeout(400);
+
+    const ok = await page.evaluate(() => {
+      const v = document.querySelector('.xterm-viewport') as HTMLElement | null;
+      if (!v) return false;
+      return v.scrollHeight - v.scrollTop - v.clientHeight < 24;
+    });
+    expect(ok, 'after maximize, viewport must be scrolled to the prompt').toBe(true);
+  });
+
   test('window manager: prompt is not clipped after long-output command', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');

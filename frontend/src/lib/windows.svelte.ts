@@ -11,13 +11,21 @@ export interface WindowState {
   h: number;
   z: number;
   minimized: boolean;
-  // When maximized, the previous geometry is stored so the green button
-  // can toggle back to the user's window arrangement.
+  // When maximized OR snapped, the previous geometry is stored so the
+  // user can restore to their original window arrangement.
   previousGeometry?: { x: number; y: number; w: number; h: number };
+}
+
+export type SnapZone = 'left' | 'right' | 'top' | null;
+
+export interface SnapHint {
+  zone: SnapZone;
+  rect: { x: number; y: number; w: number; h: number } | null;
 }
 
 const MIN_W = 360;
 const MIN_H = 220;
+const SNAP_THRESHOLD = 24;
 
 let nextId = 1;
 let nextZ = 1;
@@ -26,8 +34,26 @@ function makeId(prefix: string): string {
   return `${prefix}-${nextId++}`;
 }
 
+function snapRectFor(
+  zone: SnapZone,
+  desktopW: number,
+  desktopH: number,
+): { x: number; y: number; w: number; h: number } | null {
+  switch (zone) {
+    case 'left':
+      return { x: 0, y: 0, w: Math.floor(desktopW / 2), h: desktopH };
+    case 'right':
+      return { x: Math.ceil(desktopW / 2), y: 0, w: Math.floor(desktopW / 2), h: desktopH };
+    case 'top':
+      return { x: 0, y: 0, w: desktopW, h: desktopH };
+    default:
+      return null;
+  }
+}
+
 export interface WindowManager {
   readonly windows: WindowState[];
+  readonly snapHint: SnapHint;
   open(title: string): WindowState;
   close(id: string): void;
   focus(id: string): void;
@@ -37,17 +63,20 @@ export interface WindowManager {
   resize(id: string, w: number, h: number): void;
   toggleMaximize(id: string, desktopW: number, desktopH: number): void;
   isMaximized(id: string): boolean;
+  updateSnapHint(pointerX: number, pointerY: number, desktopW: number, desktopH: number): void;
+  clearSnapHint(): void;
+  commitSnap(id: string, desktopW: number, desktopH: number): boolean;
 }
 
 export function createWindowManager(): WindowManager {
   const windows = $state<WindowState[]>([]);
+  const snapHint = $state<SnapHint>({ zone: null, rect: null });
 
   function find(id: string): WindowState | undefined {
     return windows.find((w) => w.id === id);
   }
 
   function open(title: string): WindowState {
-    // Cascade new windows so they don't overlap perfectly.
     const offset = (windows.length % 6) * 28;
     const win: WindowState = {
       id: makeId('term'),
@@ -96,8 +125,9 @@ export function createWindowManager(): WindowManager {
     if (!win) return;
     win.w = Math.max(MIN_W, w);
     win.h = Math.max(MIN_H, h);
-    // Any user-driven resize cancels the maximized state — restoring would
-    // jump back to a stale geometry the user didn't intend.
+    // Any user-driven resize cancels the snapped/maximized state — a
+    // future restore would jump back to a stale geometry the user didn't
+    // intend.
     win.previousGeometry = undefined;
   }
 
@@ -105,7 +135,6 @@ export function createWindowManager(): WindowManager {
     const win = find(id);
     if (!win) return;
     if (win.previousGeometry) {
-      // Currently maximized — restore.
       const prev = win.previousGeometry;
       win.x = prev.x;
       win.y = prev.y;
@@ -114,7 +143,6 @@ export function createWindowManager(): WindowManager {
       win.previousGeometry = undefined;
       return;
     }
-    // Maximize: snapshot current geometry, then fill the desktop.
     win.previousGeometry = { x: win.x, y: win.y, w: win.w, h: win.h };
     win.x = 0;
     win.y = 0;
@@ -127,9 +155,50 @@ export function createWindowManager(): WindowManager {
     return !!win?.previousGeometry;
   }
 
+  function detectZone(pointerX: number, pointerY: number, desktopW: number): SnapZone {
+    if (pointerY <= SNAP_THRESHOLD) return 'top';
+    if (pointerX <= SNAP_THRESHOLD) return 'left';
+    if (pointerX >= desktopW - SNAP_THRESHOLD) return 'right';
+    return null;
+  }
+
+  function updateSnapHint(pointerX: number, pointerY: number, desktopW: number, desktopH: number) {
+    const zone = detectZone(pointerX, pointerY, desktopW);
+    snapHint.zone = zone;
+    snapHint.rect = snapRectFor(zone, desktopW, desktopH);
+  }
+
+  function clearSnapHint() {
+    snapHint.zone = null;
+    snapHint.rect = null;
+  }
+
+  // Apply the active snap (if any) to the window. Returns true when a
+  // snap was committed so the caller can suppress the normal release.
+  function commitSnap(id: string, desktopW: number, desktopH: number): boolean {
+    const win = find(id);
+    if (!win || !snapHint.zone) {
+      clearSnapHint();
+      return false;
+    }
+    const rect = snapRectFor(snapHint.zone, desktopW, desktopH);
+    clearSnapHint();
+    if (!rect) return false;
+    // Snapshot the pre-snap geometry so toggleMaximize-style restore works.
+    win.previousGeometry = { x: win.x, y: win.y, w: win.w, h: win.h };
+    win.x = rect.x;
+    win.y = rect.y;
+    win.w = rect.w;
+    win.h = rect.h;
+    return true;
+  }
+
   return {
     get windows() {
       return windows;
+    },
+    get snapHint() {
+      return snapHint;
     },
     open,
     close,
@@ -140,5 +209,8 @@ export function createWindowManager(): WindowManager {
     resize,
     toggleMaximize,
     isMaximized,
+    updateSnapHint,
+    clearSnapHint,
+    commitSnap,
   };
 }

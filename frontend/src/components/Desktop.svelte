@@ -30,6 +30,19 @@
     </Window>
   {/each}
 
+  <!-- Snap-to-edge preview overlay (visible while a window is being
+       dragged within ~24 px of an edge). -->
+  {#if manager.snapHint.rect}
+    <div
+      class="snap-preview"
+      aria-hidden="true"
+      style:left="{manager.snapHint.rect.x}px"
+      style:top="{manager.snapHint.rect.y}px"
+      style:width="{manager.snapHint.rect.w}px"
+      style:height="{manager.snapHint.rect.h}px"
+    ></div>
+  {/if}
+
   <!-- Dock for minimized windows. -->
   {#if manager.windows.some((w) => w.minimized)}
     <div class="dock" role="toolbar" aria-label="Minimized windows">
@@ -120,5 +133,20 @@
   }
   .dock-item:hover {
     border-color: var(--color-accent);
+  }
+
+  .snap-preview {
+    position: absolute;
+    pointer-events: none;
+    background: color-mix(in srgb, var(--color-accent) 18%, transparent);
+    border: 2px solid var(--color-accent);
+    border-radius: var(--radius-md);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-accent) 30%, transparent);
+    transition:
+      left 100ms ease,
+      top 100ms ease,
+      width 100ms ease,
+      height 100ms ease;
+    z-index: 5;
   }
 </style>

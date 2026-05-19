@@ -23,6 +23,12 @@
   // Drag from the chrome bar.
   let dragOffset: { x: number; y: number } | null = null;
 
+  function desktopRect(): { left: number; top: number; w: number; h: number } | null {
+    if (!desktopEl) return null;
+    const r = desktopEl.getBoundingClientRect();
+    return { left: r.left, top: r.top, w: desktopEl.clientWidth, h: desktopEl.clientHeight };
+  }
+
   function onChromePointerDown(event: PointerEvent) {
     if ((event.target as HTMLElement).closest('.traffic')) return; // dot click
     manager.focus(win.id);
@@ -33,11 +39,23 @@
   function onChromePointerMove(event: PointerEvent) {
     if (!dragOffset) return;
     manager.move(win.id, event.clientX - dragOffset.x, event.clientY - dragOffset.y);
+
+    // Snap-zone detection: translate the pointer into desktop-local coords.
+    const desk = desktopRect();
+    if (desk) {
+      manager.updateSnapHint(event.clientX - desk.left, event.clientY - desk.top, desk.w, desk.h);
+    }
   }
 
   function onChromePointerUp(event: PointerEvent) {
     dragOffset = null;
     (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+    const desk = desktopRect();
+    if (desk) {
+      manager.commitSnap(win.id, desk.w, desk.h);
+    } else {
+      manager.clearSnapHint();
+    }
   }
 
   // Resize from the SE corner.
@@ -144,7 +162,9 @@
     padding: 0.55rem 0.8rem;
     background: var(--color-bg-subtle);
     border-bottom: 1px solid var(--color-border);
-    cursor: grab;
+    /* Stay with the system arrow over the header — only swap to a
+       grabbing cursor while the user is actively dragging. */
+    cursor: default;
     user-select: none;
     touch-action: none;
   }
@@ -155,8 +175,14 @@
   .traffic {
     display: flex;
     gap: 0.4rem;
+    /* When the user hovers any dot, surface the macOS-style symbol on
+       every dot in the group (matches the real macOS chrome behaviour). */
+  }
+  .traffic:hover .dot::before {
+    opacity: 1;
   }
   .dot {
+    position: relative;
     width: 12px;
     height: 12px;
     border-radius: 50%;
@@ -165,17 +191,47 @@
     cursor: pointer;
     transition: filter var(--transition);
   }
+  /* macOS-style hover glyph inside each traffic light. */
+  .dot::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    color: rgba(0, 0, 0, 0.55);
+    line-height: 1;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    pointer-events: none;
+  }
   .dot:hover {
-    filter: brightness(1.15);
+    filter: brightness(1.05);
   }
   .dot-red {
     background: #ff5f56;
   }
+  .dot-red::before {
+    content: '×';
+    font-size: 12px;
+  }
   .dot-yellow {
     background: #ffbd2e;
   }
+  .dot-yellow::before {
+    content: '−';
+    font-size: 11px;
+  }
   .dot-green {
     background: #27c93f;
+  }
+  .dot-green::before {
+    /* Two opposite-corner triangles — the macOS maximize glyph. */
+    content: '⛶';
+    font-size: 9px;
   }
 
   .title {
