@@ -1,70 +1,39 @@
-name: Go lint and test
+name: CI
 
 on:
-  pull_request:
-    paths:
-      - "**/*.go"
-      - "!cli.go"
   push:
     branches:
-      - "main"
-    paths:
-      - "**/*.go"
-      - "!cli.go"
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: '0 0 * * *'
 
 permissions:
-  contents: write
-
-env:
-  GO_VERSION: stable
-  GOLANGCI_LINT_VERSION: v1.64.5
+  contents: read
 
 jobs:
-  detect-modules:
+  static:
     runs-on: ubuntu-latest
-    outputs:
-      modules: ${{ steps.set-modules.outputs.modules }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.2
+      - uses: ./.github/actions/ci
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - id: set-modules
-        run: echo "modules=$(go list -m -json | jq -s '.' | jq -c '[.[].Dir]')" >> $GITHUB_OUTPUT
+          target: ci-static
+          golangci-lint: 'true'
 
-  golangci-lint:
-    needs: detect-modules
+  unit-test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        modules: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.2
+      - uses: ./.github/actions/ci
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: golangci-lint ${{ matrix.modules }}
-        uses: golangci/golangci-lint-action@v6
+          target: ci-test
+      - name: Upload results to Codecov
+        if: github.event_name == 'push'
+        uses: codecov/codecov-action@v6.0.0
         with:
-          version: ${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: ${{ matrix.modules }}
-    
-  golang-test:
-    needs: detect-modules
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        modules: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
-    steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-go@v5
-      with:
-        go-version: ${{ env.GO_VERSION }}
-    - name: go-test
-      run: make test
-    - name: check-test-coverage
-      uses: vladopajic/go-test-coverage@v2
-      with:
-        config: ./.testcoverage.yml
-        git-branch: badges
-        git-token: ${{ github.ref_name == 'main' && secrets.GITHUB_TOKEN || '' }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.out
+          fail_ci_if_error: true

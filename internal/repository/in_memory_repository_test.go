@@ -1,8 +1,8 @@
 package repository_test
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"strings"
 	"testing"
 	"time"
@@ -168,6 +168,45 @@ func TestInMemoryRepository(t *testing.T) {
 		}
 		if len(resources) != 2 {
 			t.Errorf("expected 2 namespaces, got %d", len(resources))
+		}
+	})
+
+	t.Run("Create Stamps Zero Timestamp", func(t *testing.T) {
+		// A resource with a zero CreationTimestamp triggers the auto-stamp branch.
+		r := &mockResource{
+			kind:      "resume",
+			name:      "no-ts",
+			namespace: "default",
+		}
+		if _, err := repo.Create(r); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if r.GetCreationTimestamp().IsZero() {
+			t.Error("Create did not auto-stamp a zero CreationTimestamp")
+		}
+	})
+
+	t.Run("Create Preserves Non-Zero Timestamp", func(t *testing.T) {
+		fixed := time.Date(2025, 1, 2, 3, 4, 5, 0, time.UTC)
+		r := &mockResource{
+			kind:              "resume",
+			name:              "with-ts",
+			namespace:         "default",
+			creationTimestamp: fixed,
+		}
+		if _, err := repo.Create(r); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		stored, err := repo.List("resume", "with-ts", "default")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if len(stored) != 1 {
+			t.Fatalf("expected 1 stored resource, got %d", len(stored))
+		}
+		if !stored[0].GetCreationTimestamp().Equal(fixed) {
+			t.Errorf("Create overwrote a non-zero CreationTimestamp: got %v, want %v",
+				stored[0].GetCreationTimestamp(), fixed)
 		}
 	})
 }

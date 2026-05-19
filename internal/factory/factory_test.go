@@ -1,7 +1,7 @@
 package factory_test
 
 import (
-	"awasm-portfolio/internal/factory"
+	"github.com/TrianaLab/awasm-portfolio/internal/factory"
 	"testing"
 )
 

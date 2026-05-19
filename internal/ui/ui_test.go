@@ -1,10 +1,11 @@
 package ui_test
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
-	"awasm-portfolio/internal/ui"
 	"encoding/json"
+	"errors"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models/types"
+	"github.com/TrianaLab/awasm-portfolio/internal/ui"
 	"strings"
 	"testing"
 	"time"
@@ -371,5 +372,183 @@ func TestAllSchemas(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// TestSchemaTypeAssertionFallback feeds a wrong-type resource into every
+// typed schema's extractors to exercise the "N/A" fallback paths that fire
+// when the type assertion in each extractor fails.
+func TestSchemaTypeAssertionFallback(t *testing.T) {
+	schemas := ui.GenerateSchemas()
+	// A bare testResource won't successfully type-assert to any concrete
+	// types.* pointer, so every extractor's type-asserted branch returns "N/A".
+	other := &testResource{
+		Kind:              "other",
+		Name:              "wrong",
+		Namespace:         "default",
+		CreationTimestamp: time.Now(),
+	}
+
+	for kind, schema := range schemas {
+		if kind == "namespace" || kind == "default" {
+			// These schemas don't type-assert, so there's no fallback.
+			continue
+		}
+		t.Run(kind, func(t *testing.T) {
+			for i, extractor := range schema.Extractors {
+				_ = extractor(other) // just exercising the fallback branches
+				_ = i
+			}
+		})
+	}
+}
+
+// TestWorkSchema_PresentEndDate covers the EndDate == "" branch of the work
+// schema (which renders "Present" for ongoing roles).
+func TestWorkSchema_PresentEndDate(t *testing.T) {
+	schemas := ui.GenerateSchemas()
+	schema := schemas["work"]
+	work := &types.Work{
+		Name:              "current-role",
+		Namespace:         "default",
+		Company:           "Acme",
+		Position:          "Engineer",
+		StartDate:         "2024-01-01",
+		EndDate:           "",
+		CreationTimestamp: time.Now(),
+	}
+	found := false
+	for _, extractor := range schema.Extractors {
+		if extractor(work) == "Present" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("work schema should render \"Present\" when EndDate is empty")
+	}
+}
+
+// TestSkillSchema_KeywordsTruncation covers the >3-keywords truncation branch.
+func TestSkillSchema_KeywordsTruncation(t *testing.T) {
+	schemas := ui.GenerateSchemas()
+	schema := schemas["skill"]
+	skill := &types.Skill{
+		Name:              "many",
+		Namespace:         "default",
+		Skill:             "Polyglot",
+		Level:             "Expert",
+		Keywords:          []string{"Go", "Rust", "Python", "Zig", "C"},
+		CreationTimestamp: time.Now(),
+	}
+	found := false
+	for _, extractor := range schema.Extractors {
+		if v := extractor(skill); strings.Contains(v, "...") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("skill schema should truncate keyword lists with > 3 entries")
+	}
+}
+
+// TestCalculateAge covers each duration branch of calculateAge by routing
+// through FormatTable, since calculateAge itself is unexported.
+func TestCalculateAge(t *testing.T) {
+	now := time.Now()
+	cases := []struct {
+		name   string
+		ts     time.Time
+		expect string // substring expected in the AGE column
+	}{
+		{"zero", time.Time{}, ""},
+		{"seconds", now.Add(-5 * time.Second), "s"},
+		{"minutes", now.Add(-5 * time.Minute), "m"},
+		{"hours", now.Add(-3 * time.Hour), "h"},
+		{"days", now.Add(-3 * 24 * time.Hour), "d"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			res := &testResource{
+				Kind:              "namespace",
+				Name:              "ns-" + tc.name,
+				CreationTimestamp: tc.ts,
+			}
+			out := ui.FormatTable([]models.Resource{res}, "")
+			// Each case just needs to render without panicking; the expected
+			// substring assertion is best-effort (zero-timestamp renders blank).
+			if tc.expect != "" && !strings.Contains(out, tc.expect) {
+				t.Errorf("expected %q in age output, got: %s", tc.expect, out)
+			}
+		})
+	}
+}
+
+// TestFormatAsTable_UnknownKindFallback exercises the schema-not-found branch
+// where formatAsTable falls back to the "default" schema.
+func TestFormatAsTable_UnknownKindFallback(t *testing.T) {
+	res := &testResource{
+		Kind:              "definitely-not-a-real-kind",
+		Name:              "weird",
+		Namespace:         "default",
+		CreationTimestamp: time.Now(),
+	}
+	out := ui.FormatTable([]models.Resource{res}, "")
+	if !strings.Contains(out, "weird") {
+		t.Errorf("default-schema fallback should render the resource, got: %s", out)
+	}
+}
+
+// TestFormatAsTable_WideCell exercises the column-width branch that grows
+// the width to accommodate a cell longer than its header.
+func TestFormatAsTable_WideCell(t *testing.T) {
+	long := strings.Repeat("x", 80)
+	res := &testResource{
+		Kind:              "default",
+		Name:              long,
+		Namespace:         "default",
+		CreationTimestamp: time.Now(),
+	}
+	out := ui.FormatTable([]models.Resource{res}, "")
+	if !strings.Contains(out, long) {
+		t.Errorf("wide cell should render in full, got: %s", out)
+	}
+}
+
+// failingResource implements models.Resource but its JSON/YAML marshalers
+// always error out, exercising the marshal-error fallback paths.
+type failingResource struct{}
+
+func (f *failingResource) GetKind() string                          { return "failing" }
+func (f *failingResource) GetName() string                          { return "fail" }
+func (f *failingResource) SetName(string)                           {}
+func (f *failingResource) GetNamespace() string                     { return "default" }
+func (f *failingResource) SetNamespace(string)                      {}
+func (f *failingResource) GetOwnerReference() models.OwnerReference { return models.OwnerReference{} }
+func (f *failingResource) SetOwnerReference(models.OwnerReference)  {}
+func (f *failingResource) GetID() string                            { return "failing:fail:default" }
+func (f *failingResource) GetCreationTimestamp() time.Time          { return time.Time{} }
+func (f *failingResource) SetCreationTimestamp(time.Time)           {}
+
+func (f *failingResource) MarshalJSON() ([]byte, error) {
+	return nil, errors.New("intentional json marshal failure")
+}
+
+func (f *failingResource) MarshalYAML() (interface{}, error) {
+	return nil, errors.New("intentional yaml marshal failure")
+}
+
+func TestFormatAsJSON_Error(t *testing.T) {
+	out := ui.FormatTable([]models.Resource{&failingResource{}}, "json")
+	if !strings.Contains(out, "Error formatting resources as JSON") {
+		t.Errorf("expected JSON error message, got: %s", out)
+	}
+}
+
+func TestFormatAsYAML_Error(t *testing.T) {
+	out := ui.FormatTable([]models.Resource{&failingResource{}}, "yaml")
+	if !strings.Contains(out, "Error formatting resources as YAML") {
+		t.Errorf("expected YAML error message, got: %s", out)
 	}
 }

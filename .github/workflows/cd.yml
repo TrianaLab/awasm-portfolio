@@ -1,13 +1,9 @@
-name: Deploy to pages and ghcr.io
+name: Deploy to GitHub Pages and GHCR
 
 on:
   release:
-    types:
-      - published
+    types: [published]
   workflow_dispatch:
-
-env:
-  GO_VERSION: stable
 
 permissions:
   contents: read
@@ -16,56 +12,69 @@ permissions:
   packages: write
 
 concurrency:
-  group: "deploy-matrix"
+  group: deploy-${{ github.event.release.tag_name || github.run_id }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  pages:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: [pages, docker]
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.2
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6.4.0
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: '1.26'
 
-      - name: Build Go project
-        run: make build VERSION=$GITHUB_REF_NAME
+      - name: Build WebAssembly bundle
+        run: make build VERSION=${{ github.event.release.tag_name || github.ref_name }}
 
-      - name: Setup Pages
-        if: matrix.target == 'pages'
-        uses: actions/configure-pages@v5
+      - uses: actions/configure-pages@v5
 
-      - name: Upload artifact
-        if: matrix.target == 'pages'
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v3
         with:
-          path: './web'
+          path: ./web
 
-      - name: Deploy to GitHub Pages
-        if: matrix.target == 'pages'
-        id: deployment
+      - id: deployment
         uses: actions/deploy-pages@v4
 
-      - name: Log in to GitHub Container Registry
-        if: matrix.target == 'docker'
-        uses: docker/login-action@v3
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Compute lowercase repo
+        id: repo
+        run: echo "name=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve tag
+        id: tag
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          if [ -z "$tag" ]; then tag="${{ github.ref_name }}"; fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v4.0.0
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Compute lowercase repo info
-        id: lowercase_repo
-        run: echo "repo_lower=$(echo "${GITHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
-
-      - name: Build and push
-        if: matrix.target == 'docker'
-        uses: docker/build-push-action@v6
+      - name: Build and push image
+        uses: docker/build-push-action@v7.1.0
         with:
+          context: .
           push: true
-          tags: ghcr.io/${{ steps.lowercase_repo.outputs.repo_lower }}:${{ github.ref_name }}
+          platforms: linux/amd64,linux/arm64
+          tags: ghcr.io/${{ steps.repo.outputs.name }}:${{ steps.tag.outputs.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ steps.tag.outputs.tag }}
+            GIT_COMMIT=${{ github.sha }}
+            BUILD_DATE=${{ github.event.release.published_at }}

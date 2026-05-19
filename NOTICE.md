@@ -37,4 +37,4 @@ This project includes third-party software under the following licenses:
 
 ---
 
-See the [LICENSE](LICENSE.md) file for the full license text of the Apache 2.0 license applied to this project.
+See the [LICENSE](LICENSE) file for the full license text of the MIT license applied to this project.

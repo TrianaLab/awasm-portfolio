@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"awasm-portfolio/internal/repository"
-	"awasm-portfolio/internal/service"
-	"awasm-portfolio/internal/util"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/internal/service"
+	"github.com/TrianaLab/awasm-portfolio/internal/util"
 
 	"github.com/spf13/cobra"
 )

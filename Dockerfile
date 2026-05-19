@@ -1,39 +1,38 @@
 # Stage 1: Build the WebAssembly binary
-FROM golang:1.24.3 AS builder
+FROM golang:1.26.0 AS builder
 
-# ---- Build Arguments ----
-# These can be overridden at build time using --build-arg
-ARG VERSION
+ARG VERSION=dev
+ARG GIT_COMMIT=unknown
+ARG BUILD_DATE=unknown
 ARG GOOS=js
 ARG GOARCH=wasm
-ARG APP_WASM=web/assets/app.wasm
 
-# ---- Environment Variables ----
-# Set environment variables based on build arguments
 ENV GOOS=${GOOS}
 ENV GOARCH=${GOARCH}
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Copy Go module files and download dependencies
+# Cache dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the entire source code
 COPY . .
 
-# Build the WebAssembly binary with version information
 RUN make build VERSION=${VERSION}
 
 # Stage 2: Serve with Nginx
 FROM nginx:stable-alpine
 
-# Copy the built WebAssembly assets from the builder stage to Nginx's html directory
+LABEL org.opencontainers.image.title=awasm-portfolio
+LABEL org.opencontainers.image.description="WebAssembly-powered Kubernetes-style portfolio console"
+LABEL org.opencontainers.image.source=https://github.com/TrianaLab/awasm-portfolio
+LABEL org.opencontainers.image.licenses=MIT
+
 COPY --from=builder /app/web /usr/share/nginx/html
 
-# Expose port 80 to allow external access
 EXPOSE 80
 
-# Start Nginx in the foreground
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD wget -q --spider http://localhost:80/ || exit 1
+
 CMD ["nginx", "-g", "daemon off;"]

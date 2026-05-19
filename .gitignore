@@ -1,47 +1,25 @@
-# Ignore build artifacts and generated files
-**/app.wasm
-**/wasm_exec.js
+# Build artifacts
+web/assets/app.wasm
+web/scripts/wasm_exec.js
 
-# Ignore temporary files and logs
-*.exe
-*.out
-*.log
-*.tmp
-*.swp
-*.swo
-
-# Ignore Go build cache and test files
-*.test
-*.cover
-*.prof
-*.a
-
-# Ignore system-specific files
-.DS_Store
-Thumbs.db
-
-# Ignore IDE and editor-specific files
-.vscode/
+# IDE
 .idea/
-*.iml
-*.sublime-workspace
-*.sublime-project
-*.pyc
-*.pyo
+.vscode/
+*.swp
 
-# Node.js-related (if applicable)
-node_modules/
-npm-debug.log
-yarn-debug.log
-yarn-error.log
+# OS
+.DS_Store
 
-# Ignore build tools output (if any future additions)
-dist/
-build/
+# Coverage
+coverage.out
+coverage.html
+cover.out
 
-# Coverage files
-**/coverage.out
-**/coverage.html
-
-# Resume
+# Generated resume
 resume.json
+
+# Local-only
+TODO.md
+.env
+.env.local
+*.env.local

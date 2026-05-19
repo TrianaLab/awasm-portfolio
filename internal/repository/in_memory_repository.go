@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/util"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/util"
 	"strings"
 	"sync"
 	"time"

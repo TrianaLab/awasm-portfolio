@@ -1,7 +1,7 @@
 package types
 
 import (
-	"awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
 	"reflect"
 	"strings"
 	"time"
