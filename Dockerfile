@@ -1,5 +1,7 @@
 # ── Stage 1: build the Go WASM artifact ─────────────────────────────────
-FROM golang:1.26.0 AS wasm-builder
+# Pin to BUILDPLATFORM: the output is a portable .wasm file, so we avoid
+# slow (and SIGILL-prone) QEMU emulation when building for linux/arm64.
+FROM --platform=$BUILDPLATFORM golang:1.26.0 AS wasm-builder
 
 ARG VERSION=dev
 ARG GIT_COMMIT=unknown
@@ -17,7 +19,9 @@ COPY . .
 RUN make wasm VERSION=${VERSION}
 
 # ── Stage 2: build the Svelte + Vite frontend ──────────────────────────
-FROM node:22-alpine AS ui-builder
+# Pin to BUILDPLATFORM: Vite produces static assets, and running npm/node
+# under QEMU for linux/arm64 fails with SIGILL (exit 132).
+FROM --platform=$BUILDPLATFORM node:22-alpine AS ui-builder
 
 WORKDIR /app
 
