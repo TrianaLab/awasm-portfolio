@@ -7,89 +7,100 @@
 [![GitHub Release](https://img.shields.io/github/v/release/TrianaLab/awasm-portfolio)](https://github.com/TrianaLab/awasm-portfolio/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-AWASM Portfolio is a WebAssembly-powered application that emulates a console, enabling users to interact with the developer's resume using Kubernetes-like commands. This innovative client-side architecture combines frontend and backend functionality for seamless and dynamic user interactions. The data structure follows the [JSON Resume Schema](https://jsonresume.org/schema) standard.
+AWASM Portfolio is a WebAssembly-powered application that emulates a console, letting visitors interact with the developer's resume using `kubectl`-style commands. The data layer follows the [JSON Resume Schema](https://jsonresume.org/schema). The whole thing runs client-side: Go compiled to WASM in a Web Worker for the command engine, Svelte 5 for the UI, pdfmake for runtime PDF generation.
 
-![Demo](images/demo.gif)
+Try it live at [edudiaz.dev](https://edudiaz.dev) :globe_with_meridians:.
 
-Check out the live demo [here](https://edudiaz.dev) :globe_with_meridians:.
+## Architecture :building_construction:
 
-## Deployment :computer:
+```mermaid
+flowchart LR
+    subgraph SPA [Svelte 5 SPA · main thread]
+        direction TB
+        Term(Terminal · xterm.js)
+        Resume(Resume view · Svelte)
+        PDF(Download PDF · pdfmake)
+    end
 
-1.  **Locally**: Use the provided Makefile:
-    ```bash
-    make run
-    ```
-    Access the application at `http://127.0.0.1:8000`.
+    Bridge{{wasm.ts bridge}}
 
-2.  **Docker**: Pull and run the latest release image:
-    ```bash
-    docker run -p 8000:80 ghcr.io/trianalab/awasm-portfolio:$(curl -s https://api.github.com/repos/trianalab/awasm-portfolio/releases/latest | jq -r .tag_name)
-    ```
-    Access the application at `http://127.0.0.1:8000`.
+    subgraph Worker [Web Worker]
+        direction TB
+        Exec[wasm_exec.js]
+        Wasm[(app.wasm · Go core)]
+        Exec --> Wasm
+    end
 
-## Customization :wrench:
+    Term --> Bridge
+    Resume --> Bridge
+    PDF --> Bridge
+    Bridge -- postMessage --> Worker
+```
 
-Personalize your portfolio by editing the [`preload.go`](internal/preload/preload.go) file. This file contains the data that initializes your portfolio profile, including basics, work experience, certificates, education, skills, and more.
+- **Go side** (`cmd/`, `internal/`): the kubectl-style command surface, in-memory repository, output formatters. Compiled to WebAssembly.
+- **Frontend** (`frontend/`): Svelte 5 + Vite + TypeScript SPA. Renders the terminal and the resume view, talks to the Go core through a typed Worker bridge.
+- **PDF**: when the user clicks the download button, `frontend/src/lib/pdf.ts` maps the same JSON Resume to a pdfmake document and triggers the download. Text in the PDF is vector (selectable / searchable / ATS-parseable).
 
-### Steps to Customize
+## Run it locally :computer:
 
-1.  **Locate the File**: :file_folder:  
-    Open the [`internal/preload/preload.go`](internal/preload/preload.go) file in your favorite code editor.
+You need Go 1.26+, Node 22+, and `make`.
 
-2.  **Understand the Structure**: :eyes:  
-    The file uses Go structs to define and organize portfolio data. Each section (e.g., Certificate, Education) is represented by a struct that includes relevant fields.
+```bash
+# One-shot production build (Go WASM + Svelte bundle)
+make build && make run    # serves http://127.0.0.1:8000
 
-3.  **Edit the Content**: :pencil2:  
-    Modify the fields to match your personal details. For example:
+# Or, with HMR for the frontend
+make dev                  # builds WASM once, then runs vite dev server
+```
 
-    *   Replace `"edudiazasencio@gmail.com"` with your email.
-    *   Update `"Certified Kubernetes Administrator"` with your certificates.
+Run it as a container instead:
 
-4.  **Save and Rebuild**: :hammer:  
-    After making changes, save the file and rebuild the project to see your updates in the portfolio.
+```bash
+docker run -p 8000:80 ghcr.io/trianalab/awasm-portfolio:$(curl -s https://api.github.com/repos/trianalab/awasm-portfolio/releases/latest | jq -r .tag_name)
+```
 
-## Architecture Overview :building_construction:
+## Customize :wrench:
 
-![Architecture](images/architecture.png)
+There are three things you can customize without forking the codebase:
 
-### Frontend :art:
+**1. Portfolio content** — edit [`internal/preload/preload.go`](internal/preload/preload.go). The per-section `build*` helpers are small typed slices (work, education, volunteer, skills, …). Saving + `make build` regenerates the WASM.
 
-The frontend features two primary modes of interaction, both synchronized with the WebAssembly backend:
+**2. Branding** — branding strings (the domain shown in the topbar, the page tab title, the GitHub repo card target) are driven by Vite environment variables. Copy [`frontend/.env.example`](frontend/.env.example) to `frontend/.env.local` and edit the values:
 
-1.  **CLI Mode** :keyboard:
-    *   Emulates a web terminal using xterm.js.
-    *   Supports `kubectl` commands to interact with a virtual cluster.
+```bash
+cp frontend/.env.example frontend/.env.local
+# then edit frontend/.env.local
+```
 
-2.  **UI Mode** :sparkles:
-    *   Offers a dynamic, modern visualization of CV information.
+| Variable           | Default                       | Used by                                                            |
+| ------------------ | ----------------------------- | ------------------------------------------------------------------ |
+| `VITE_BRAND`       | `edudiaz`                     | Page `<title>` — rendered as `{VITE_BRAND} - awasm portfolio`      |
+| `VITE_DOMAIN`      | `edudiaz.dev`                 | Brand mark in the topbar (`~/{VITE_DOMAIN}`)                       |
+| `VITE_GITHUB_REPO` | `TrianaLab/awasm-portfolio`   | Topbar repo card (release tag + stars + forks via GitHub REST API) |
 
-### Backend :gear:
+The defaults match the upstream demo. Override them at build time:
 
-The backend, written in Go and compiled to WebAssembly, runs entirely within the browser. It processes commands and manages data using a layered architecture:
+```bash
+VITE_BRAND=alice VITE_DOMAIN=alice.dev VITE_GITHUB_REPO=alice/portfolio make ui
+```
 
-*   **Cmd Package**: Handles command parsing (via Cobra) and validation.
-*   **Services Package**: Implements business logic and data processing.
-*   **Repository Package**: Manages an in-memory key-value store.
-*   **Factory Package**: Creates mock resources with randomized data (using gofakeit).
-*   **Models Package**: Defines Kubernetes-like CRD models for CV elements.
-*   **Preload Package**: Loads initial CV data for immediate use.
-*   **UI Package**: Serializes data into YAML, JSON, or tables for consistent display.
-*   **Util Package**: Ensures data normalization and utility operations.
+**3. UI** — edit the Svelte components under [`frontend/src/components/`](frontend/src/components/). `make dev` gives you HMR while editing.
 
-## Key Features :key:
+After any change, `make build` regenerates everything end-to-end.
 
-*   **Integrated Architecture**: Entirely client-side for high performance and offline capability.
-*   **Dual Interaction Modes**: Switch between CLI and UI modes with real-time synchronization.
-*   **Kubernetes-Inspired Commands**: Use familiar `kubectl` syntax to explore the CV.
-*   **Dynamic Visuals**: Physics-based UI for engaging data visualization.
-*   **Extensibility**: Easily customizable models and data generation.
-*   **Standardization**: The data structure follows the JSON Resume Schema standard.
+## Key features :key:
+
+- **Fully client-side** — no backend, no auth, deploys as a static site.
+- **kubectl-style CLI** — `kubectl get`, `describe`, `create`, `delete` against an in-memory resume "cluster".
+- **Modern UI** — Svelte 5 runes, theme-aware, responsive.
+- **PDF on the fly** — click the download button to get a vector PDF generated in the browser from the same JSON.
+- **Schema-compliant data** — the JSON shape matches the JSON Resume v1 spec.
+- **100% Go coverage**, gocyclo ≤ 15, golangci-lint clean.
 
 ## Contributing :handshake:
 
-Contributions are welcome! Open an issue or submit a pull request to share your ideas or fixes.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the dev workflow, CI gates, and conventional-commit release flow. PRs welcome.
 
 ## Acknowledgments :pray:
 
-This project uses several open-source libraries and resources. We thank the developers of these projects for their contributions.
-For a full list of dependencies, their licenses, and acknowledgments, please see the [NOTICE.md](./NOTICE.md) file.
+This project uses several open-source libraries. Full list and their licenses: [NOTICE.md](./NOTICE.md).

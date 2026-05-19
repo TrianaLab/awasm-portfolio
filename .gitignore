@@ -1,6 +1,7 @@
-# Build artifacts
-web/assets/app.wasm
-web/scripts/wasm_exec.js
+# Build outputs
+web/
+frontend/node_modules/
+frontend/dist/
 
 # IDE
 .idea/

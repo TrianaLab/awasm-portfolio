@@ -1,0 +1,99 @@
+:root {
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Consolas', monospace;
+
+  /* Dark theme (default) */
+  --color-bg: #0d1117;
+  --color-bg-elevated: #161b22;
+  --color-bg-subtle: #21262d;
+  --color-border: #30363d;
+  --color-text: #e6edf3;
+  --color-text-muted: #8b949e;
+  --color-accent: #58a6ff;
+  --color-accent-soft: rgba(88, 166, 255, 0.15);
+  --color-success: #3fb950;
+  --color-danger: #f85149;
+
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.5);
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --transition: 200ms ease;
+}
+
+:root[data-theme='light'] {
+  --color-bg: #f6f8fa;
+  --color-bg-elevated: #ffffff;
+  --color-bg-subtle: #eaeef2;
+  --color-border: #d0d7de;
+  --color-text: #1f2328;
+  --color-text-muted: #59636e;
+  --color-accent: #0969da;
+  --color-accent-soft: rgba(9, 105, 218, 0.1);
+  --color-success: #1a7f37;
+  --color-danger: #cf222e;
+  --shadow-md: 0 4px 16px rgba(31, 35, 40, 0.08);
+  --shadow-lg: 0 12px 40px rgba(31, 35, 40, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden; /* prevent the page from scrolling; layout owns its own scroll */
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  transition: background var(--transition), color var(--transition);
+}
+
+#app {
+  /* Fixed viewport height; children manage their own scroll. Critical:
+     without this (e.g. min-height: 100vh) xterm + ResizeObserver create
+     a feedback loop that grows the page indefinitely. */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: opacity var(--transition);
+}
+a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: inherit;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}

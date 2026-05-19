@@ -8,6 +8,7 @@ BUILD_DATE   := $(shell date -u '+%Y-%m-%dT%H:%M:%SZ')
 WEB_DIR      := web
 ASSETS_DIR   := $(WEB_DIR)/assets
 SCRIPTS_DIR  := $(WEB_DIR)/scripts
+FRONTEND_DIR := frontend
 
 # Files
 APP_WASM     := $(ASSETS_DIR)/app.wasm
@@ -15,6 +16,7 @@ WASM_EXEC_JS := $(SCRIPTS_DIR)/wasm_exec.js
 
 # Tools
 GO           := go
+NPM          := npm
 PYTHON       := python3
 
 # WASM toolchain
@@ -26,28 +28,48 @@ IMAGE        := ghcr.io/trianalab/awasm-portfolio
 
 LDFLAGS := -X '$(MODULE)/cmd.appVersion=$(VERSION)'
 
-.PHONY: build run clean test lint coverage resume docker-build docker-run ensure-deps fetch-wasm-exec
+.PHONY: build wasm ui run dev test lint coverage resume docker-build docker-run ensure-deps fetch-wasm-exec clean
 
-build: clean ensure-deps fetch-wasm-exec
+# Composite build: produce the WASM artifact, then bundle the Svelte SPA
+# around it. Order matters — Vite is configured with emptyOutDir=false so
+# the WASM written by `make wasm` is preserved when Vite writes the rest.
+build: wasm ui
+
+# Go → WebAssembly. Produces web/assets/app.wasm + web/scripts/wasm_exec.js.
+wasm: clean-wasm ensure-deps fetch-wasm-exec
+	@mkdir -p $(ASSETS_DIR) $(SCRIPTS_DIR)
 	@echo "==> Building WebAssembly binary ($(VERSION))..."
 	GOARCH=$(GOARCH) GOOS=$(GOOS) $(GO) build -ldflags "$(LDFLAGS)" -o $(APP_WASM) main.go
 	@echo "    built: $(APP_WASM)"
 
+# Svelte → Vite build. Writes index.html + assets/* into web/ alongside
+# the WASM produced above.
+ui:
+	@echo "==> Building Svelte frontend..."
+	cd $(FRONTEND_DIR) && $(NPM) ci && $(NPM) run build
+
+# Local serve: full production build, then a tiny static server.
 run: build
-	@echo "==> Starting dev server at http://127.0.0.1:8000"
+	@echo "==> Serving production build at http://127.0.0.1:8000"
 	$(PYTHON) -m http.server 8000 --bind 127.0.0.1 --directory $(WEB_DIR)
 
+# Local dev: Vite dev server with HMR. Build the WASM once up front so
+# the worker can find it, then let Vite watch the Svelte side.
+dev: wasm
+	@echo "==> Starting Vite dev server (HMR)..."
+	cd $(FRONTEND_DIR) && $(NPM) install && $(NPM) run dev
+
 test:
-	go test ./... -v
+	$(GO) test ./... -v
 
 lint:
-	gofmt -s -l $(shell find . -name '*.go' -not -path './web/*')
-	go vet ./...
+	gofmt -s -l $(shell find . -name '*.go' -not -path './web/*' -not -path './frontend/node_modules/*')
+	$(GO) vet ./...
 
 coverage:
-	go test $(shell go list ./... | grep -v /tests/) -coverprofile=coverage.out -covermode=atomic
-	go tool cover -html=coverage.out -o coverage.html
-	@go tool cover -func=coverage.out | tail -1
+	$(GO) test $(shell go list ./... | grep -v /tests/) -coverprofile=coverage.out -covermode=atomic
+	$(GO) tool cover -html=coverage.out -o coverage.html
+	@$(GO) tool cover -func=coverage.out | tail -1
 
 resume:
 	@echo "==> Generating resume.json..."
@@ -63,13 +85,17 @@ docker-build:
 docker-run: docker-build
 	docker run --rm -p 8000:80 $(IMAGE):$(VERSION)
 
-clean:
-	@rm -f $(APP_WASM) $(WASM_EXEC_JS) coverage.out coverage.html cover.out
+clean: clean-wasm
+	@rm -rf $(WEB_DIR) coverage.out coverage.html cover.out
+
+clean-wasm:
+	@rm -f $(APP_WASM) $(WASM_EXEC_JS)
 
 ensure-deps:
 	@$(GO) mod tidy
 
 fetch-wasm-exec:
-	@cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(WASM_EXEC_JS)
+	@mkdir -p $(SCRIPTS_DIR)
+	@cp "$$($(GO) env GOROOT)/lib/wasm/wasm_exec.js" $(WASM_EXEC_JS)
 
 include ci.mk

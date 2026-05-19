@@ -135,6 +135,36 @@ func TestOwnerReferenceGetName(t *testing.T) {
 	}
 }
 
+// TestMeta exercises the methods promoted to concrete types via embedding.
+func TestMeta(t *testing.T) {
+	m := &models.Meta{}
+	m.SetName("widget")
+	m.SetNamespace("ns-a")
+	m.SetOwnerReference(models.OwnerReference{Kind: "resume", Name: "owner"})
+	ts := time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC)
+	m.SetCreationTimestamp(ts)
+	m.Kind = "award"
+
+	if m.GetKind() != "award" {
+		t.Errorf("GetKind() = %q, want %q", m.GetKind(), "award")
+	}
+	if m.GetName() != "widget" {
+		t.Errorf("GetName() = %q, want %q", m.GetName(), "widget")
+	}
+	if m.GetNamespace() != "ns-a" {
+		t.Errorf("GetNamespace() = %q, want %q", m.GetNamespace(), "ns-a")
+	}
+	if m.GetOwnerReference().Kind != "resume" {
+		t.Errorf("GetOwnerReference().Kind = %q, want %q", m.GetOwnerReference().Kind, "resume")
+	}
+	if !m.GetCreationTimestamp().Equal(ts) {
+		t.Errorf("GetCreationTimestamp() = %v, want %v", m.GetCreationTimestamp(), ts)
+	}
+	if got := m.GetID(); got != "award:widget:ns-a" {
+		t.Errorf("GetID() = %q, want %q", got, "award:widget:ns-a")
+	}
+}
+
 func TestMockResource(t *testing.T) {
 	resource := &mockResource{
 		kind:      "test",

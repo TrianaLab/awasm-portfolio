@@ -8,5 +8,6 @@
 coverage.*
 cover.out
 resume.json
-web/assets/app.wasm
-web/scripts/wasm_exec.js
+web/
+frontend/node_modules/
+frontend/dist/

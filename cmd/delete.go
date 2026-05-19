@@ -1,12 +1,13 @@
 package cmd
 
 import (
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"github.com/TrianaLab/awasm-portfolio/internal/service"
 
 	"github.com/spf13/cobra"
 )
 
-func NewDeleteCommand(service service.ResourceService) *cobra.Command {
+func NewDeleteCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	return &cobra.Command{
 		Use:   "delete [kind] [name]",
 		Short: "Delete a resource",
@@ -19,26 +20,17 @@ kubectl delete profile john-doe -n dev
 kubectl delete namespace dev
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
-			kind, name := args[0], args[1]
-			namespace, _ := cmd.Flags().GetString("namespace")
-			allNamespaces, _ := cmd.Flags().GetBool("all-namespaces")
-			formatOutput, _ := cmd.Flags().GetString("output")
-
-			if formatOutput != "" {
+			flags := readFlags(cmd)
+			if flags.output != "" {
 				cmd.Println("Error: output flag is not supported in this command")
 				return
 			}
 
-			if allNamespaces {
-				namespace = ""
-			}
-
-			result, err := service.DeleteResource(kind, name, namespace)
+			result, err := service.Delete(repo, args[0], args[1], flags.namespace)
 			if err != nil {
 				cmd.Println("Error: ", err)
 				return
 			}
-
 			cmd.Println(result)
 		},
 	}
