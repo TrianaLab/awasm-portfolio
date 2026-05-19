@@ -15,26 +15,26 @@ Try it live at [edudiaz.dev](https://edudiaz.dev) :globe_with_meridians:.
 
 ```mermaid
 flowchart LR
-    subgraph SPA["Svelte 5 SPA (main thread)"]
+    subgraph SPA [Svelte 5 SPA · main thread]
         direction TB
-        Term("Terminal windows<br>xterm.js")
-        Resume("Resume view<br>Svelte components")
-        PDF("Download PDF<br>pdfmake")
+        Term(Terminal · xterm.js)
+        Resume(Resume view · Svelte)
+        PDF(Download PDF · pdfmake)
     end
 
-    Bridge{{"wasm.ts bridge<br>runCommand · fetchResume"}}
+    Bridge{{wasm.ts bridge}}
 
-    subgraph Worker["Web Worker"]
+    subgraph Worker [Web Worker]
         direction TB
-        Exec["wasm_exec.js"]
-        Wasm[("app.wasm<br>cmd · service · repository · ui")]
+        Exec[wasm_exec.js]
+        Wasm[(app.wasm · Go core)]
         Exec --> Wasm
     end
 
     Term --> Bridge
     Resume --> Bridge
     PDF --> Bridge
-    Bridge -- "postMessage + correlation IDs" --> Worker
+    Bridge -- postMessage --> Worker
 ```
 
 - **Go side** (`cmd/`, `internal/`): the kubectl-style command surface, in-memory repository, output formatters. Compiled to WebAssembly.
