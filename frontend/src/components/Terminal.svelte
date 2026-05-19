@@ -227,7 +227,10 @@
   .terminal {
     flex: 1;
     min-height: 0;
-    padding: 0.6rem;
+    /* Extra bottom padding so the last rendered xterm row (typically the
+       prompt line) doesn't sit flush against the window border or the
+       resize handle. */
+    padding: 0.6rem 0.6rem 1rem 0.6rem;
     overflow: hidden;
   }
 

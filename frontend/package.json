@@ -15,7 +15,7 @@
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
-    "pdfmake": "^0.2.10"
+    "pdfmake": "^0.3.8"
   },
   "devDependencies": {
     "@playwright/test": "^1.60.0",

@@ -5,6 +5,7 @@
   import { createWindowManager } from '../lib/windows.svelte';
 
   const manager = createWindowManager();
+  let desktopEl = $state<HTMLDivElement | null>(null);
 
   onMount(() => {
     // Open one terminal automatically so the user has something to look at.
@@ -22,9 +23,9 @@
   }
 </script>
 
-<div class="desktop">
+<div class="desktop" bind:this={desktopEl}>
   {#each manager.windows as win (win.id)}
-    <Window {win} {manager}>
+    <Window {win} {manager} {desktopEl}>
       <Terminal />
     </Window>
   {/each}

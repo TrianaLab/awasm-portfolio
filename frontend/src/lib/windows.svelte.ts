@@ -11,6 +11,9 @@ export interface WindowState {
   h: number;
   z: number;
   minimized: boolean;
+  // When maximized, the previous geometry is stored so the green button
+  // can toggle back to the user's window arrangement.
+  previousGeometry?: { x: number; y: number; w: number; h: number };
 }
 
 const MIN_W = 360;
@@ -32,6 +35,8 @@ export interface WindowManager {
   restore(id: string): void;
   move(id: string, x: number, y: number): void;
   resize(id: string, w: number, h: number): void;
+  toggleMaximize(id: string, desktopW: number, desktopH: number): void;
+  isMaximized(id: string): boolean;
 }
 
 export function createWindowManager(): WindowManager {
@@ -91,6 +96,35 @@ export function createWindowManager(): WindowManager {
     if (!win) return;
     win.w = Math.max(MIN_W, w);
     win.h = Math.max(MIN_H, h);
+    // Any user-driven resize cancels the maximized state — restoring would
+    // jump back to a stale geometry the user didn't intend.
+    win.previousGeometry = undefined;
+  }
+
+  function toggleMaximize(id: string, desktopW: number, desktopH: number) {
+    const win = find(id);
+    if (!win) return;
+    if (win.previousGeometry) {
+      // Currently maximized — restore.
+      const prev = win.previousGeometry;
+      win.x = prev.x;
+      win.y = prev.y;
+      win.w = prev.w;
+      win.h = prev.h;
+      win.previousGeometry = undefined;
+      return;
+    }
+    // Maximize: snapshot current geometry, then fill the desktop.
+    win.previousGeometry = { x: win.x, y: win.y, w: win.w, h: win.h };
+    win.x = 0;
+    win.y = 0;
+    win.w = Math.max(MIN_W, desktopW);
+    win.h = Math.max(MIN_H, desktopH);
+  }
+
+  function isMaximized(id: string): boolean {
+    const win = find(id);
+    return !!win?.previousGeometry;
   }
 
   return {
@@ -104,5 +138,7 @@ export function createWindowManager(): WindowManager {
     restore,
     move,
     resize,
+    toggleMaximize,
+    isMaximized,
   };
 }

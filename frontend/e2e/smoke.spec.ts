@@ -144,6 +144,53 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('[role="dialog"]')).toHaveCount(1);
   });
 
+  test('window manager: maximize fills the desktop and toggles back', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    const win = page.locator('[role="dialog"]').first();
+    const before = await win.boundingBox();
+    const desktop = await page.locator('.desktop').boundingBox();
+    expect(before).not.toBeNull();
+    expect(desktop).not.toBeNull();
+    expect(before!.width).toBeLessThan(desktop!.width);
+
+    await win.getByRole('button', { name: /maximize window/i }).click();
+    await page.waitForTimeout(150);
+    const max = await win.boundingBox();
+    expect(Math.abs(max!.width - desktop!.width)).toBeLessThan(3);
+    expect(Math.abs(max!.height - desktop!.height)).toBeLessThan(3);
+
+    await win.getByRole('button', { name: /maximize window/i }).click();
+    await page.waitForTimeout(150);
+    const restored = await win.boundingBox();
+    expect(Math.abs(restored!.width - before!.width)).toBeLessThan(3);
+    expect(Math.abs(restored!.height - before!.height)).toBeLessThan(3);
+  });
+
+  test('window manager: prompt is not clipped after long-output command', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+
+    const helper = page.locator('.xterm-helper-textarea');
+    await helper.focus();
+    await page.keyboard.type('kubectl get all -A');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(800);
+
+    // The bottom of the xterm canvas must sit above the window border so
+    // the prompt's last row is not partially clipped.
+    const clearance = await page.evaluate(() => {
+      const dialog = document.querySelector('[role="dialog"]') as HTMLElement | null;
+      const xterm = dialog?.querySelector('.xterm') as HTMLElement | null;
+      if (!dialog || !xterm) return -1;
+      return dialog.getBoundingClientRect().bottom - xterm.getBoundingClientRect().bottom;
+    });
+    expect(clearance, 'xterm canvas must finish inside the window').toBeGreaterThan(0);
+  });
+
   test('window manager: focus brings background window to front', async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });

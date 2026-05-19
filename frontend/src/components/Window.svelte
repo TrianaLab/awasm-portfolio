@@ -5,12 +5,20 @@
   let {
     win,
     manager,
+    desktopEl,
     children,
   }: {
     win: WindowState;
     manager: WindowManager;
+    desktopEl: HTMLElement | null;
     children: Snippet;
   } = $props();
+
+  function maximize() {
+    const w = desktopEl?.clientWidth ?? window.innerWidth;
+    const h = desktopEl?.clientHeight ?? window.innerHeight;
+    manager.toggleMaximize(win.id, w, h);
+  }
 
   // Drag from the chrome bar.
   let dragOffset: { x: number; y: number } | null = null;
@@ -58,10 +66,11 @@
 </script>
 
 {#if !win.minimized}
-  <section
+  <div
     class="window"
     role="dialog"
     aria-label={win.title}
+    tabindex="-1"
     style:left="{win.x}px"
     style:top="{win.y}px"
     style:width="{win.w}px"
@@ -71,6 +80,9 @@
   >
     <div
       class="chrome"
+      role="toolbar"
+      aria-label="Window controls and drag handle"
+      tabindex="0"
       onpointerdown={onChromePointerDown}
       onpointermove={onChromePointerMove}
       onpointerup={onChromePointerUp}
@@ -90,7 +102,7 @@
         <button
           class="dot dot-green"
           aria-label="Maximize window"
-          onclick={() => manager.resize(win.id, 1200, 700)}
+          onclick={maximize}
         ></button>
       </div>
       <span class="title">{win.title}</span>
@@ -102,12 +114,13 @@
       class="resize-handle"
       role="separator"
       aria-label="Resize"
+      aria-orientation="horizontal"
       onpointerdown={onResizePointerDown}
       onpointermove={onResizePointerMove}
       onpointerup={onResizePointerUp}
       onpointercancel={onResizePointerUp}
     ></div>
-  </section>
+  </div>
 {/if}
 
 <style>
