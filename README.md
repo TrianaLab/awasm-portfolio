@@ -9,30 +9,37 @@
 
 AWASM Portfolio is a WebAssembly-powered application that emulates a console, letting visitors interact with the developer's resume using `kubectl`-style commands. The data layer follows the [JSON Resume Schema](https://jsonresume.org/schema). The whole thing runs client-side: Go compiled to WASM in a Web Worker for the command engine, Svelte 5 for the UI, pdfmake for runtime PDF generation.
 
-![Demo](images/demo.gif)
-
 Try it live at [edudiaz.dev](https://edudiaz.dev) :globe_with_meridians:.
 
 ## Architecture :building_construction:
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                       Browser (single page)                     │
-│  ┌──────────────┐     ┌──────────────┐     ┌─────────────────┐  │
-│  │ Terminal     │     │ Resume view  │     │ Download PDF    │  │
-│  │ (@xterm/xterm│     │ (Svelte 5    │     │ (pdfmake, in    │  │
-│  │  + runes)    │     │  components) │     │  the browser)   │  │
-│  └──────┬───────┘     └──────┬───────┘     └────────┬────────┘  │
-│         │                    │                      │           │
-│         └────────────┬───────┴──────────────────────┘           │
-│                     │  runCommand() / fetchResume()             │
-│                     ▼                                           │
-│           ┌──────────────────┐                                  │
-│           │  Web Worker      │                                  │
-│           │   ├─ wasm_exec.js│                                  │
-│           │   └─ app.wasm    │  Go (kubectl, repository,        │
-│           └──────────────────┘  preload data, formatter)        │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Browser["Browser (single static page)"]
+        direction TB
+        subgraph UI["Svelte 5 SPA"]
+            direction LR
+            Term["Terminal windows<br/>@xterm/xterm"]
+            Resume["Resume view<br/>Svelte components"]
+            PDF["Download PDF<br/>pdfmake (in browser)"]
+        end
+        Bridge["wasm.ts bridge<br/>(runCommand · fetchResume)"]
+        subgraph Worker["Web Worker"]
+            direction TB
+            Exec["wasm_exec.js"]
+            Wasm["app.wasm<br/>Go: cmd · service · repository · ui"]
+            Exec --> Wasm
+        end
+        UI -- "typed calls" --> Bridge
+        Bridge -- "postMessage<br/>(correlation IDs)" --> Worker
+    end
+
+    classDef ui fill:#0969da22,stroke:#0969da,color:#1f2328;
+    classDef bridge fill:#dbeafe,stroke:#0969da,color:#1f2328;
+    classDef wasm fill:#fef3c7,stroke:#c2410c,color:#1f2328;
+    class Term,Resume,PDF ui;
+    class Bridge bridge;
+    class Exec,Wasm wasm;
 ```
 
 - **Go side** (`cmd/`, `internal/`): the kubectl-style command surface, in-memory repository, output formatters. Compiled to WebAssembly.
