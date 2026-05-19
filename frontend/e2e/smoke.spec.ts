@@ -144,6 +144,13 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('[role="dialog"]')).toHaveCount(1);
   });
 
+  test('GitHub repo card renders the repo name (and meta when API resolves)', async ({ page }) => {
+    await page.goto('/');
+    const card = page.getByRole('link', { name: /github repository trianalab\/awasm-portfolio/i });
+    await expect(card).toBeVisible({ timeout: 10_000 });
+    await expect(card).toContainText('TrianaLab/awasm-portfolio');
+  });
+
   test('window manager: maximize fills the desktop and toggles back', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');

@@ -210,7 +210,18 @@
 </script>
 
 <div class="terminal-wrap">
-  <div class="terminal" bind:this={container}></div>
+  <!-- xterm's height: 100% sizes against the parent's content box, so
+       padding inside .terminal lets xterm spill into the padding area.
+       Use sibling flex spacers to create visual breathing room INSTEAD of
+       padding inside .terminal, which gives xterm a clean integer pixel
+       box to size into. -->
+  <div class="pad-top"></div>
+  <div class="row">
+    <div class="pad-side"></div>
+    <div class="terminal" bind:this={container}></div>
+    <div class="pad-side"></div>
+  </div>
+  <div class="pad-bottom"></div>
 </div>
 
 <style>
@@ -224,14 +235,30 @@
     overflow: hidden;
   }
 
-  .terminal {
+  .row {
     flex: 1;
     min-height: 0;
-    /* Extra bottom padding so the last rendered xterm row (typically the
-       prompt line) doesn't sit flush against the window border or the
-       resize handle. */
-    padding: 0.6rem 0.6rem 1rem 0.6rem;
+    display: flex;
+  }
+
+  .terminal {
+    flex: 1;
+    min-width: 0;
+    min-height: 0;
     overflow: hidden;
+  }
+
+  .pad-top {
+    flex: none;
+    height: 0.6rem;
+  }
+  .pad-bottom {
+    flex: none;
+    height: 1.4rem;
+  }
+  .pad-side {
+    flex: none;
+    width: 0.6rem;
   }
 
   .terminal :global(.xterm) {
