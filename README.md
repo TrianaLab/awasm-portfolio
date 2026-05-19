@@ -59,9 +59,32 @@ docker run -p 8000:80 ghcr.io/trianalab/awasm-portfolio:$(curl -s https://api.gi
 
 ## Customize :wrench:
 
-To change the portfolio content, edit [`internal/preload/preload.go`](internal/preload/preload.go) — the per-section `build*` helpers are small typed slices. To change the UI, edit the Svelte components under [`frontend/src/components/`](frontend/src/components/).
+There are three things you can customize without forking the codebase:
 
-After either change, `make build` regenerates everything end-to-end.
+**1. Portfolio content** — edit [`internal/preload/preload.go`](internal/preload/preload.go). The per-section `build*` helpers are small typed slices (work, education, volunteer, skills, …). Saving + `make build` regenerates the WASM.
+
+**2. Branding** — branding strings (the domain shown in the topbar, the page tab title, the GitHub repo card target) are driven by Vite environment variables. Copy [`frontend/.env.example`](frontend/.env.example) to `frontend/.env.local` and edit the values:
+
+```bash
+cp frontend/.env.example frontend/.env.local
+# then edit frontend/.env.local
+```
+
+| Variable           | Default                       | Used by                                                            |
+| ------------------ | ----------------------------- | ------------------------------------------------------------------ |
+| `VITE_BRAND`       | `edudiaz`                     | Page `<title>` — rendered as `{VITE_BRAND} - awasm portfolio`      |
+| `VITE_DOMAIN`      | `edudiaz.dev`                 | Brand mark in the topbar (`~/{VITE_DOMAIN}`)                       |
+| `VITE_GITHUB_REPO` | `TrianaLab/awasm-portfolio`   | Topbar repo card (release tag + stars + forks via GitHub REST API) |
+
+The defaults match the upstream demo. Override them at build time:
+
+```bash
+VITE_BRAND=alice VITE_DOMAIN=alice.dev VITE_GITHUB_REPO=alice/portfolio make ui
+```
+
+**3. UI** — edit the Svelte components under [`frontend/src/components/`](frontend/src/components/). `make dev` gives you HMR while editing.
+
+After any change, `make build` regenerates everything end-to-end.
 
 ## Key features :key:
 

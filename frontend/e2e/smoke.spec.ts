@@ -5,18 +5,44 @@ test.describe('awasm-portfolio smoke', () => {
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
     page.on('console', (msg) => {
-      if (msg.type() === 'error') consoleErrors.push(msg.text());
+      if (msg.type() !== 'error') return;
+      const text = msg.text();
+      // Skip GitHub API rate-limit / not-found noise — the repo card
+      // retries from localStorage and degrades gracefully when unauth
+      // calls hit the 60/hr quota (very common in CI).
+      if (/Failed to load resource/i.test(text)) return;
+      consoleErrors.push(text);
     });
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await page.goto('/');
-    // Wait for the xterm welcome banner to render — it only shows after
-    // the Worker + WASM bootstrap chain has set things up.
     await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
 
     expect(pageErrors, `page errors:\n${pageErrors.join('\n')}`).toEqual([]);
     expect(consoleErrors, `console errors:\n${consoleErrors.join('\n')}`).toEqual([]);
+  });
+
+  test('terminal state survives a round trip to resume mode', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+
+    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+
+    await page.locator('.xterm-helper-textarea').first().focus();
+    await page.keyboard.type('kubectl get namespace');
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(400);
+    await expect(page.locator('.xterm').first()).toContainText('default');
+
+    await page.getByRole('tab', { name: /resume/i }).click();
+    await page.waitForTimeout(300);
+    await page.getByRole('tab', { name: /terminal/i }).click();
+    await page.waitForTimeout(300);
+
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+    await expect(page.locator('.xterm').first()).toContainText('default');
   });
 
   test('runs a kubectl command in the terminal', async ({ page }) => {

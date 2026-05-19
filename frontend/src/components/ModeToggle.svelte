@@ -41,11 +41,14 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.4rem 0.8rem;
+    padding: 0 0.65rem;
     color: var(--color-text-muted);
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 500;
     border-radius: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
     transition: all var(--transition);
   }
 

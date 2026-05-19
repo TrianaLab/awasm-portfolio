@@ -287,7 +287,7 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			Meta:         mk("volunteer", "volunteer-artifacthub-mermaid"),
 			Organization: "Artifact Hub",
 			Position:     "Open-source contributor",
-			URL:          "https://github.com/artifacthub/hub/commits/main/?author=edu-diaz",
+			URL:          "https://github.com/artifacthub/hub/commits/master/?author=edu-diaz",
 			StartDate:    "2026-04-13",
 			Summary:      "Added Mermaid diagram rendering to package README files in Artifact Hub, a CNCF project for finding, installing, and publishing cloud-native packages.",
 		},

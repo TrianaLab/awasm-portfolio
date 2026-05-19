@@ -19,7 +19,8 @@
 </script>
 
 <button
-  class="icon-btn"
+  type="button"
+  class="pill"
   onclick={handleClick}
   disabled={downloading}
   aria-label="Download resume as PDF"
@@ -38,21 +39,24 @@
 </button>
 
 <style>
-  .icon-btn {
+  .pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 36px;
     height: 36px;
     border-radius: var(--radius-sm);
+    border: 1px solid transparent;
+    background: transparent;
     color: var(--color-text-muted);
+    cursor: pointer;
     transition: background var(--transition), color var(--transition);
   }
-  .icon-btn:hover:not(:disabled) {
+  .pill:hover:not(:disabled) {
     background: var(--color-bg-subtle);
     color: var(--color-text);
   }
-  .icon-btn:disabled {
+  .pill:disabled {
     cursor: progress;
   }
   .spin {
