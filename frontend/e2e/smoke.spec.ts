@@ -33,6 +33,35 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('.xterm')).toContainText('default', { timeout: 10_000 });
   });
 
+  test('terminal mode does not grow the page height indefinitely', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+    // Let xterm + ResizeObserver settle.
+    await page.waitForTimeout(500);
+    const initial = await page.evaluate(() => document.documentElement.scrollHeight);
+    await page.waitForTimeout(1000);
+    const after = await page.evaluate(() => document.documentElement.scrollHeight);
+    // Allow ±10px for the cursor blink and other normal variations.
+    expect(after, `scrollHeight grew from ${initial}px to ${after}px (feedback loop?)`).toBeLessThanOrEqual(
+      initial + 10,
+    );
+    // The page should fit in the viewport — no body scrolling.
+    expect(after).toBeLessThanOrEqual(810);
+  });
+
+  test('education section renders course names as text, not [object Object]', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    await page.getByRole('tab', { name: /resume/i }).click();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+
+    const body = await page.locator('body').innerText();
+    expect(body, 'rendered body must include a real course name').toContain('Python Fundamentals');
+    expect(body, 'should not contain [object Object] anywhere').not.toContain('[object Object]');
+  });
+
   test('switches to resume view and renders sections', async ({ page }) => {
     const errs: string[] = [];
     page.on('console', (msg) => {

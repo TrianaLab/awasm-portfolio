@@ -46,6 +46,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden; /* prevent the page from scrolling; layout owns its own scroll */
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -55,9 +56,13 @@ body {
 }
 
 #app {
-  min-height: 100vh;
+  /* Fixed viewport height; children manage their own scroll. Critical:
+     without this (e.g. min-height: 100vh) xterm + ResizeObserver create
+     a feedback loop that grows the page indefinitely. */
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
 a {

@@ -12,6 +12,9 @@ export default defineConfig({
     emptyOutDir: false, // preserve assets/app.wasm placed by Go build
     target: 'esnext',
     sourcemap: true,
+    // pdfmake (~1.4 MB) is intentionally lazy-loaded on Download click;
+    // the warning is noise for our intentional split.
+    chunkSizeWarningLimit: 1500,
   },
   server: {
     port: 8000,

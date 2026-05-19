@@ -218,6 +218,7 @@
 <style>
   .terminal-wrap {
     flex: 1;
+    min-height: 0; /* let the flex item shrink so xterm cannot expand its parent */
     display: flex;
     flex-direction: column;
     background: var(--color-bg-elevated);
@@ -253,6 +254,7 @@
 
   .terminal {
     flex: 1;
+    min-height: 0;
     padding: 0.8rem;
     overflow: hidden;
   }

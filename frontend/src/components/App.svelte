@@ -116,6 +116,7 @@
 
   .stage {
     flex: 1;
+    min-height: 0; /* break the flex shrink hold so children can scroll */
     display: flex;
     padding: 1.5rem;
     overflow: hidden;

@@ -16,7 +16,13 @@ function apply(mode: Mode) {
 
 export function createTheme() {
   let mode = $state<Mode>(read());
-  apply(mode);
+
+  // Apply on first render and on every subsequent change. Wrapped in
+  // $effect.root because createTheme() is called from <script> setup
+  // (no component context) but lives for the page lifetime.
+  $effect.root(() => {
+    $effect(() => apply(mode));
+  });
 
   return {
     get mode() {
@@ -25,7 +31,6 @@ export function createTheme() {
     toggle() {
       mode = mode === 'dark' ? 'light' : 'dark';
       localStorage.setItem(STORAGE_KEY, mode);
-      apply(mode);
     },
   };
 }
