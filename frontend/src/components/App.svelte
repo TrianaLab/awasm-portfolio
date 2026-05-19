@@ -4,7 +4,7 @@
   import ThemeToggle from './ThemeToggle.svelte';
   import ModeToggle from './ModeToggle.svelte';
   import DownloadButton from './DownloadButton.svelte';
-  import { createTheme } from '../lib/theme';
+  import { createTheme } from '../lib/theme.svelte';
   import { fetchResume } from '../lib/wasm';
   import type { Resume } from '../lib/schema';
 
