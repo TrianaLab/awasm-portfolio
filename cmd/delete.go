@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"awasm-portfolio/internal/service"
+	"github.com/TrianaLab/awasm-portfolio/internal/service"
 
 	"github.com/spf13/cobra"
 )

@@ -1,9 +1,9 @@
 package ui
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models/types"
 )
 
 // Schema defines headers and extractors for resources

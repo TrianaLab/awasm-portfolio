@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"awasm-portfolio/internal/service"
+	"github.com/TrianaLab/awasm-portfolio/internal/service"
 
 	"github.com/spf13/cobra"
 )
@@ -17,10 +17,7 @@ kubectl describe profile john-doe -n dev
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				err := cmd.Help()
-				if err != nil {
-					cmd.Printf("Error: %s\n", err)
-				}
+				_ = cmd.Help()
 				return
 			}
 

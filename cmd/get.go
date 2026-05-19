@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"awasm-portfolio/internal/service"
+	"github.com/TrianaLab/awasm-portfolio/internal/service"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -24,10 +24,7 @@ kubectl get all -A
 		`,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				err := cmd.Help()
-				if err != nil {
-					cmd.Printf("Error: %s\n", err)
-				}
+				_ = cmd.Help()
 				return
 			}
 

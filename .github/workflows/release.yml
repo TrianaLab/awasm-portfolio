@@ -1,0 +1,36 @@
+name: Build and publish release artifacts
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    if: startsWith(github.event.release.tag_name, 'v')
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version: '1.26'
+
+      - name: Build WebAssembly bundle
+        run: make build VERSION=${{ github.event.release.tag_name }}
+
+      - name: Create web bundle tarball
+        run: |
+          tar -czf awasm-portfolio-${{ github.event.release.tag_name }}.tgz -C web .
+          sha256sum awasm-portfolio-${{ github.event.release.tag_name }}.tgz > checksums.txt
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v3.0.0
+        with:
+          files: |
+            awasm-portfolio-${{ github.event.release.tag_name }}.tgz
+            checksums.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -3,9 +3,9 @@
 package main
 
 import (
-	"awasm-portfolio/cmd"
-	"awasm-portfolio/internal/preload"
-	"awasm-portfolio/internal/repository"
+	"github.com/TrianaLab/awasm-portfolio/cmd"
+	"github.com/TrianaLab/awasm-portfolio/internal/preload"
+	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"os"
 )
 

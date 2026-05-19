@@ -1,7 +1,7 @@
 package models_test
 
 import (
-	"awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
 	"testing"
 	"time"
 )

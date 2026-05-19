@@ -1,9 +1,9 @@
 package factory
 
 import (
-	"awasm-portfolio/internal/models"
-	"awasm-portfolio/internal/models/types"
 	"fmt"
+	"github.com/TrianaLab/awasm-portfolio/internal/models"
+	"github.com/TrianaLab/awasm-portfolio/internal/models/types"
 	"time"
 
 	"github.com/brianvoe/gofakeit/v6"
