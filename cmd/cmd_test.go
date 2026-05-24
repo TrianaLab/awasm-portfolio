@@ -270,6 +270,108 @@ func TestGetCommand_ServiceError(t *testing.T) {
 	}
 }
 
+// ─── Tab completion (__complete) ──────────────────────────────────────
+// These tests drive Cobra's hidden __complete subcommand to exercise
+// every branch of the ValidArgsFunction wiring used by the browser
+// terminal. Cobra's __complete output is "candidate\tdescription\n…"
+// followed by a ":<directive>" trailer; we just assert substrings.
+
+func TestCompleteCommand_Subcommands(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", ""})
+	for _, want := range []string{"create", "delete", "describe", "get", "version"} {
+		if !strings.Contains(output, want) {
+			t.Errorf("expected %q in subcommand completion, got: %s", want, output)
+		}
+	}
+}
+
+func TestCompleteCommand_GetKinds(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "get", ""})
+	for _, want := range []string{"namespace", "work", "resume", "all"} {
+		if !strings.Contains(output, want) {
+			t.Errorf("expected %q in get kind completion, got: %s", want, output)
+		}
+	}
+}
+
+func TestCompleteCommand_GetNames(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+	_, _ = setupTestCommand(t, rootCmd, []string{"create", "namespace", "testns"})
+
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "get", "namespace", ""})
+	if !strings.Contains(output, "testns") {
+		t.Errorf("expected 'testns' in name completion, got: %s", output)
+	}
+}
+
+func TestCompleteCommand_GetNamesInvalidKind(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	// Invalid kind must yield no name candidates (resourceNamesFor's
+	// error path returns nil; Cobra reports an empty completion list).
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "get", "notakind", ""})
+	if strings.Contains(output, "panic") {
+		t.Errorf("unexpected panic on invalid kind, got: %s", output)
+	}
+}
+
+func TestCompleteCommand_GetBeyondTwoArgs(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	// Third positional is past what completeResourceArgs covers — the
+	// default switch branch must return cleanly with no candidates.
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "get", "namespace", "default", ""})
+	if strings.Contains(output, "panic") {
+		t.Errorf("unexpected panic past valid arg count, got: %s", output)
+	}
+}
+
+func TestCompleteCommand_DescribeKinds(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "describe", ""})
+	if !strings.Contains(output, "namespace") {
+		t.Errorf("expected describe to suggest kinds, got: %s", output)
+	}
+}
+
+func TestCompleteCommand_DeleteKinds(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "delete", ""})
+	if !strings.Contains(output, "namespace") {
+		t.Errorf("expected delete to suggest kinds, got: %s", output)
+	}
+}
+
+func TestCompleteCommand_CreateKinds(t *testing.T) {
+	repo := repository.NewInMemoryRepository()
+	rootCmd := cmd.NewRootCommand(repo)
+
+	// create's ValidArgsFunction returns kinds for the first positional…
+	output, _ := setupTestCommand(t, rootCmd, []string{"__complete", "create", ""})
+	if !strings.Contains(output, "namespace") {
+		t.Errorf("expected create to suggest kinds, got: %s", output)
+	}
+
+	// …and nothing for the second (it's a free-form name).
+	output, _ = setupTestCommand(t, rootCmd, []string{"__complete", "create", "namespace", ""})
+	if strings.Contains(output, "panic") {
+		t.Errorf("unexpected panic completing create's second arg, got: %s", output)
+	}
+}
+
 func TestRootCommand_HelpFlag(t *testing.T) {
 	repo := repository.NewInMemoryRepository()
 	rootCmd := cmd.NewRootCommand(repo)

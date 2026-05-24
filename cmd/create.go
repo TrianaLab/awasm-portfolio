@@ -13,6 +13,12 @@ func NewCreateCommand(repo *repository.InMemoryRepository) *cobra.Command {
 		Short:         "Create a new resource",
 		SilenceErrors: false,
 		Args:          cobra.ExactArgs(2),
+		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+			if len(args) == 0 {
+				return canonicalResourceKinds(), cobra.ShellCompDirectiveNoFileComp
+			}
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		},
 		Example: `
 # Create a namespace
 kubectl create namespace dev

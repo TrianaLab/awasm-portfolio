@@ -9,9 +9,10 @@ import (
 
 func NewDescribeCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	return &cobra.Command{
-		Use:   "describe [kind] [name]",
-		Short: "Describe a specific resource",
-		Args:  cobra.RangeArgs(0, 2),
+		Use:               "describe [kind] [name]",
+		Short:             "Describe a specific resource",
+		Args:              cobra.RangeArgs(0, 2),
+		ValidArgsFunction: completeResourceArgs(repo),
 		Example: `
 # Describe the profile john-doe in the dev namespace
 kubectl describe profile john-doe -n dev

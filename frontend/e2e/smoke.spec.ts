@@ -192,13 +192,17 @@ test.describe('awasm-portfolio smoke', () => {
     const chrome = win.locator('.chrome');
     await chrome.click({ position: { x: 300, y: 10 } });
     await chrome.click({ position: { x: 300, y: 10 } });
-    await page.waitForTimeout(150);
+    // 250 ms covers the 180 ms maximize/snap CSS transition plus a small
+    // jitter buffer; boundingBox() reads the in-flight value mid-anim.
+    await page.waitForTimeout(250);
     let now = await win.boundingBox();
     expect(Math.abs(now!.width - desktop!.width)).toBeLessThan(3);
 
     await chrome.click({ position: { x: 300, y: 10 } });
     await chrome.click({ position: { x: 300, y: 10 } });
-    await page.waitForTimeout(150);
+    // 250 ms covers the 180 ms maximize/snap CSS transition plus a small
+    // jitter buffer; boundingBox() reads the in-flight value mid-anim.
+    await page.waitForTimeout(250);
     now = await win.boundingBox();
     expect(Math.abs(now!.width - before!.width)).toBeLessThan(3);
   });
@@ -260,13 +264,13 @@ test.describe('awasm-portfolio smoke', () => {
     expect(before!.width).toBeLessThan(desktop!.width);
 
     await win.getByRole('button', { name: /maximize window/i }).click();
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(250);
     const max = await win.boundingBox();
     expect(Math.abs(max!.width - desktop!.width)).toBeLessThan(3);
     expect(Math.abs(max!.height - desktop!.height)).toBeLessThan(3);
 
     await win.getByRole('button', { name: /maximize window/i }).click();
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(250);
     const restored = await win.boundingBox();
     expect(Math.abs(restored!.width - before!.width)).toBeLessThan(3);
     expect(Math.abs(restored!.height - before!.height)).toBeLessThan(3);
@@ -318,6 +322,57 @@ test.describe('awasm-portfolio smoke', () => {
       return dialog.getBoundingClientRect().bottom - xterm.getBoundingClientRect().bottom;
     });
     expect(clearance, 'xterm canvas must finish inside the window').toBeGreaterThan(0);
+  });
+
+  test('window manager: dragging a snapped window restores its previous size', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    const win = page.locator('[role="dialog"]').first();
+    const before = await win.boundingBox();
+
+    // Maximize first (same code path as snap — both set previousGeometry).
+    await win.getByRole('button', { name: /maximize window/i }).click();
+    await page.waitForTimeout(200);
+    const maxed = await win.boundingBox();
+    expect(Math.abs(maxed!.width - 1280)).toBeLessThan(3);
+
+    // Now drag the chrome to "pull off" — window should restore to the
+    // original size and stay under the cursor.
+    const chrome = win.locator('.chrome');
+    const chromeBox = await chrome.boundingBox();
+    const startX = chromeBox!.x + 300;
+    const startY = chromeBox!.y + 12;
+    await page.mouse.move(startX, startY);
+    await page.mouse.down();
+    await page.mouse.move(startX + 60, startY + 60, { steps: 8 });
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+
+    const after = await win.boundingBox();
+    // Width must shrink back from maximized → roughly the pre-maximize size.
+    expect(Math.abs(after!.width - before!.width)).toBeLessThan(20);
+    expect(Math.abs(after!.height - before!.height)).toBeLessThan(20);
+  });
+
+  test('phone viewport: terminal fills the desktop', async ({ page }) => {
+    // iPhone-ish viewport. On phones the window forcibly fills the
+    // desktop area so the terminal is actually usable.
+    await page.setViewportSize({ width: 390, height: 780 });
+    await page.goto('/');
+    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+
+    const win = page.locator('[role="dialog"]').first();
+    const desktop = await page.locator('.desktop').boundingBox();
+    const winBox = await win.boundingBox();
+    expect(desktop).not.toBeNull();
+    expect(winBox).not.toBeNull();
+    // Window must span the whole desktop area on phones.
+    expect(Math.abs(winBox!.width - desktop!.width)).toBeLessThan(3);
+    expect(Math.abs(winBox!.height - desktop!.height)).toBeLessThan(3);
+    // Resize handles must be hidden so they don't trap taps.
+    await expect(win.locator('.rz-se')).toBeHidden();
   });
 
   test('window manager: focus brings background window to front', async ({ page }) => {

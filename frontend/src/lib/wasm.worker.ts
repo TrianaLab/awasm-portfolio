@@ -13,6 +13,7 @@ interface GoRuntime {
 declare const Go: new () => GoRuntime;
 const workerSelf = self as DedicatedWorkerGlobalScope & {
   executeCommand?: (cmd: string) => string;
+  completeCommand?: (line: string) => string;
 };
 
 interface CommandRequest {
@@ -20,6 +21,14 @@ interface CommandRequest {
   requestId: string;
   command: string;
 }
+
+interface CompleteRequest {
+  type: 'complete';
+  requestId: string;
+  line: string;
+}
+
+type WorkerRequest = CommandRequest | CompleteRequest;
 
 interface CommandResponse {
   type: 'response';
@@ -33,7 +42,7 @@ interface ReadyMessage {
 }
 
 let ready = false;
-const queue: CommandRequest[] = [];
+const queue: WorkerRequest[] = [];
 
 async function bootstrap() {
   // wasm_exec.js is shipped at the same origin under /scripts/wasm_exec.js
@@ -53,9 +62,12 @@ async function bootstrap() {
   }
 }
 
-function handle(req: CommandRequest) {
+function handle(req: WorkerRequest) {
   try {
-    const output = workerSelf.executeCommand?.(req.command) ?? '';
+    const output =
+      req.type === 'command'
+        ? (workerSelf.executeCommand?.(req.command) ?? '')
+        : (workerSelf.completeCommand?.(req.line) ?? '{"candidates":[]}');
     postMessage({ type: 'response', requestId: req.requestId, output } satisfies CommandResponse);
   } catch (err) {
     postMessage({
@@ -66,8 +78,8 @@ function handle(req: CommandRequest) {
   }
 }
 
-self.addEventListener('message', (event: MessageEvent<CommandRequest>) => {
-  if (event.data.type !== 'command') return;
+self.addEventListener('message', (event: MessageEvent<WorkerRequest>) => {
+  if (event.data.type !== 'command' && event.data.type !== 'complete') return;
   if (!ready) {
     queue.push(event.data);
     return;

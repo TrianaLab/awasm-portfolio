@@ -9,9 +9,10 @@ import (
 
 func NewDeleteCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	return &cobra.Command{
-		Use:   "delete [kind] [name]",
-		Short: "Delete a resource",
-		Args:  cobra.ExactArgs(2),
+		Use:               "delete [kind] [name]",
+		Short:             "Delete a resource",
+		Args:              cobra.ExactArgs(2),
+		ValidArgsFunction: completeResourceArgs(repo),
 		Example: `
 # Delete the profile john-doe in the dev namespace
 kubectl delete profile john-doe -n dev
