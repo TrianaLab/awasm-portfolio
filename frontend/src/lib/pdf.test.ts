@@ -75,4 +75,51 @@ describe('buildResumeDocDef', () => {
     expect(doc.pageSize).toBe('A4');
     expect((doc.content as unknown[]).length).toBeGreaterThan(0);
   });
+
+  // ── ATS-friendliness assertions ────────────────────────────────────
+  // These guard the choices made for ATS parsers: no decorated section
+  // titles, no multi-column rows in scannable sections, no non-ASCII
+  // date separators, plain " | " contact joins.
+
+  it('section titles have no decoration (decorated text confuses ATS)', () => {
+    const doc = buildResumeDocDef(sample);
+    const sectionTitleStyle = doc.styles?.sectionTitle as Record<string, unknown> | undefined;
+    expect(sectionTitleStyle).toBeDefined();
+    expect(sectionTitleStyle?.decoration).toBeUndefined();
+  });
+
+  it('skills render as a single linear text run, not a two-column row', () => {
+    const doc = buildResumeDocDef(sample);
+    const content = doc.content as unknown[];
+    const titles = content
+      .map((c) => (c as { text?: string; style?: string }).text)
+      .map((t, i) => ({ t, i }))
+      .filter((x) => x.t === 'SKILLS');
+    expect(titles).toHaveLength(1);
+    // The next entry after the SKILLS title is the first skill row.
+    const skillsRow = content[titles[0].i + 1] as Record<string, unknown>;
+    expect(skillsRow.columns).toBeUndefined();
+    expect(Array.isArray(skillsRow.text)).toBe(true);
+  });
+
+  it('date ranges use ASCII hyphen, not the "→" arrow', () => {
+    const doc = buildResumeDocDef(sample);
+    const flat = JSON.stringify(doc.content);
+    expect(flat).not.toContain('→');
+    expect(flat).toMatch(/\d{4}.+ - .+\d{4}|\d{4}.+ - Present/);
+  });
+
+  it('contact line uses " | " as a separator (parsed by ATS readers)', () => {
+    const doc = buildResumeDocDef(sample);
+    const content = doc.content as { text?: string; style?: string }[];
+    const contact = content.find((c) => c.style === 'contact' && c.text?.includes('ada@example.com'));
+    expect(contact?.text).toContain(' | ');
+  });
+
+  it('profile lines include the full URL, not just the username', () => {
+    const doc = buildResumeDocDef(sample);
+    const content = doc.content as { text?: string; style?: string }[];
+    const profiles = content.find((c) => c.style === 'contact' && c.text?.includes('GitHub'));
+    expect(profiles?.text).toContain('https://github.com/ada');
+  });
 });

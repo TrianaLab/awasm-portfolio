@@ -11,9 +11,10 @@ import (
 
 func NewGetCommand(repo *repository.InMemoryRepository) *cobra.Command {
 	return &cobra.Command{
-		Use:   "get [kind] [name]",
-		Short: "Get resources of a specific kind or a specific resource",
-		Args:  cobra.RangeArgs(0, 2),
+		Use:               "get [kind] [name]",
+		Short:             "Get resources of a specific kind or a specific resource",
+		Args:              cobra.RangeArgs(0, 2),
+		ValidArgsFunction: completeResourceArgs(repo),
 		Example: `
 # Get all profiles in the default namespace
 kubectl get profile

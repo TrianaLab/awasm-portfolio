@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
+  import { onMount, tick } from 'svelte';
   import Window from './Window.svelte';
   import Terminal from './Terminal.svelte';
   import { createWindowManager } from '../lib/windows.svelte';
@@ -7,15 +7,26 @@
   const manager = createWindowManager();
   let desktopEl = $state<HTMLDivElement | null>(null);
 
-  onMount(() => {
-    // Open one terminal automatically so the user has something to look at.
+  function desktopSize(): { w: number; h: number } {
+    return {
+      w: desktopEl?.clientWidth ?? window.innerWidth,
+      h: desktopEl?.clientHeight ?? window.innerHeight,
+    };
+  }
+
+  onMount(async () => {
+    // Wait one tick so the desktop element is actually sized before we
+    // measure it — otherwise the first window opens against zeroes.
+    await tick();
     if (manager.windows.length === 0) {
-      manager.open('kubectl — terminal');
+      const { w, h } = desktopSize();
+      manager.open('kubectl — terminal', w, h);
     }
   });
 
   function openTerminal() {
-    manager.open(`kubectl — terminal #${manager.windows.length + 1}`);
+    const { w, h } = desktopSize();
+    manager.open(`kubectl — terminal #${manager.windows.length + 1}`, w, h);
   }
 
   export function open() {

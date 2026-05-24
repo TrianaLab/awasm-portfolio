@@ -50,6 +50,29 @@ export async function runCommand(command: string): Promise<string> {
 }
 
 /**
+ * Asks the Go side to produce completion candidates for the given
+ * partial command line. Returns the candidate list (descriptions
+ * stripped). Empty array when nothing matches.
+ */
+export async function completeLine(line: string): Promise<string[]> {
+  workerPromise ??= spawnWorker();
+  const worker = await workerPromise;
+
+  const raw = await new Promise<string>((resolve, reject) => {
+    const requestId = crypto.randomUUID();
+    pending.set(requestId, { resolve, reject });
+    worker.postMessage({ type: 'complete', requestId, line });
+  });
+
+  try {
+    const parsed = JSON.parse(raw) as { candidates?: string[] };
+    return parsed.candidates ?? [];
+  } catch {
+    return [];
+  }
+}
+
+/**
  * Fetches the resume.json by running the same kubectl-style command the
  * user would type in the terminal, then parses the wrapping array.
  */

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/TrianaLab/awasm-portfolio/internal/repository"
 	"github.com/TrianaLab/awasm-portfolio/internal/util"
@@ -70,6 +71,63 @@ func rootHelp(cmd *cobra.Command, _ []string) {
 	cmd.Println("  -h, --help               help for kubectl")
 	cmd.Println("  -n, --namespace string   Specify the namespace (default \"default\")")
 	cmd.Println("\nUse \"kubectl [command] --help\" for more information about a command.")
+}
+
+// canonicalResourceKinds returns the de-duplicated, sorted list of
+// resource kinds, plus the "all" pseudo-kind, suitable for shell tab
+// completion. Aliases are intentionally excluded — they would otherwise
+// triple the candidate list and add noise.
+func canonicalResourceKinds() []string {
+	seen := map[string]struct{}{}
+	for _, canonical := range util.SupportedResources() {
+		seen[canonical] = struct{}{}
+	}
+	out := make([]string, 0, len(seen)+1)
+	for k := range seen {
+		out = append(out, k)
+	}
+	out = append(out, "all")
+	sort.Strings(out)
+	return out
+}
+
+// resourceNamesFor returns the deduplicated names of resources of the
+// given kind in the active namespace context, used for completing the
+// second positional argument of get/describe/delete. Dedup matters
+// when the cmd context is -A (all namespaces): the same resource name
+// can exist in multiple namespaces.
+func resourceNamesFor(repo *repository.InMemoryRepository, kind string, namespace string) []string {
+	resources, err := repo.List(kind, "", namespace)
+	if err != nil {
+		return nil
+	}
+	seen := map[string]struct{}{}
+	for _, r := range resources {
+		seen[r.GetName()] = struct{}{}
+	}
+	names := make([]string, 0, len(seen))
+	for name := range seen {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names
+}
+
+// completeResourceArgs is the ValidArgsFunction shared by
+// get/describe/delete: the first positional completes resource kinds,
+// the second completes existing resource names of that kind.
+func completeResourceArgs(repo *repository.InMemoryRepository) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return func(cmd *cobra.Command, args []string, _ string) ([]string, cobra.ShellCompDirective) {
+		switch len(args) {
+		case 0:
+			return canonicalResourceKinds(), cobra.ShellCompDirectiveNoFileComp
+		case 1:
+			flags := readFlags(cmd)
+			return resourceNamesFor(repo, args[0], flags.namespace), cobra.ShellCompDirectiveNoFileComp
+		default:
+			return nil, cobra.ShellCompDirectiveNoFileComp
+		}
+	}
 }
 
 // flagContext collects the persistent flag values commands care about.

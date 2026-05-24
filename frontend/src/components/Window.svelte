@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import type { Snippet } from 'svelte';
   import type { WindowState, WindowManager } from '../lib/windows.svelte';
 
@@ -16,6 +17,31 @@
 
   const MIN_W = 360;
   const MIN_H = 220;
+
+  // The window is "focused" when nothing else has a higher z-index.
+  // Used to brighten the chrome border so the active window stands out.
+  const focused = $derived(
+    manager.windows.every((w) => w.id === win.id || w.z <= win.z),
+  );
+
+  // After a programmatic geometry change (maximize, snap, restore), the
+  // manager sets win.animating=true. We clear it next frame so the
+  // transitioned values are applied — drag/resize moves don't set the
+  // flag, so they stay snappy.
+  $effect(() => {
+    if (win.animating) {
+      requestAnimationFrame(() => manager.clearAnimating(win.id));
+    }
+  });
+
+  // Skip the spawn animation on the very first window so the page
+  // doesn't feel like it pops in on initial load.
+  let spawned = $state(false);
+  onMount(() => {
+    requestAnimationFrame(() => {
+      spawned = true;
+    });
+  });
 
   function maximize() {
     const w = desktopEl?.clientWidth ?? window.innerWidth;
@@ -53,6 +79,28 @@
 
   function onChromePointerMove(event: PointerEvent) {
     if (!dragOffset) return;
+
+    // macOS/Win11 behavior: dragging a window that is currently
+    // snapped or maximized restores its previous geometry as soon as
+    // the user pulls it off the snap. We keep the cursor at the same
+    // relative horizontal position within the (now smaller) title bar
+    // so the window stays under the pointer instead of jumping.
+    if (win.previousGeometry) {
+      const dxFromStart = Math.abs(event.clientX - (win.x + dragOffset.x));
+      const dyFromStart = Math.abs(event.clientY - (win.y + dragOffset.y));
+      if (dxFromStart >= 6 || dyFromStart >= 6) {
+        const prev = win.previousGeometry;
+        const ratioX = win.w > 0 ? dragOffset.x / win.w : 0.5;
+        dragOffset = {
+          x: Math.round(Math.max(20, Math.min(prev.w - 20, ratioX * prev.w))),
+          y: Math.min(40, dragOffset.y),
+        };
+        // resize() clears previousGeometry as a side effect — any
+        // user-driven geometry change cancels the snap state.
+        manager.resize(win.id, prev.w, prev.h);
+      }
+    }
+
     manager.move(win.id, event.clientX - dragOffset.x, event.clientY - dragOffset.y);
     const desk = desktopRect();
     if (desk) {
@@ -149,6 +197,9 @@
 {#if !win.minimized}
   <div
     class="window"
+    class:spawned
+    class:animating={win.animating}
+    class:focused
     role="dialog"
     aria-label={win.title}
     tabindex="-1"
@@ -209,6 +260,36 @@
     overflow: hidden;
     min-width: 360px;
     min-height: 220px;
+    /* Open animation: scale up + fade in. `.spawned` is toggled on
+       next-frame so the initial render lands in the "small/transparent"
+       state, then transitions to the rest one tick later. */
+    transform: scale(0.97);
+    opacity: 0;
+    transition: transform 180ms ease, opacity 180ms ease, border-color var(--transition), box-shadow var(--transition);
+  }
+  .window.spawned {
+    transform: scale(1);
+    opacity: 1;
+  }
+  /* Only transition geometry when the change is programmatic
+     (maximize/snap/restore). Drag and edge-resize set .animating=false
+     so they stay frame-perfect. */
+  .window.animating {
+    transition:
+      left 180ms ease,
+      top 180ms ease,
+      width 180ms ease,
+      height 180ms ease,
+      transform 180ms ease,
+      opacity 180ms ease,
+      border-color var(--transition),
+      box-shadow var(--transition);
+  }
+  .window.focused {
+    border-color: color-mix(in srgb, var(--color-accent) 45%, var(--color-border));
+    box-shadow:
+      var(--shadow-lg),
+      0 0 0 1px color-mix(in srgb, var(--color-accent) 25%, transparent);
   }
 
   .chrome {
@@ -388,5 +469,32 @@
   }
   .rz-se:hover {
     opacity: 0.9;
+  }
+
+  /* ─── Mobile (phone) ─────────────────────────────────────────────────
+     Below 640 px the windowing metaphor breaks down — a 360-px wide
+     chrome with traffic dots and an 18-row terminal doesn't fit. Force
+     the window to fill the desktop, hide the resize handles, and shrink
+     the chrome so it doesn't eat half the height. The drag handle stays
+     enabled but harmless (the window already fills the viewport). */
+  @media (max-width: 640px) {
+    .window {
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      border-radius: 0;
+      border: none;
+    }
+    .chrome {
+      padding: 0.4rem 0.6rem;
+    }
+    .title {
+      font-size: 0.7rem;
+      margin-right: 0;
+    }
+    .rz {
+      display: none;
+    }
   }
 </style>

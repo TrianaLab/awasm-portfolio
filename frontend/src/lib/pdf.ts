@@ -42,18 +42,21 @@ export function buildResumeDocDef(resume: Resume): TDocumentDefinitions {
   };
 }
 
+// ATS notes: keep decorations off section titles (some parsers drop or
+// duplicate decorated text), keep skills/languages/interests in a single
+// linear text run (multi-column layouts get re-ordered by greedy
+// parsers), keep date separators ASCII (the "→" character gets dropped
+// by older extractors).
 const stylesheet: StyleDictionary = {
   name: { fontSize: 22, bold: true, color: '#1a202c' },
   label: { fontSize: 12, color: '#0969da', margin: [0, 2, 0, 8] },
-  contact: { fontSize: 9, color: '#59636e', margin: [0, 0, 0, 6] },
-  summary: { fontSize: 10, color: '#2c3e50', margin: [0, 4, 0, 0] },
+  contact: { fontSize: 9, color: '#59636e', margin: [0, 0, 0, 4] },
+  summary: { fontSize: 10, color: '#2c3e50', margin: [0, 6, 0, 0] },
   sectionTitle: {
     fontSize: 11,
     bold: true,
     color: '#1a202c',
     margin: [0, 14, 0, 6],
-    decoration: 'underline',
-    decorationColor: '#d0d7de',
   },
   entryTitle: { fontSize: 10.5, bold: true, color: '#1a202c' },
   entrySubtitle: { fontSize: 10, color: '#0969da' },
@@ -68,6 +71,9 @@ function pushBasics(content: Content[], resume: Resume): void {
   content.push({ text: b.name ?? '', style: 'name' });
   if (b.label) content.push({ text: b.label, style: 'label' });
 
+  // Plain-text contact block (label + value, ASCII separators) — every
+  // ATS we've validated against parses this correctly: real email, real
+  // phone, real URL, real city. No icon glyphs, no decorative chars.
   const contactParts: string[] = [];
   if (b.email) contactParts.push(b.email);
   if (b.phone) contactParts.push(b.phone);
@@ -77,11 +83,15 @@ function pushBasics(content: Content[], resume: Resume): void {
     contactParts.push(`${b.location.city}${region}`);
   }
   if (contactParts.length > 0) {
-    content.push({ text: contactParts.join('  ·  '), style: 'contact' });
+    content.push({ text: contactParts.join(' | '), style: 'contact' });
   }
 
   if (b.profiles && b.profiles.length > 0) {
-    const profileLine = b.profiles.map((p) => `${p.network}: ${p.username}`).join('  ·  ');
+    // Spell out each profile as "Network: URL" so ATS link extractors
+    // see the canonical URL, not just "GitHub: ada".
+    const profileLine = b.profiles
+      .map((p) => `${p.network}: ${p.url ?? p.username ?? ''}`)
+      .join(' | ');
     content.push({ text: profileLine, style: 'contact' });
   }
 
@@ -173,22 +183,17 @@ function buildPublications(resume: Resume): Content[] {
   );
 }
 
+// Single-text-run renderers — ATS parsers traverse columns inconsistently
+// (some left-to-right within a row, some top-down per column), which
+// reorders keywords away from their skill label. A linear text run is
+// always parsed in order.
 function buildSkills(resume: Resume): Content[] {
   return (resume.skills ?? []).map((s) => ({
-    columns: [
-      {
-        width: 'auto',
-        text: [
-          { text: s.name ?? '', style: 'entryTitle' },
-          s.level ? { text: `  (${s.level})`, style: 'entrySubtitle' } : '',
-        ],
-      },
-      {
-        width: '*',
-        text: (s.keywords ?? []).join(', '),
-        style: 'tag',
-        alignment: 'right',
-      },
+    text: [
+      { text: s.name ?? '', style: 'entryTitle' },
+      s.level ? { text: ` (${s.level})`, style: 'entrySubtitle' } : '',
+      { text: ': ', style: 'entrySummary' },
+      { text: (s.keywords ?? []).join(', '), style: 'entrySummary' },
     ],
     margin: [0, 0, 0, 4],
   }));
@@ -196,9 +201,10 @@ function buildSkills(resume: Resume): Content[] {
 
 function buildLanguages(resume: Resume): Content[] {
   return (resume.languages ?? []).map((l) => ({
-    columns: [
-      { width: 'auto', text: l.language ?? '', style: 'entryTitle' },
-      { width: '*', text: l.fluency ?? '', style: 'entrySubtitle', alignment: 'right' },
+    text: [
+      { text: l.language ?? '', style: 'entryTitle' },
+      { text: ' — ', style: 'entrySummary' },
+      { text: l.fluency ?? '', style: 'entrySubtitle' },
     ],
     margin: [0, 0, 0, 4],
   }));
@@ -206,9 +212,10 @@ function buildLanguages(resume: Resume): Content[] {
 
 function buildInterests(resume: Resume): Content[] {
   return (resume.interests ?? []).map((i) => ({
-    columns: [
-      { width: 'auto', text: i.name ?? '', style: 'entryTitle' },
-      { width: '*', text: (i.keywords ?? []).join(', '), style: 'tag', alignment: 'right' },
+    text: [
+      { text: i.name ?? '', style: 'entryTitle' },
+      { text: ': ', style: 'entrySummary' },
+      { text: (i.keywords ?? []).join(', '), style: 'entrySummary' },
     ],
     margin: [0, 0, 0, 4],
   }));
@@ -248,8 +255,10 @@ function entry(opts: {
 }
 
 function formatRange(start?: string, end?: string): string {
+  // ASCII hyphen separator — the "→" arrow is dropped by many ATS text
+  // extractors, so dates would collapse into "Feb 2024Jul 2024".
   if (!start && !end) return '';
-  return `${formatDate(start)} → ${end ? formatDate(end) : 'Present'}`;
+  return `${formatDate(start)} - ${end ? formatDate(end) : 'Present'}`;
 }
 
 function formatDate(d?: string): string {

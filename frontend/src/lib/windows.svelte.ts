@@ -11,6 +11,10 @@ export interface WindowState {
   h: number;
   z: number;
   minimized: boolean;
+  // True for one render tick after a programmatic geometry change so
+  // the Window component can apply CSS transitions (snap, maximize)
+  // without lagging the drag/resize path.
+  animating: boolean;
   // When maximized OR snapped, the previous geometry is stored so the
   // user can restore to their original window arrangement.
   previousGeometry?: { x: number; y: number; w: number; h: number };
@@ -54,7 +58,7 @@ function snapRectFor(
 export interface WindowManager {
   readonly windows: WindowState[];
   readonly snapHint: SnapHint;
-  open(title: string): WindowState;
+  open(title: string, desktopW?: number, desktopH?: number): WindowState;
   close(id: string): void;
   focus(id: string): void;
   minimize(id: string): void;
@@ -66,6 +70,7 @@ export interface WindowManager {
   updateSnapHint(pointerX: number, pointerY: number, desktopW: number, desktopH: number): void;
   clearSnapHint(): void;
   commitSnap(id: string, desktopW: number, desktopH: number): boolean;
+  clearAnimating(id: string): void;
 }
 
 export function createWindowManager(): WindowManager {
@@ -76,17 +81,38 @@ export function createWindowManager(): WindowManager {
     return windows.find((w) => w.id === id);
   }
 
-  function open(title: string): WindowState {
+  // initialGeometry sizes a fresh window relative to the desktop. On
+  // wide viewports it lands ~70% × 70% centered; on phone-class
+  // viewports it covers most of the screen so it's actually usable.
+  // Subsequent opens cascade by `offset` so a second window isn't
+  // perfectly overlapping the first.
+  function initialGeometry(
+    desktopW: number,
+    desktopH: number,
+    offset: number,
+  ): { x: number; y: number; w: number; h: number } {
+    const isPhone = desktopW < 640;
+    const ratioW = isPhone ? 0.96 : 0.7;
+    const ratioH = isPhone ? 0.88 : 0.7;
+    const minW = isPhone ? 320 : 600;
+    const minH = isPhone ? 320 : 380;
+    const w = Math.max(minW, Math.round(desktopW * ratioW));
+    const h = Math.max(minH, Math.round(desktopH * ratioH));
+    const x = Math.max(0, Math.round((desktopW - w) / 2) + offset);
+    const y = Math.max(0, Math.round((desktopH - h) / 2) + offset);
+    return { x, y, w, h };
+  }
+
+  function open(title: string, desktopW = 1280, desktopH = 800): WindowState {
     const offset = (windows.length % 6) * 28;
+    const geom = initialGeometry(desktopW, desktopH, offset);
     const win: WindowState = {
       id: makeId('term'),
       title,
-      x: 40 + offset,
-      y: 40 + offset,
-      w: 720,
-      h: 440,
+      ...geom,
       z: ++nextZ,
       minimized: false,
+      animating: true,
     };
     windows.push(win);
     return win;
@@ -134,6 +160,7 @@ export function createWindowManager(): WindowManager {
   function toggleMaximize(id: string, desktopW: number, desktopH: number) {
     const win = find(id);
     if (!win) return;
+    win.animating = true;
     if (win.previousGeometry) {
       const prev = win.previousGeometry;
       win.x = prev.x;
@@ -186,11 +213,17 @@ export function createWindowManager(): WindowManager {
     if (!rect) return false;
     // Snapshot the pre-snap geometry so toggleMaximize-style restore works.
     win.previousGeometry = { x: win.x, y: win.y, w: win.w, h: win.h };
+    win.animating = true;
     win.x = rect.x;
     win.y = rect.y;
     win.w = rect.w;
     win.h = rect.h;
     return true;
+  }
+
+  function clearAnimating(id: string) {
+    const win = find(id);
+    if (win) win.animating = false;
   }
 
   return {
@@ -212,5 +245,6 @@ export function createWindowManager(): WindowManager {
     updateSnapHint,
     clearSnapHint,
     commitSnap,
+    clearAnimating,
   };
 }

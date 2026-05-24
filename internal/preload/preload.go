@@ -95,7 +95,7 @@ func buildBasics(mk func(kind, name string) models.Meta) *types.Basics {
 		Email:    "edudiazasencio@gmail.com",
 		Url:      "https://edudiaz.dev",
 		Phone:    "+34 622287557",
-		Summary:  "Platform Engineer focused on cloud-native infrastructure, WebAssembly, and operating-systems development. I design and operate the platforms — Kubernetes, observability, networking, CI/CD — that other engineering teams build on, with an emphasis on reliability, developer experience, and long-term maintainability. I sustain a steady cadence of upstream open-source contributions (KEDA, Docker, Artifact Hub, container2wasm, Spin, CloudTTY) and run TrianaLab, where I design and ship original cloud-native tooling (pacto, awasm-portfolio, remake).",
+		Summary:  "Platform Engineer working across cloud-native infrastructure, WebAssembly and systems-level tooling. At Emergence AI I design the engineering operating model and the platform every service deploys through — and that deployment interface is Pacto, the OCI-distributed contract system I also ship as open source through TrianaLab (alongside awasm-portfolio and remake). I contribute upstream across the CNCF landscape (KEDA, Artifact Hub, container2wasm, CloudTTY) and to Docker, Fermyon and Spin.",
 		Location: types.Location{
 			PostalCode:  "41010",
 			City:        "Sevilla",
@@ -117,7 +117,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			Position:  "Platform Engineer",
 			URL:       "https://emergence.ai",
 			StartDate: "2024-07-29",
-			Summary:   "Design and operate the AI platform on GKE. Lead workstreams across cluster provisioning (Terraform, Crossplane), service mesh and ingress (Istio), event-driven autoscaling (KEDA), policy and admission control (Kyverno), and end-to-end observability (Prometheus, OpenTelemetry). Focus on making the platform safe, scalable, and self-service for the AI engineering teams that depend on it.",
+			Summary:   "Own the Emergence AI platform end-to-end. Designed the engineering operating model every team deploys through — contract-driven deployment, a single enforced golden path, clear ownership boundaries — and built the platform layer behind it: declarative cluster and cloud-resource provisioning, managed secrets, policy enforcement, end-to-end observability and a programmable CI/CD pipeline that runs identically locally and in CI. The deployment interface is Pacto, the OCI-distributed contract system I also author as open source — so the platform I run internally and the project I ship publicly converge on the same artifact.",
 		},
 		{
 			Meta:      mk("work", "work-prodeng-appian"),
@@ -126,7 +126,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2024-02-01",
 			EndDate:   "2024-07-29",
-			Summary:   "Built platform services on Kubernetes that let product teams ship elastic, high-impact changes safely across cloud and self-managed environments. Owned data-platform primitives (lifecycle, retention, analytics APIs) that reduced toil for downstream service teams, and drove the broader push to make Appian more Kubernetes-native.",
+			Summary:   "Built the Kubernetes-native platform services product teams shipped on top of, across cloud and self-managed deployments. Owned the data-platform primitives — lifecycle, retention, analytics APIs — that removed recurring toil from downstream services and helped drive Appian's broader migration to a Kubernetes-native architecture.",
 		},
 		{
 			Meta:      mk("work", "work-ssoleng-appian"),
@@ -135,7 +135,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2023-10-01",
 			EndDate:   "2024-02-01",
-			Summary:   "Senior engineer on the team handling escalated Kubernetes and cloud incidents for enterprise customers. Diagnosed and resolved complex platform issues across observability, networking, and automation, and fed recurring failure modes back into platform-level improvements.",
+			Summary:   "Resolved the Kubernetes and cloud incidents that escalated past lower tiers — the failures whose root cause spanned observability, networking and automation at once. Translated recurring failure modes into platform-level changes that prevented them at the source rather than re-running the same diagnosis next quarter.",
 		},
 		{
 			Meta:      mk("work", "work-soleng-appian"),
@@ -144,7 +144,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2022-10-01",
 			EndDate:   "2023-10-01",
-			Summary:   "Supported enterprise customers running Appian on Kubernetes across cloud and on-prem deployments. Owned observability tuning, performance investigations, and cluster-level troubleshooting, partnering with product and engineering to harden infrastructure reliability and delivery.",
+			Summary:   "Supported enterprise customers running Appian on Kubernetes across cloud and on-prem deployments. Owned observability tuning, performance investigations and cluster-level troubleshooting; partnered with product and engineering to harden infrastructure reliability and the delivery path it sat behind.",
 		},
 		{
 			Meta:      mk("work", "work-asoleng-appian"),
@@ -153,7 +153,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2021-11-01",
 			EndDate:   "2022-10-01",
-			Summary:   "Joined the infrastructure support team focused on networking, storage, and observability for Appian's self-managed Kubernetes deployments. Built deep operational fluency in containerized environments and customer-incident response.",
+			Summary:   "Joined the infrastructure team focused on networking, storage and observability for Appian's self-managed Kubernetes deployments. Built the operational fluency in containerized environments and customer-incident response that the platform work in later roles ran on.",
 		},
 		{
 			Meta:      mk("work", "work-qaeng-solera"),
@@ -162,7 +162,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://solera.com",
 			StartDate: "2020-08-01",
 			EndDate:   "2021-11-01",
-			Summary:   "Partnered with developers and architects to bake testability into applications at design time, defining and enforcing tagging, naming, and component standards. Authored test plans, automated regression suites, and integrated them into the team's CI workflows.",
+			Summary:   "Worked alongside developers and architects to bake testability into applications at design time, defining the tagging, naming and component standards the rest of the team built against. Authored test plans and automated regression suites integrated into the team's CI workflows.",
 		},
 	}
 }
@@ -214,26 +214,26 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 		{
 			Meta:         mk("volunteer", "volunteer-trianalab-pacto"),
 			Organization: "TrianaLab: pacto",
-			Position:     "Owner",
+			Position:     "Author and maintainer",
 			URL:          "https://github.com/TrianaLab/pacto",
 			StartDate:    "2026-03-03",
-			Summary:      "An OCI-distributed contract system for cloud-native services. Pacto pairs a CLI, dashboard, and Kubernetes operator so teams can describe a service's operational behavior once — interfaces, dependencies, runtime semantics, configuration, scaling — then validate it, diff it, distribute it via OCI registries, and verify alignment against running workloads.",
+			Summary:      "An OCI-distributed contract system for cloud-native services. Pacto pairs a CLI, dashboard and Kubernetes operator so teams describe a service's operational contract once — interfaces, dependencies, runtime semantics, configuration, scaling — then validate, diff, distribute it via OCI registries and verify alignment against running workloads. Explores what testing-in-production for infrastructure should look like when contracts travel with the artifact instead of living in a separate repo.",
 		},
 		{
 			Meta:         mk("volunteer", "volunteer-remake"),
 			Organization: "TrianaLab: remake",
-			Position:     "Owner",
+			Position:     "Author and maintainer",
 			URL:          "https://github.com/TrianaLab/remake",
 			StartDate:    "2025-05-23",
-			Summary:      "A lightweight CLI tool that lets you package and share Makefiles as OCI artifacts.",
+			Summary:      "A lightweight CLI that packages and shares Makefiles as OCI artifacts — bringing the same versioning and distribution model OCI gave containers to the build-system glue that lives alongside them.",
 		},
 		{
 			Meta:         mk("volunteer", "volunteer-trianalab-awasmportfolio"),
 			Organization: "TrianaLab: awasm-portfolio",
-			Position:     "Owner",
+			Position:     "Author and maintainer",
 			URL:          "https://edudiaz.dev",
 			StartDate:    "2025-01-19",
-			Summary:      "A WebAssembly-powered application that exposes the developer's portfolio through kubectl-style commands.",
+			Summary:      "A WebAssembly portfolio: my CV compiled to Wasm and exposed through a real kubectl-style CLI that runs entirely in the browser, with runtime PDF generation and ATS-clean output. Started as a sandbox for browser-side Go and turned into the site this resume is being read on.",
 		},
 		{
 			Meta:         mk("volunteer", "volunteer-jesse-chart"),
@@ -289,7 +289,7 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			Position:     "Open-source contributor",
 			URL:          "https://github.com/artifacthub/hub/commits/master/?author=edu-diaz",
 			StartDate:    "2026-04-13",
-			Summary:      "Added Mermaid diagram rendering to package README files in Artifact Hub, a CNCF project for finding, installing, and publishing cloud-native packages.",
+			Summary:      "Added Mermaid diagram rendering to package README files in Artifact Hub, a CNCF project for finding, installing and publishing cloud-native packages.",
 		},
 	}
 }
@@ -323,10 +323,16 @@ func buildCertificates(mk func(kind, name string) models.Meta) []types.Certifica
 func buildSkills(mk func(kind, name string) models.Meta) []types.Skill {
 	return []types.Skill{
 		{
-			Meta:     mk("skill", "skill-devops-tools"),
-			Skill:    "DevOps Tools",
+			Meta:     mk("skill", "skill-programming-languages"),
+			Skill:    "Programming Languages",
+			Level:    "Advanced",
+			Keywords: []string{"Go", "Python", "Java", "C", "Bash", "WebAssembly (Wasm)"},
+		},
+		{
+			Meta:     mk("skill", "skill-kubernetes-cloud-native"),
+			Skill:    "Kubernetes and Cloud-Native",
 			Level:    "Expert",
-			Keywords: []string{"Jenkins", "GitHub Actions", "ArgoCD", "Crossplane", "Ansible", "Helm"},
+			Keywords: []string{"Kubernetes", "Helm", "Docker", "Operators", "ArgoCD", "Crossplane", "Istio", "Kyverno", "cert-manager"},
 		},
 		{
 			Meta:     mk("skill", "skill-cloud-platforms"),
@@ -335,34 +341,28 @@ func buildSkills(mk func(kind, name string) models.Meta) []types.Skill {
 			Keywords: []string{"GCP", "AWS", "Cloudflare"},
 		},
 		{
-			Meta:     mk("skill", "skill-containerization-technologies"),
-			Skill:    "Containerization and Orchestration",
+			Meta:     mk("skill", "skill-infrastructure-cicd"),
+			Skill:    "Infrastructure as Code and CI/CD",
 			Level:    "Expert",
-			Keywords: []string{"Kubernetes", "Helm", "Docker", "Docker Compose", "Operators"},
+			Keywords: []string{"Terraform", "Dagger", "GitHub Actions", "Jenkins", "Ansible", "GitOps", "OCI registries"},
 		},
 		{
-			Meta:     mk("skill", "skill-service-mesh-observability"),
-			Skill:    "Service Mesh and Observability",
+			Meta:     mk("skill", "skill-observability"),
+			Skill:    "Observability",
 			Level:    "Advanced",
-			Keywords: []string{"Istio", "Prometheus", "Grafana", "Open Telemetry"},
+			Keywords: []string{"Prometheus", "Grafana", "OpenTelemetry"},
 		},
 		{
-			Meta:     mk("skill", "skill-programming-languages"),
-			Skill:    "Programming Languages",
+			Meta:     mk("skill", "skill-security-networking"),
+			Skill:    "Security and Networking",
 			Level:    "Advanced",
-			Keywords: []string{"Go", "Java", "Python", "C", "Bash", "WebAssembly (Wasm)"},
+			Keywords: []string{"Kubernetes security (CKS)", "Vault", "Secrets management", "Cloud networking", "Network security", "Telecom networking"},
 		},
 		{
-			Meta:     mk("skill", "skill-networking"),
-			Skill:    "Networking",
+			Meta:     mk("skill", "skill-platform-engineering"),
+			Skill:    "Platform Engineering",
 			Level:    "Expert",
-			Keywords: []string{"Networking Fundamentals", "Network Security"},
-		},
-		{
-			Meta:     mk("skill", "skill-other-skills"),
-			Skill:    "Other Skills",
-			Level:    "Expert",
-			Keywords: []string{"Observability", "Infrastructure as Code", "CI/CD Pipelines", "Microservices Architecture"},
+			Keywords: []string{"Contract-driven deployment", "Golden paths", "Developer experience", "Self-service platforms", "Multi-tenancy"},
 		},
 	}
 }
@@ -389,8 +389,8 @@ func buildInterests(mk func(kind, name string) models.Meta) []types.Interest {
 		},
 		{
 			Meta:     mk("interest", "interest-lego-architecture"),
-			Interest: "Legos",
-			Keywords: []string{"Lego", "Architectural design", "Creative builds"},
+			Interest: "Lego",
+			Keywords: []string{"Architecture sets", "Creative builds", "Spatial reasoning"},
 		},
 		{
 			Meta:     mk("interest", "interest-culinary-adventures"),
