@@ -112,11 +112,20 @@ func buildBasics(mk func(kind, name string) models.Meta) *types.Basics {
 func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 	return []types.Work{
 		{
+			Meta:      mk("work", "work-staffplat-emergenceai"),
+			Company:   "Emergence AI",
+			Position:  "Senior Staff Platform Engineer",
+			URL:       "https://emergence.ai",
+			StartDate: "2026-07-01",
+			Summary:   "Set the technical direction of the Emergence AI platform and the engineering operating model behind it — the contract-driven deployment standard, the single golden path and the ownership boundaries every team ships through. Same platform I built as Platform Engineer, now with a broader mandate over how the org designs, deploys and runs services, still anchored on Pacto, the OCI-distributed contract system I also author as open source.",
+		},
+		{
 			Meta:      mk("work", "work-mlops-emergenceai"),
 			Company:   "Emergence AI",
 			Position:  "Platform Engineer",
 			URL:       "https://emergence.ai",
 			StartDate: "2024-07-29",
+			EndDate:   "2026-07-01",
 			Summary:   "Own the Emergence AI platform end-to-end. Designed the engineering operating model every team deploys through — contract-driven deployment, a single enforced golden path, clear ownership boundaries — and built the platform layer behind it: declarative cluster and cloud-resource provisioning, managed secrets, policy enforcement, end-to-end observability and a programmable CI/CD pipeline that runs identically locally and in CI. The deployment interface is Pacto, the OCI-distributed contract system I also author as open source — so the platform I run internally and the project I ship publicly converge on the same artifact.",
 		},
 		{
