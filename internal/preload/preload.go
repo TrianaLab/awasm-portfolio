@@ -112,11 +112,20 @@ func buildBasics(mk func(kind, name string) models.Meta) *types.Basics {
 func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 	return []types.Work{
 		{
+			Meta:      mk("work", "work-staffplat-emergenceai"),
+			Company:   "Emergence AI",
+			Position:  "Senior Staff Platform Engineer",
+			URL:       "https://emergence.ai",
+			StartDate: "2026-07-01",
+			Summary:   "Set the technical direction of the Emergence AI platform and the engineering operating model behind it — the contract-driven deployment standard, the single golden path and the ownership boundaries every team ships through. Same platform I built as Platform Engineer, now with a broader mandate over how the org designs, deploys and runs services, still anchored on Pacto, the OCI-distributed contract system I also author as open source.",
+		},
+		{
 			Meta:      mk("work", "work-mlops-emergenceai"),
 			Company:   "Emergence AI",
 			Position:  "Platform Engineer",
 			URL:       "https://emergence.ai",
 			StartDate: "2024-07-29",
+			EndDate:   "2026-07-01",
 			Summary:   "Own the Emergence AI platform end-to-end. Designed the engineering operating model every team deploys through — contract-driven deployment, a single enforced golden path, clear ownership boundaries — and built the platform layer behind it: declarative cluster and cloud-resource provisioning, managed secrets, policy enforcement, end-to-end observability and a programmable CI/CD pipeline that runs identically locally and in CI. The deployment interface is Pacto, the OCI-distributed contract system I also author as open source — so the platform I run internally and the project I ship publicly converge on the same artifact.",
 		},
 		{
@@ -290,6 +299,14 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			URL:          "https://github.com/artifacthub/hub/commits/master/?author=edu-diaz",
 			StartDate:    "2026-04-13",
 			Summary:      "Added Mermaid diagram rendering to package README files in Artifact Hub, a CNCF project for finding, installing and publishing cloud-native packages.",
+		},
+		{
+			Meta:         mk("volunteer", "volunteer-argocd-autherr"),
+			Organization: "Argo CD",
+			Position:     "Open-source contributor",
+			URL:          "https://github.com/argoproj/argo-cd/commits/master/?author=edu-diaz",
+			StartDate:    "2026-07-20",
+			Summary:      "Clarified a misleading git authentication failure in Argo CD, the CNCF GitOps continuous-delivery tool for Kubernetes. The repo-server now surfaces a real authentication error instead of Git's cryptic \"terminal prompts disabled\" message.",
 		},
 	}
 }
