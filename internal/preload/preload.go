@@ -300,6 +300,14 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			StartDate:    "2026-04-13",
 			Summary:      "Added Mermaid diagram rendering to package README files in Artifact Hub, a CNCF project for finding, installing and publishing cloud-native packages.",
 		},
+		{
+			Meta:         mk("volunteer", "volunteer-argocd-autherr"),
+			Organization: "Argo CD",
+			Position:     "Open-source contributor",
+			URL:          "https://github.com/argoproj/argo-cd/commits/master/?author=edu-diaz",
+			StartDate:    "2026-07-20",
+			Summary:      "Clarified a misleading git authentication failure in Argo CD, the CNCF GitOps continuous-delivery tool for Kubernetes. The repo-server now surfaces a real authentication error instead of Git's cryptic \"terminal prompts disabled\" message.",
+		},
 	}
 }
 
