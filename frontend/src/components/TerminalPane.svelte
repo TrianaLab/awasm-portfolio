@@ -1,0 +1,133 @@
+<script lang="ts">
+  import Desktop from './Desktop.svelte';
+  import { TERMINAL_SUGGESTIONS } from '../lib/portfolio';
+
+  let desktop = $state<Desktop | undefined>();
+  let copied = $state<string | null>(null);
+
+  async function copy(command: string) {
+    try {
+      await navigator.clipboard.writeText(command);
+      copied = command;
+      setTimeout(() => {
+        if (copied === command) copied = null;
+      }, 1600);
+    } catch {
+      /* clipboard blocked — the command is still selectable as text */
+    }
+  }
+</script>
+
+<div class="pane">
+  <div class="bar">
+    <p class="lede">
+      <span class="mono prompt" aria-hidden="true">$</span>
+      The same résumé, served by a Go CLI compiled to WebAssembly. Nothing here is faked —
+      <code>kubectl</code> is really running in your browser.
+    </p>
+    <button type="button" class="btn" onclick={() => desktop?.open()}>New terminal</button>
+  </div>
+
+  <div class="suggestions">
+    <h2 class="sr-only">Suggested commands</h2>
+    <ul>
+      {#each TERMINAL_SUGGESTIONS as s (s.command)}
+        <li>
+          <button
+            type="button"
+            class="chip"
+            onclick={() => copy(s.command)}
+            aria-label="Copy command: {s.command} — {s.hint}"
+            title={s.hint}
+          >
+            <code>{s.command}</code>
+            <span class="chip-state" aria-hidden="true">{copied === s.command ? 'copied' : 'copy'}</span>
+          </button>
+        </li>
+      {/each}
+    </ul>
+  </div>
+
+  <Desktop bind:this={desktop} />
+</div>
+
+<style>
+  .pane {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 1.5rem;
+    padding: 0.6rem var(--page-pad);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .lede {
+    margin: 0;
+    max-width: 72ch;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+  }
+  .prompt {
+    color: var(--color-success);
+    margin-right: 0.35rem;
+  }
+  .lede code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--color-text);
+  }
+
+  .suggestions {
+    padding: 0.5rem var(--page-pad);
+    border-bottom: 1px solid var(--color-border);
+    overflow-x: auto;
+  }
+  .suggestions ul {
+    display: flex;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: var(--tap);
+    padding: 0 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-elevated);
+    color: var(--color-text);
+    white-space: nowrap;
+    transition: border-color var(--transition);
+  }
+  .chip:hover {
+    border-color: var(--color-accent);
+  }
+  .chip code {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+  .chip-state {
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  @media (max-width: 780px) {
+    .bar,
+    .suggestions {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+</style>

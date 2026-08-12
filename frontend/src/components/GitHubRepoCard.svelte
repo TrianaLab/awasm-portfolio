@@ -112,6 +112,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
+    min-height: var(--tap);
     padding: 0.35rem 0.75rem 0.35rem 0.6rem;
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);

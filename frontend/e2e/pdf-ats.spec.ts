@@ -28,11 +28,11 @@ function extractPdfText(pdfPath: string): string | null {
 test.describe('PDF ATS extraction', () => {
   test('downloaded PDF extracts to clean linear text in expected order', async ({ page }) => {
     await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
 
     const [download] = await Promise.all([
       page.waitForEvent('download', { timeout: 30_000 }),
-      page.getByRole('button', { name: /download resume as pdf/i }).click(),
+      page.getByRole('button', { name: /download résumé/i }).first().click(),
     ]);
 
     const dir = mkdtempSync(join(tmpdir(), 'resume-pdf-'));

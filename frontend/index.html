@@ -3,10 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Placeholder; the real title is set from src/lib/config.ts so it
-         picks up the per-deployment VITE_BRAND env var at runtime. -->
-    <title>awasm portfolio</title>
-    <meta name="description" content="Platform Engineer · WebAssembly-powered portfolio with a kubectl-style terminal." />
+    <!-- Static fallback. Once the canonical JSON Resume document loads, the
+         title is rebuilt from it (see lib/resume-select.ts) so the job title
+         is never a second, drifting copy of resume.json. -->
+    <title>Eduardo Díaz · edudiaz.dev</title>
+    <meta
+      name="description"
+      content="Platform engineer building contract-driven deployment systems for cloud-native infrastructure. Résumé, open-source work, and a kubectl-style terminal running on WebAssembly."
+    />
+    <link rel="canonical" href="https://edudiaz.dev/" />
+    <meta name="theme-color" content="#0d1117" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="edudiaz.dev" />
+    <meta property="og:title" content="Eduardo Díaz · edudiaz.dev" />
+    <meta
+      property="og:description"
+      content="Platform engineer building contract-driven deployment systems for cloud-native infrastructure."
+    />
+    <meta property="og:url" content="https://edudiaz.dev/" />
+    <meta property="og:image" content="https://edudiaz.dev/favicon.svg" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Eduardo Díaz · edudiaz.dev" />
+    <meta
+      name="twitter:description"
+      content="Platform engineer building contract-driven deployment systems for cloud-native infrastructure."
+    />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

@@ -1,15 +1,9 @@
-<script module lang="ts">
-  // Module-scoped so the auto-typed welcome demo runs exactly once per
-  // page load — subsequent terminals opened via the "+" button (or
-  // re-mounted after a mode switch) skip the demo.
-  let demoHasRun = false;
-</script>
-
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte';
   import { Terminal } from '@xterm/xterm';
   import { FitAddon } from '@xterm/addon-fit';
   import { runCommand, completeLine } from '../lib/wasm';
+  import { TERMINAL_SUGGESTIONS } from '../lib/portfolio';
   import '@xterm/xterm/css/xterm.css';
 
   let container: HTMLDivElement;
@@ -21,6 +15,9 @@
   // Color codes used in WELCOME (kept short for readability):
   //   \x1b[36m cyan (logo)   \x1b[33m yellow (callout)
   //   \x1b[90m grey (hint)   \x1b[0m  reset
+  // Nothing runs on its own: the terminal is an alternate way to read the
+  // same résumé, so it opens on a prompt with a short, honest menu instead
+  // of auto-flooding the screen with output the visitor didn't ask for.
   const WELCOME = [
     '\x1b[36m  __ ___      ____ _ ___ _ __ ___    \x1b[0m',
     '\x1b[36m / _` \\ \\ /\\ / / _` / __| \'_ ` _ \\   \x1b[0m',
@@ -28,21 +25,19 @@
     '\x1b[36m \\__,_| \\_/\\_/ \\__,_|___/_| |_| |_|  \x1b[0m',
     '',
     '\x1b[90m# Welcome. Eduardo\'s resume, exposed as kubectl resources.\x1b[0m',
-    '\x1b[90m# Press Tab to discover commands, or just watch…\x1b[0m',
+    '\x1b[90m# Tab completes commands and names · kubectl --help lists everything\x1b[0m',
+    '',
+    ...TERMINAL_SUGGESTIONS.map(
+      (s) => `\x1b[90m#  \x1b[0m\x1b[36m${s.command}\x1b[0m\x1b[90m  ${s.hint}\x1b[0m`,
+    ),
     '',
   ];
-  const DEMO_COMMAND = 'kubectl get all';
 
   let input = '';
   let cursor = 0;
   const history: string[] = [];
   let historyIndex = -1;
   let running = false;
-  // Auto-typed demo: when true, character input from the welcome demo
-  // loop is being written into `input`; the first user keystroke aborts
-  // the demo via `demoAbort`.
-  let demoActive = false;
-  let demoAbort: (() => void) | null = null;
 
   function write(s: string) {
     term.write(s);
@@ -187,43 +182,6 @@
     redrawInput();
   }
 
-  // Plays the auto-typed welcome demo: types DEMO_COMMAND character by
-  // character with a touch of cadence variation, pauses briefly, then
-  // executes it. Resolves once finished or aborted. Aborts on the first
-  // user keystroke (handled in handleKey).
-  async function runWelcomeDemo() {
-    demoActive = true;
-    let aborted = false;
-    demoAbort = () => {
-      aborted = true;
-    };
-    const sleep = (ms: number) =>
-      new Promise<void>((resolve) => setTimeout(resolve, ms));
-
-    for (const ch of DEMO_COMMAND) {
-      if (aborted) break;
-      input = input.slice(0, cursor) + ch + input.slice(cursor);
-      cursor += 1;
-      redrawInput();
-      await sleep(45 + Math.random() * 55);
-    }
-    if (!aborted) {
-      await sleep(450);
-    }
-    if (aborted) {
-      demoActive = false;
-      demoAbort = null;
-      return;
-    }
-    const line = input;
-    history.push(line);
-    historyIndex = history.length;
-    await execute(line);
-    demoActive = false;
-    demoAbort = null;
-    prompt();
-  }
-
   function formatCandidates(items: string[]): string {
     // Two-space gap, wrap at the terminal width (with a 40-col floor
     // so very narrow phone viewports still produce readable rows).
@@ -245,22 +203,6 @@
 
   function handleKey({ key, domEvent }: { key: string; domEvent: KeyboardEvent }) {
     if (running) return;
-    // First user keystroke during the welcome demo aborts it: clear
-    // the partial demo command, then fall through so the keystroke
-    // itself is processed as the first character of the user's own
-    // input (otherwise it would be silently dropped, eating the first
-    // letter of whatever they meant to type).
-    // demoActive is set false synchronously here so subsequent
-    // keystrokes (which run before the async demo loop has finished
-    // its cleanup) skip this branch instead of re-clearing the input.
-    if (demoActive) {
-      demoActive = false;
-      demoAbort?.();
-      demoAbort = null;
-      input = '';
-      cursor = 0;
-      redrawInput();
-    }
     // Drop keystrokes while a completion round-trip is pending so the
     // user can't submit the line by hitting Enter before cycle state
     // has had a chance to populate.
@@ -387,6 +329,10 @@
     fit.fit();
 
     resizeObserver = new ResizeObserver(() => {
+      // The pane is display:none while another view is active. Fitting
+      // against a zero-sized box would reflow the buffer to the minimum
+      // geometry and back again on every navigation.
+      if (!container.clientWidth || !container.clientHeight) return;
       fit.fit();
       // fit() reflows xterm asynchronously — defer scrollToBottom to the
       // next animation frame so it sees the new buffer geometry. Without
@@ -407,16 +353,6 @@
         handlePaste(data);
       }
     });
-
-    // Welcome demo: type out a sample command after a short beat so the
-    // user can register the welcome message first. Runs once per page
-    // load — subsequent terminals skip it (the module-scoped flag).
-    if (!demoHasRun) {
-      demoHasRun = true;
-      setTimeout(() => {
-        void runWelcomeDemo();
-      }, 700);
-    }
 
     const updateTheme = () => {
       term.options.theme = themeColors();

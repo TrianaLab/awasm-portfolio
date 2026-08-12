@@ -7,8 +7,9 @@
   --color-bg-elevated: #161b22;
   --color-bg-subtle: #21262d;
   --color-border: #30363d;
+  --color-border-strong: #4a535d;
   --color-text: #e6edf3;
-  --color-text-muted: #8b949e;
+  --color-text-muted: #9aa6b2;
   --color-accent: #58a6ff;
   --color-accent-soft: rgba(88, 166, 255, 0.15);
   --color-success: #3fb950;
@@ -20,14 +21,22 @@
   --radius-md: 12px;
   --radius-lg: 16px;
   --transition: 200ms ease;
+
+  /* Layout rhythm shared by the page shell and every section. */
+  --page-max: 1080px;
+  --page-pad: 1.5rem;
+  --header-h: 60px;
+  --tap: 44px;
 }
 
 :root[data-theme='light'] {
-  --color-bg: #f6f8fa;
-  --color-bg-elevated: #ffffff;
+  --color-bg: #ffffff;
+  --color-bg-elevated: #f6f8fa;
   --color-bg-subtle: #eaeef2;
   --color-border: #d0d7de;
+  --color-border-strong: #a8b1ba;
   --color-text: #1f2328;
+  /* 4.6:1 on --color-bg-elevated, so muted text still clears WCAG AA. */
   --color-text-muted: #59636e;
   --color-accent: #0969da;
   --color-accent-soft: rgba(9, 105, 218, 0.1);
@@ -45,8 +54,6 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
-  overflow: hidden; /* prevent the page from scrolling; layout owns its own scroll */
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
@@ -55,14 +62,30 @@ body {
   transition: background var(--transition), color var(--transition);
 }
 
+/* Home and résumé scroll the document like any other page. The terminal is
+   the one view that owns the viewport: xterm + ResizeObserver inside a
+   growable container feed each other and expand the page indefinitely, so
+   that view — and only that view — pins html/body to the viewport. */
+html[data-view='terminal'],
+html[data-view='terminal'] body {
+  height: 100%;
+  overflow: hidden;
+}
+
 #app {
-  /* Fixed viewport height; children manage their own scroll. Critical:
-     without this (e.g. min-height: 100vh) xterm + ResizeObserver create
-     a feedback loop that grows the page indefinitely. */
-  height: 100vh;
   display: flex;
   flex-direction: column;
+  min-height: 100dvh;
+}
+html[data-view='terminal'] #app {
+  height: 100dvh;
   min-height: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Anchored sections must clear the sticky header. */
+  scroll-padding-top: calc(var(--header-h) + 1rem);
 }
 
 a {
@@ -83,17 +106,150 @@ button {
   color: inherit;
 }
 
+h1,
+h2,
+h3,
+h4 {
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+/* A single visible focus treatment for every interactive element. */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* `hidden` must win over component display rules so inactive views are
+   removed from the accessibility tree and the tab order, not just faded. */
+[hidden] {
+  display: none !important;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Container for links that stand on their own rather than sitting inside a
+   sentence — project names, card URLs, footer links. Text alone gives them a
+   ~24px tall target; the overlay grows the hit box to a comfortable size
+   without pushing the layout around. */
+.tap-links a {
+  position: relative;
+}
+.tap-links a::after {
+  content: '';
+  position: absolute;
+  inset: -11px 0;
+}
+
+.skip-link {
+  position: absolute;
+  left: 0.5rem;
+  top: -100%;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-text);
+  font-weight: 600;
+}
+.skip-link:focus {
+  top: 0.5rem;
+}
+
+/* Shared control shapes. Every tappable control clears 44×44 CSS px. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: var(--tap);
+  padding: 0 1.1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-elevated);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 550;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color var(--transition), background var(--transition), color var(--transition);
+}
+.btn:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-bg-subtle);
+  text-decoration: none;
+  opacity: 1;
+}
+.btn:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--color-accent) 85%, #000);
+  border-color: color-mix(in srgb, var(--color-accent) 85%, #000);
+  color: #ffffff;
+}
+.btn-icon {
+  width: var(--tap);
+  min-width: var(--tap);
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+.btn-icon:hover {
+  background: var(--color-bg-subtle);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.mono {
+  font-family: var(--font-mono);
+}
+
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
-  border-radius: 4px;
+  border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

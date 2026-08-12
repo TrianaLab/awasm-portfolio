@@ -1,7 +1,37 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
-test.describe('awasm-portfolio smoke', () => {
-  test('loads without console errors and boots the WASM worker', async ({ page }) => {
+// The terminal is now an alternate view behind #/terminal, so anything that
+// exercises it starts there instead of on the landing page.
+const TERMINAL = '/#/terminal';
+
+/** The primary nav link with this exact label. */
+function nav(page: Page, label: string) {
+  return page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: label, exact: true });
+}
+
+async function terminalReady(page: Page) {
+  await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+}
+
+/**
+ * Reads a window's box once it stops moving. The pane mounts from a lazy
+ * chunk and the window animates in, so a box read straight after boot is a
+ * mid-transition value that later geometry assertions would compare against.
+ */
+async function settledBox(locator: ReturnType<Page['locator']>) {
+  let last = await locator.boundingBox();
+  for (let i = 0; i < 20; i++) {
+    await locator.page().waitForTimeout(100);
+    const now = await locator.boundingBox();
+    if (now && last && now.width === last.width && now.height === last.height) return now;
+    last = now;
+  }
+  return last;
+}
+
+test.describe('portfolio', () => {
+  test('home page presents the portfolio without loading the terminal', async ({ page }) => {
     const consoleErrors: string[] = [];
     const pageErrors: string[] = [];
     page.on('console', (msg) => {
@@ -16,18 +46,143 @@ test.describe('awasm-portfolio smoke', () => {
     page.on('pageerror', (err) => pageErrors.push(err.message));
 
     await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Eduardo Díaz');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+    // The heavy chunk stays unloaded until the visitor asks for it.
+    await expect(page.locator('.xterm')).toHaveCount(0);
 
     expect(pageErrors, `page errors:\n${pageErrors.join('\n')}`).toEqual([]);
     expect(consoleErrors, `console errors:\n${consoleErrors.join('\n')}`).toEqual([]);
   });
 
-  test('terminal state survives a round trip to resume mode', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+  test('hash routes are linkable, reloadable and survive back/forward', async ({ page }) => {
+    await page.goto('/#/resume');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator('body')).toContainText('Experience');
 
-    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+
+    await nav(page, 'Work').click();
+    await expect(nav(page, 'Work')).toHaveAttribute('aria-current', 'page');
+    await expect(page.locator('#work')).toBeInViewport();
+
+    await page.goBack();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Eduardo Díaz|Eduardo/);
+  });
+
+  test('home page scrolls normally instead of trapping scroll in a pane', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+
+    const scrollable = await page.evaluate(
+      () => document.documentElement.scrollHeight > window.innerHeight + 100,
+    );
+    expect(scrollable, 'the home page must be a normal scrolling document').toBe(true);
+  });
+
+  test('mobile: the Menu button expands the nav and navigating closes it', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 780 });
+    await page.goto('/');
+
+    // Located by the control it owns — its label flips between Menu and Close.
+    const toggle = page.locator('button[aria-controls="primary-nav"]');
+    await expect(toggle).toHaveText('Menu');
+    const box = await toggle.boundingBox();
+    expect(box!.height, 'menu button must be a comfortable touch target').toBeGreaterThanOrEqual(44);
+
+    await expect(nav(page, 'Résumé')).toBeHidden();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(nav(page, 'Résumé')).toBeVisible();
+
+    await nav(page, 'Résumé').click();
+    await expect(nav(page, 'Résumé')).toBeHidden();
+    await expect(page.locator('body')).toContainText('Experience', { timeout: 10_000 });
+  });
+
+  test('no horizontal overflow on a phone viewport', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 780 });
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(1);
+  });
+
+  test('education section renders course names as text, not [object Object]', async ({ page }) => {
+    await page.goto('/#/resume');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+
+    // Secondary detail is collapsed on the page; open it before reading text.
+    for (const d of await page.locator('details').all()) {
+      await d.evaluate((el) => ((el as HTMLDetailsElement).open = true));
+    }
+
+    const body = await page.locator('body').innerText();
+    expect(body, 'rendered body must include a real course name').toContain('Python Fundamentals');
+    expect(body, 'should not contain [object Object] anywhere').not.toContain('[object Object]');
+  });
+
+  test('GitHub repo card renders the repo name (and meta when API resolves)', async ({ page }) => {
+    await page.goto('/');
+    const card = page.getByRole('link', { name: /github repository trianalab\/awasm-portfolio/i });
+    await expect(card).toBeVisible({ timeout: 10_000 });
+    await expect(card).toContainText('TrianaLab/awasm-portfolio');
+  });
+
+  test('download button triggers a PDF download', async ({ page }) => {
+    const errs: string[] = [];
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errs.push(`[console] ${msg.text()}`);
+    });
+    page.on('pageerror', (err) => errs.push(`[pageerror] ${err.message}`));
+
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+
+    try {
+      const [download] = await Promise.all([
+        page.waitForEvent('download', { timeout: 30_000 }),
+        page.getByRole('button', { name: /download résumé/i }).first().click(),
+      ]);
+      const filename = download.suggestedFilename();
+      expect(filename).toMatch(/\.pdf$/);
+    } catch (e) {
+      throw new Error(`download didn't fire.\nErrors:\n${errs.join('\n')}`);
+    }
+  });
+});
+
+test.describe('terminal', () => {
+  test('boots the WASM worker and runs a kubectl command', async ({ page }) => {
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+
+    // xterm captures keystrokes via its hidden textarea.
+    await page.locator('.xterm-helper-textarea').focus();
+    await page.keyboard.type('kubectl get namespace');
+    await page.keyboard.press('Enter');
+
+    // The WASM service should answer with at least the default namespace.
+    await expect(page.locator('.xterm')).toContainText('default', { timeout: 10_000 });
+  });
+
+  test('nothing runs on its own — the welcome screen only suggests commands', async ({ page }) => {
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+    await page.waitForTimeout(1500);
+    await expect(page.locator('.xterm')).not.toContainText('EXPERIENCE');
+  });
+
+  test('state survives a round trip to the résumé view', async ({ page }) => {
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+
+    await page.getByRole('button', { name: 'New terminal' }).click();
     await expect(page.locator('[role="dialog"]')).toHaveCount(2);
 
     await page.locator('.xterm-helper-textarea').first().focus();
@@ -36,27 +191,25 @@ test.describe('awasm-portfolio smoke', () => {
     await page.waitForTimeout(400);
     await expect(page.locator('.xterm').first()).toContainText('default');
 
-    await page.getByRole('tab', { name: /resume/i }).click();
+    await nav(page, 'Résumé').click();
     await page.waitForTimeout(300);
-    await page.getByRole('tab', { name: /terminal/i }).click();
+    await nav(page, 'Terminal').click();
     await page.waitForTimeout(300);
 
     await expect(page.locator('[role="dialog"]')).toHaveCount(2);
     await expect(page.locator('.xterm').first()).toContainText('default');
   });
 
-  test('runs a kubectl command in the terminal', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+  test('is fully inert while another view is active', async ({ page }) => {
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
-    // xterm captures keystrokes via its hidden textarea.
-    const helper = page.locator('.xterm-helper-textarea');
-    await helper.focus();
-    await page.keyboard.type('kubectl get namespace');
-    await page.keyboard.press('Enter');
-
-    // The WASM service should answer with at least the default namespace.
-    await expect(page.locator('.xterm')).toContainText('default', { timeout: 10_000 });
+    await nav(page, 'Résumé').click();
+    await expect(page.locator('.terminal-layer')).toBeHidden();
+    // display:none takes it out of the tab order and the a11y tree, so the
+    // résumé and the terminal are never simultaneously interactive.
+    await expect(page.locator('.xterm-helper-textarea')).toBeHidden();
+    await expect(page.locator('[role="dialog"]').first()).toBeHidden();
   });
 
   // Run at a few viewport sizes so we catch regressions on smaller windows.
@@ -69,8 +222,8 @@ test.describe('awasm-portfolio smoke', () => {
       page,
     }) => {
       await page.setViewportSize(viewport);
-      await page.goto('/');
-      await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+      await page.goto(TERMINAL);
+      await terminalReady(page);
 
       const helper = page.locator('.xterm-helper-textarea');
       await helper.focus();
@@ -91,10 +244,10 @@ test.describe('awasm-portfolio smoke', () => {
     });
   }
 
-  test('terminal mode does not grow the page height indefinitely', async ({ page }) => {
+  test('terminal view does not grow the page height indefinitely', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
     // Let xterm + ResizeObserver settle.
     await page.waitForTimeout(500);
     const initial = await page.evaluate(() => document.documentElement.scrollHeight);
@@ -104,55 +257,23 @@ test.describe('awasm-portfolio smoke', () => {
     expect(after, `scrollHeight grew from ${initial}px to ${after}px (feedback loop?)`).toBeLessThanOrEqual(
       initial + 10,
     );
-    // The page should fit in the viewport — no body scrolling.
+    // The terminal view is the one view that locks to the viewport.
     expect(after).toBeLessThanOrEqual(810);
   });
 
-  test('education section renders course names as text, not [object Object]', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
-
-    await page.getByRole('tab', { name: /resume/i }).click();
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
-
-    const body = await page.locator('body').innerText();
-    expect(body, 'rendered body must include a real course name').toContain('Python Fundamentals');
-    expect(body, 'should not contain [object Object] anywhere').not.toContain('[object Object]');
-  });
-
-  test('switches to resume view and renders sections', async ({ page }) => {
-    const errs: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') errs.push(`[console] ${msg.text()}`);
-    });
-    page.on('pageerror', (err) => errs.push(`[pageerror] ${err.message}`));
-
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
-
-    await page.getByRole('tab', { name: /resume/i }).click();
-    try {
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
-    } catch (e) {
-      const bodyText = await page.locator('body').innerText();
-      throw new Error(`heading not found.\nBody text:\n${bodyText}\nErrors:\n${errs.join('\n')}`);
-    }
-    await expect(page.locator('body')).toContainText('Experience');
-  });
-
   test('window manager: opens a second window via the + button', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
     await expect(page.locator('[role="dialog"]')).toHaveCount(1);
 
-    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await page.getByRole('button', { name: 'New terminal' }).click();
     await expect(page.locator('[role="dialog"]')).toHaveCount(2);
   });
 
   test('window manager: close removes the window', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
-    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+    await page.getByRole('button', { name: 'New terminal' }).click();
     await expect(page.locator('[role="dialog"]')).toHaveCount(2);
 
     await page.locator('[role="dialog"]').last().getByRole('button', { name: /close window/i }).click();
@@ -160,8 +281,8 @@ test.describe('awasm-portfolio smoke', () => {
   });
 
   test('window manager: minimize hides the window and dock entry restores it', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     await page.getByRole('button', { name: /minimize window/i }).first().click();
     await expect(page.locator('[role="dialog"]')).toHaveCount(0);
@@ -170,20 +291,13 @@ test.describe('awasm-portfolio smoke', () => {
     await expect(page.locator('[role="dialog"]')).toHaveCount(1);
   });
 
-  test('GitHub repo card renders the repo name (and meta when API resolves)', async ({ page }) => {
-    await page.goto('/');
-    const card = page.getByRole('link', { name: /github repository trianalab\/awasm-portfolio/i });
-    await expect(card).toBeVisible({ timeout: 10_000 });
-    await expect(card).toContainText('TrianaLab/awasm-portfolio');
-  });
-
   test('window manager: double-clicking the chrome toggles maximize', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const win = page.locator('[role="dialog"]').first();
-    const before = await win.boundingBox();
+    const before = await settledBox(win);
     const desktop = await page.locator('.desktop').boundingBox();
     expect(before!.width).toBeLessThan(desktop!.width);
 
@@ -200,8 +314,6 @@ test.describe('awasm-portfolio smoke', () => {
 
     await chrome.click({ position: { x: 300, y: 10 } });
     await chrome.click({ position: { x: 300, y: 10 } });
-    // 250 ms covers the 180 ms maximize/snap CSS transition plus a small
-    // jitter buffer; boundingBox() reads the in-flight value mid-anim.
     await page.waitForTimeout(250);
     now = await win.boundingBox();
     expect(Math.abs(now!.width - before!.width)).toBeLessThan(3);
@@ -209,11 +321,11 @@ test.describe('awasm-portfolio smoke', () => {
 
   test('window manager: resize from the left edge changes width and x', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const win = page.locator('[role="dialog"]').first();
-    const before = await win.boundingBox();
+    const before = await settledBox(win);
 
     const handle = await win.locator('.rz-w').boundingBox();
     const startX = handle!.x + handle!.width / 2;
@@ -231,11 +343,11 @@ test.describe('awasm-portfolio smoke', () => {
 
   test('window manager: resize from the top edge changes height and y', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const win = page.locator('[role="dialog"]').first();
-    const before = await win.boundingBox();
+    const before = await settledBox(win);
 
     const handle = await win.locator('.rz-n').boundingBox();
     const x = handle!.x + handle!.width / 2;
@@ -253,11 +365,11 @@ test.describe('awasm-portfolio smoke', () => {
 
   test('window manager: maximize fills the desktop and toggles back', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const win = page.locator('[role="dialog"]').first();
-    const before = await win.boundingBox();
+    const before = await settledBox(win);
     const desktop = await page.locator('.desktop').boundingBox();
     expect(before).not.toBeNull();
     expect(desktop).not.toBeNull();
@@ -278,8 +390,8 @@ test.describe('awasm-portfolio smoke', () => {
 
   test('window manager: prompt stays visible after maximizing during long output', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const helper = page.locator('.xterm-helper-textarea');
     await helper.focus();
@@ -304,8 +416,8 @@ test.describe('awasm-portfolio smoke', () => {
 
   test('window manager: prompt is not clipped after long-output command', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const helper = page.locator('.xterm-helper-textarea');
     await helper.focus();
@@ -326,11 +438,11 @@ test.describe('awasm-portfolio smoke', () => {
 
   test('window manager: dragging a snapped window restores its previous size', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const win = page.locator('[role="dialog"]').first();
-    const before = await win.boundingBox();
+    const before = await settledBox(win);
 
     // Maximize first (same code path as snap — both set previousGeometry).
     await win.getByRole('button', { name: /maximize window/i }).click();
@@ -360,8 +472,8 @@ test.describe('awasm-portfolio smoke', () => {
     // iPhone-ish viewport. On phones the window forcibly fills the
     // desktop area so the terminal is actually usable.
     await page.setViewportSize({ width: 390, height: 780 });
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const win = page.locator('[role="dialog"]').first();
     const desktop = await page.locator('.desktop').boundingBox();
@@ -376,9 +488,9 @@ test.describe('awasm-portfolio smoke', () => {
   });
 
   test('window manager: focus brings background window to front', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
-    await page.getByRole('button', { name: /open a new terminal/i }).click();
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+    await page.getByRole('button', { name: 'New terminal' }).click();
     await expect(page.locator('[role="dialog"]')).toHaveCount(2);
 
     const zBefore = await page.evaluate(() => {
@@ -397,15 +509,15 @@ test.describe('awasm-portfolio smoke', () => {
   });
 
   test('resume view re-fetches after a delete + create in the terminal', async ({ page }) => {
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     // Snapshot the preloaded resume content first.
-    await page.getByRole('tab', { name: /resume/i }).click();
+    await nav(page, 'Résumé').click();
     await expect(page.locator('body')).toContainText('Eduardo', { timeout: 10_000 });
 
     // Mutate via the terminal: delete + recreate the resume.
-    await page.getByRole('tab', { name: /terminal/i }).click();
+    await nav(page, 'Terminal').click();
     const helper = page.locator('.xterm-helper-textarea');
     await helper.focus();
     await page.keyboard.type('kubectl delete resume main-resume');
@@ -417,33 +529,11 @@ test.describe('awasm-portfolio smoke', () => {
 
     // Switch back to the resume view; refreshResume must refetch and the
     // recreated (empty) resume should render — no Experience section.
-    await page.getByRole('tab', { name: /resume/i }).click();
+    await nav(page, 'Résumé').click();
     await page.waitForTimeout(500);
-    const body = await page.locator('body').innerText();
+    const body = await page.locator('main').innerText();
     expect(body, 'after recreate the resume should be empty — no Experience section').not.toContain(
       'Experience',
     );
-  });
-
-  test('download button triggers a PDF download', async ({ page }) => {
-    const errs: string[] = [];
-    page.on('console', (msg) => {
-      if (msg.type() === 'error') errs.push(`[console] ${msg.text()}`);
-    });
-    page.on('pageerror', (err) => errs.push(`[pageerror] ${err.message}`));
-
-    await page.goto('/');
-    await expect(page.locator('.xterm')).toBeVisible({ timeout: 10_000 });
-
-    try {
-      const [download] = await Promise.all([
-        page.waitForEvent('download', { timeout: 30_000 }),
-        page.getByRole('button', { name: /download resume as pdf/i }).click(),
-      ]);
-      const filename = download.suggestedFilename();
-      expect(filename).toMatch(/\.pdf$/);
-    } catch (e) {
-      throw new Error(`download didn't fire.\nErrors:\n${errs.join('\n')}`);
-    }
   });
 });
