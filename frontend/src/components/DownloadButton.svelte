@@ -27,7 +27,8 @@
   class:btn-primary={primary}
   class:btn-icon={!label}
   onclick={handleClick}
-  disabled={downloading}
+  aria-disabled={downloading}
+  aria-busy={downloading}
   aria-label={label ? undefined : CTA.resume.label}
   title={label ? undefined : CTA.resume.label}
 >
@@ -41,7 +42,7 @@
       <path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </svg>
   {/if}
-  {#if label}<span>{downloading ? 'Generating…' : label}</span>{/if}
+  {#if label}<span aria-live="polite">{downloading ? 'Generating…' : label}</span>{/if}
 </button>
 
 <style>

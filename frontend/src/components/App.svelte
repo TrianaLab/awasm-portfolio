@@ -65,24 +65,50 @@
   // Focus + scroll management on navigation. A hash change does not move
   // focus on its own, so keyboard and screen-reader users would otherwise
   // stay parked in the nav after switching views.
-  let firstRender = true;
+  //
+  // A section target only exists once the résumé has rendered, so a cold load
+  // of #/experience runs this before there is anything to scroll to; tracking
+  // readiness makes it re-run when the document lands. `lastNav` keeps that
+  // second run from also firing on a plain load of #/, where focus and scroll
+  // position must be left exactly where the browser put them.
+  const resumeReady = $derived(resume !== null);
+  let lastNav: string | null = null;
   $effect(() => {
     const { view, section } = loc;
-    void view;
-    const initial = firstRender;
-    firstRender = false;
-    if (initial && !section) return;
+    const ready = resumeReady;
+    const key = `${view}:${section ?? ''}`;
+    if (lastNav === null) {
+      if (!section) {
+        lastNav = key;
+        return;
+      }
+    } else if (lastNav === key) {
+      return; // only readiness changed
+    }
+    if (section && !ready) return;
+    lastNav = key;
     void tick().then(() => {
       const target = section ? document.getElementById(section) : null;
+      // preventScroll: `scroll-behavior: smooth` makes scrollIntoView an
+      // animation, and focus() would start a competing block:'nearest' scroll
+      // that lands the user somewhere in the middle of the section.
       if (target) {
         target.scrollIntoView({ block: 'start' });
-        target.focus();
+        target.focus({ preventScroll: true });
       } else {
         window.scrollTo({ top: 0 });
-        mainEl?.focus();
+        mainEl?.focus({ preventScroll: true });
       }
     });
   });
+
+  // The skip link cannot navigate: `href="#main"` sets location.hash, which
+  // parseHash reads as the home route, so the one control keyboard users are
+  // guaranteed to hit would throw them off the view they were skipping into.
+  function skipToMain(event: MouseEvent) {
+    event.preventDefault();
+    mainEl?.focus();
+  }
 
   $effect(() => {
     document.title = pageTitle(resume, PAGE_TITLE);
@@ -102,7 +128,7 @@
   });
 </script>
 
-<a class="skip-link" href="#main">Skip to main content</a>
+<a class="skip-link" href="#main" onclick={skipToMain}>Skip to main content</a>
 
 <SiteHeader view={loc.view} section={loc.section} {theme} />
 

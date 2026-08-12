@@ -83,6 +83,118 @@ test.describe('portfolio', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(/Eduardo Díaz|Eduardo/);
   });
 
+  // The skip link is the first tab stop, so a plain href="#main" would set
+  // location.hash, parseHash would read it as the home route, and the one
+  // bypass mechanism keyboard users are guaranteed to hit would eject them
+  // from the view they were skipping into.
+  test('skip link moves focus into main without changing the route', async ({ page }) => {
+    await page.goto('/#/resume');
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
+    await page.keyboard.press('Enter');
+
+    expect(await page.evaluate(() => document.documentElement.dataset.view)).toBe('resume');
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('main');
+  });
+
+  // Two failure modes in one assertion: a cold load used to leave the page at
+  // the top (the section does not exist yet when the résumé is still loading),
+  // and focus() used to fight the smooth scrollIntoView and overshoot.
+  test('section routes land on the section, cold and in-app', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const landing = (id: string) =>
+      expect
+        .poll(
+          () => page.locator(`#${id}`).evaluate((el) => Math.round(el.getBoundingClientRect().top)),
+          { timeout: 10_000 },
+        )
+        // scroll-padding-top is 76px; anything above 0 is under the sticky
+        // header, anything far below it never scrolled at all.
+        .toBeLessThan(140);
+
+    for (const id of ['work', 'experience', 'about']) {
+      await page.goto(`/#/${id}`);
+      await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+      await landing(id);
+      const top = await page.locator(`#${id}`).evaluate((el) => el.getBoundingClientRect().top);
+      expect(top, `#${id} landed above the sticky header`).toBeGreaterThan(-40);
+    }
+
+    // Reload keeps working, and so does navigating between sections in-app.
+    await page.reload();
+    await landing('about');
+    await nav(page, 'Work').click();
+    await landing('work');
+  });
+
+  // The résumé data comes from the WASM engine, so a binary that never loads
+  // has to fail loudly. The worker used to swallow its own bootstrap
+  // rejection, leaving the entire site on "Loading résumé…" forever.
+  test('a wasm boot failure surfaces an error instead of an endless spinner', async ({ page }) => {
+    await page.route('**/assets/app.wasm', (route) => route.abort());
+    await page.goto('/');
+    await expect(page.getByRole('alert')).toContainText('Could not load the résumé data', {
+      timeout: 15_000,
+    });
+  });
+
+  test('primary call to action clears AA contrast in both themes', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+
+    for (const mode of ['dark', 'light']) {
+      await page.evaluate((m) => (document.documentElement.dataset.theme = m), mode);
+      // .btn transitions its colours over 200ms; computed style mid-transition
+      // is an interpolated blend, not the value the user ends up looking at.
+      await page.waitForTimeout(300);
+      const ratio = await page.locator('.btn-primary').first().evaluate((el) => {
+        const channels = (s: string) => (s.match(/\d+(\.\d+)?/g) ?? []).slice(0, 3).map(Number);
+        const luminance = ([r, g, b]: number[]) => {
+          const lin = (c: number) => {
+            const v = c / 255;
+            return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+          };
+          return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+        };
+        const style = getComputedStyle(el);
+        const fg = luminance(channels(style.color));
+        const bg = luminance(channels(style.backgroundColor));
+        return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+      });
+      expect(ratio, `${mode} theme primary button contrast`).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  // The .tap-links overlay grows a link's hit box past its text box, so it has
+  // to stay inside the gap to the next line or it swallows that line's clicks.
+  test('link hit boxes do not steal clicks from the text beside them', async ({ page }) => {
+    await page.goto('/');
+    const summary = page.locator('.upstream-summary').first();
+    await summary.scrollIntoViewIfNeeded();
+
+    const hits = await summary.evaluate((el) => {
+      const rect = el.getBoundingClientRect();
+      return [1, 4, 8].map((dy) =>
+        document.elementFromPoint(rect.left + 4, rect.top + dy)?.closest('a') ? 'link' : 'text',
+      );
+    });
+    expect(hits).toEqual(['text', 'text', 'text']);
+  });
+
+  test('download button keeps focus while it generates', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+
+    const btn = page.getByRole('button', { name: /download résumé/i }).first();
+    await btn.focus();
+    await Promise.all([page.waitForEvent('download', { timeout: 30_000 }), btn.click()]);
+    // `disabled` would have dropped focus to <body> and stranded a keyboard
+    // user at the top of the document mid-task.
+    await expect(btn).toBeFocused();
+  });
+
   test('home page scrolls normally instead of trapping scroll in a pane', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto('/');
@@ -188,6 +300,30 @@ test.describe('terminal', () => {
     await terminalReady(page);
     await page.waitForTimeout(1500);
     await expect(page.locator('.xterm')).not.toContainText('EXPERIENCE');
+  });
+
+  test('has a page heading of its own', async ({ page }) => {
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+    // The view is a terminal, so the h1 is screen-reader only — but without it
+    // the document has no level-1 heading and its outline starts at 2.
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  });
+
+  test('window is not clipped at 200% zoom', async ({ page }) => {
+    // 640x400 is a 1280x800 laptop at 200% zoom: the WCAG 1.4.4 reflow case.
+    // This view pins html/body to the viewport, so anything the chrome pushes
+    // past the bottom cannot be scrolled back into reach.
+    await page.setViewportSize({ width: 640, height: 400 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+
+    const overhang = await page.evaluate(() => {
+      const desktop = document.querySelector('.desktop')!.getBoundingClientRect();
+      const win = document.querySelector('[role="dialog"]')!.getBoundingClientRect();
+      return win.bottom - desktop.bottom;
+    });
+    expect(overhang, 'terminal window hangs below the desktop with no way to scroll').toBeLessThanOrEqual(1);
   });
 
   test('state survives a round trip to the résumé view', async ({ page }) => {

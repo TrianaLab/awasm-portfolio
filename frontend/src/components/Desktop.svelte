@@ -7,10 +7,13 @@
   const manager = createWindowManager();
   let desktopEl = $state<HTMLDivElement | null>(null);
 
+  // `||`, not `??`: a pane that mounts while its layer is still `hidden`
+  // measures 0, and zeroes would open the first window at phone size in the
+  // top-left corner for the rest of the session.
   function desktopSize(): { w: number; h: number } {
     return {
-      w: desktopEl?.clientWidth ?? window.innerWidth,
-      h: desktopEl?.clientHeight ?? window.innerHeight,
+      w: desktopEl?.clientWidth || window.innerWidth,
+      h: desktopEl?.clientHeight || window.innerHeight,
     };
   }
 

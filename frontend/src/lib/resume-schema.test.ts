@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { validate, schema } from '@jsonresume/schema';
-import { FEATURED, SELECTED_SYSTEM_URLS } from './portfolio';
+import { FEATURED, SELECTED_SYSTEM_URLS, TERMINAL_SUGGESTIONS } from './portfolio';
 import { RESUME_QUERY } from './wasm';
 import { buildResumeDocDef } from './pdf';
 import {
@@ -29,6 +29,14 @@ function loadCanonicalResume(): Resume & Record<string, unknown> {
   });
   const parsed = JSON.parse(out) as unknown;
   return (Array.isArray(parsed) ? parsed[0] : parsed) as Resume & Record<string, unknown>;
+}
+
+function runCli(command: string): string {
+  return execFileSync('go', ['run', 'cli.go', ...command.split(' ').slice(1)], {
+    cwd: REPO_ROOT,
+    encoding: 'utf8',
+    maxBuffer: 8 * 1024 * 1024,
+  });
 }
 
 function validationErrors(doc: unknown): unknown[] {
@@ -72,6 +80,13 @@ describe('canonical JSON Resume document', () => {
     expect(featuredProject(doc), `featured project ${FEATURED.url} is missing`).toBeDefined();
     expect(selectedSystems(doc)).toHaveLength(SELECTED_SYSTEM_URLS.length);
   });
+
+  // The suggestions are printed in the terminal welcome banner and offered as
+  // copy-to-clipboard chips, so a stale resource name hands a visitor an error
+  // as their first interaction.
+  it.each(TERMINAL_SUGGESTIONS.map((s) => s.command))('suggested command runs clean: %s', (command) => {
+    expect(runCli(command).trim()).not.toMatch(/^Error:/);
+  }, 300_000);
 
   it('supplies everything the home-page view models need', () => {
     // The hero headline reads basics.label, so the document must carry one.

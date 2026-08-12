@@ -6,8 +6,9 @@
 // headings, terminal suggestions and SEO strings.
 //
 // Résumé entries are referenced by their canonical `url` (a stable key that
-// already exists in the document) and never copied. If a URL below stops
-// resolving, resume-select.test.ts fails — that is the intended guard rail.
+// already exists in the document) and never copied. resume-schema.test.ts runs
+// the real CLI over the canonical document and fails if any URL or resource
+// name referenced below stops resolving — that is the intended guard rail.
 
 export type View = 'home' | 'resume' | 'terminal';
 
@@ -90,7 +91,7 @@ export const PRINCIPLES: { title: string; body: string }[] = [
 export const TERMINAL_SUGGESTIONS: { command: string; hint: string }[] = [
   { command: 'kubectl get all', hint: 'every résumé resource at once' },
   { command: 'kubectl get work', hint: 'employment history as a table' },
-  { command: 'kubectl describe volunteer pacto', hint: 'drill into one project' },
+  { command: 'kubectl describe volunteer volunteer-trianalab-pacto', hint: 'drill into one project' },
   { command: 'kubectl get resume main-resume -o yaml', hint: 'the raw JSON Resume document' },
 ];
 

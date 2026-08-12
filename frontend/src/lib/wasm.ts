@@ -21,6 +21,9 @@ function spawnWorker(): Promise<Worker> {
       if (event.data?.type === 'ready') {
         worker.removeEventListener('message', ready);
         resolve(worker);
+      } else if (event.data?.type === 'boot-error') {
+        worker.removeEventListener('message', ready);
+        reject(new Error(event.data.error ?? 'the WebAssembly engine failed to start'));
       }
     };
     worker.addEventListener('message', ready);

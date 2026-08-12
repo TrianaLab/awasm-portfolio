@@ -19,6 +19,11 @@
 </script>
 
 <div class="pane">
+  <!-- The visible content of this view is a terminal, so there is nowhere
+       natural to hang a page heading; without this the document has no h1 at
+       all and its outline starts at level 2. -->
+  <h1 class="sr-only">Terminal</h1>
+
   <div class="bar">
     <p class="lede">
       <span class="mono prompt" aria-hidden="true">$</span>
@@ -47,6 +52,9 @@
         </li>
       {/each}
     </ul>
+    <!-- The chip's own label is static and its 'copied' badge is decorative,
+         so this is the only confirmation a screen-reader user gets. -->
+    <p class="sr-only" role="status">{copied ? `Copied: ${copied}` : ''}</p>
   </div>
 
   <Desktop bind:this={desktop} />
@@ -129,6 +137,19 @@
     .suggestions {
       padding-left: 1rem;
       padding-right: 1rem;
+    }
+  }
+
+  /* This view pins html/body to the viewport, so the chrome above the desktop
+     is space the terminal window cannot get back by scrolling. At 200% zoom on
+     a laptop the lede and the chip row leave less than the window's 220px
+     minimum and its bottom is clipped off unreachably, so they stand down.
+     Both are redundant there: the same suggestions are printed in the terminal
+     welcome banner. */
+  @media (max-height: 560px) {
+    .lede,
+    .suggestions {
+      display: none;
     }
   }
 </style>

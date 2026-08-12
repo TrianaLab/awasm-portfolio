@@ -12,6 +12,9 @@
   --color-text-muted: #9aa6b2;
   --color-accent: #58a6ff;
   --color-accent-soft: rgba(88, 166, 255, 0.15);
+  /* Text sitting on --color-accent. The dark theme's accent is a light blue,
+     so white on it is 2.53:1; near-black is 7.5:1. */
+  --color-on-accent: #0d1117;
   --color-success: #3fb950;
   --color-danger: #f85149;
 
@@ -40,6 +43,7 @@
   --color-text-muted: #59636e;
   --color-accent: #0969da;
   --color-accent-soft: rgba(9, 105, 218, 0.1);
+  --color-on-accent: #ffffff;
   --color-success: #1a7f37;
   --color-danger: #cf222e;
   --shadow-md: 0 4px 16px rgba(31, 35, 40, 0.08);
@@ -142,15 +146,20 @@ h4 {
 
 /* Container for links that stand on their own rather than sitting inside a
    sentence — project names, card URLs, footer links. Text alone gives them a
-   ~24px tall target; the overlay grows the hit box to a comfortable size
-   without pushing the layout around. */
+   ~24px tall target; the overlay grows the hit box without pushing the layout
+   around.
+   The inset is bounded by the tightest gap to a neighbouring line (0.5rem):
+   an overlay that reaches past it paints over that text and swallows both its
+   clicks and its drag-selection. 24px already meets WCAG 2.5.8, so the extra
+   height is comfort, and it is not worth taking a click target from the text
+   next door to get it. */
 .tap-links a {
   position: relative;
 }
 .tap-links a::after {
   content: '';
   position: absolute;
-  inset: -11px 0;
+  inset: -7px 0;
 }
 
 .skip-link {
@@ -193,19 +202,23 @@ h4 {
   text-decoration: none;
   opacity: 1;
 }
-.btn:disabled {
+/* aria-disabled rather than disabled for work-in-progress controls: a
+   disabled element loses focus to <body>, which strands a keyboard user
+   mid-task. The handler guards against re-entry instead. */
+.btn:disabled,
+.btn[aria-disabled='true'] {
   cursor: progress;
   opacity: 0.6;
 }
 .btn-primary {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }
 .btn-primary:hover {
   background: color-mix(in srgb, var(--color-accent) 85%, #000);
   border-color: color-mix(in srgb, var(--color-accent) 85%, #000);
-  color: #ffffff;
+  color: var(--color-on-accent);
 }
 .btn-icon {
   width: var(--tap);

@@ -41,6 +41,11 @@ interface ReadyMessage {
   type: 'ready';
 }
 
+interface BootErrorMessage {
+  type: 'boot-error';
+  error: string;
+}
+
 let ready = false;
 const queue: WorkerRequest[] = [];
 
@@ -87,4 +92,13 @@ self.addEventListener('message', (event: MessageEvent<WorkerRequest>) => {
   handle(event.data);
 });
 
-void bootstrap();
+// A rejection here (a 404 on the binary, a proxy stripping application/wasm,
+// an instantiation failure) must be reported: swallowing it leaves the main
+// thread waiting on a 'ready' that never arrives, and the whole site sits on
+// its loading message forever instead of showing an error.
+void bootstrap().catch((err: unknown) => {
+  postMessage({
+    type: 'boot-error',
+    error: err instanceof Error ? err.message : String(err),
+  } satisfies BootErrorMessage);
+});

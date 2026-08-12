@@ -395,7 +395,8 @@
   }
   .upstream-summary {
     display: block;
-    margin-top: 0.15rem;
+    /* Clears the .tap-links hit-box overlay on the organisation link above. */
+    margin-top: 0.5rem;
     font-size: 0.85rem;
     color: var(--color-text-muted);
   }

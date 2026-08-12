@@ -8,6 +8,7 @@
   let { view, section, theme }: { view: View; section: string | null; theme: Theme } = $props();
 
   let menuOpen = $state(false);
+  let toggleEl = $state<HTMLButtonElement | null>(null);
 
   // A nav item is current when its route matches the active view, or when it
   // points at the home section the user has navigated to.
@@ -16,10 +17,27 @@
     if (target === 'resume' || target === 'terminal') return view === target;
     return view === 'home' && section === target;
   }
+
+  // Collapsing the menu takes the focused link out of the layout. On a real
+  // route change App moves focus to the new view, but tapping the link for the
+  // route you are already on fires no hashchange, so focus would fall to
+  // <body>. Handing it back to the toggle covers both: App overrides it when a
+  // navigation does happen.
+  function closeMenu() {
+    if (!menuOpen) return;
+    menuOpen = false;
+    toggleEl?.focus();
+  }
 </script>
 
+<svelte:window
+  onkeydown={(e) => {
+    if (e.key === 'Escape') closeMenu();
+  }}
+/>
+
 <header class="topbar">
-  <a class="brand" href="#/" onclick={() => (menuOpen = false)}>
+  <a class="brand" href="#/" onclick={closeMenu}>
     <span class="brand-mark" aria-hidden="true">~/</span>
     <span class="brand-name">{DOMAIN}</span>
   </a>
@@ -33,7 +51,7 @@
           <a
             href={item.href}
             aria-current={isCurrent(item.href) ? 'page' : undefined}
-            onclick={() => (menuOpen = false)}
+            onclick={closeMenu}
           >
             {item.label}
           </a>
@@ -49,6 +67,7 @@
       class="btn menu-toggle"
       aria-expanded={menuOpen}
       aria-controls="primary-nav"
+      bind:this={toggleEl}
       onclick={() => (menuOpen = !menuOpen)}
     >
       {menuOpen ? 'Close' : 'Menu'}
