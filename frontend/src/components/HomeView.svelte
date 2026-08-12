@@ -2,13 +2,12 @@
   import DownloadButton from './DownloadButton.svelte';
   import ExternalLink from './ExternalLink.svelte';
   import type { Resume } from '../lib/schema';
-  import { CTA, FEATURED, HEADLINE_EMPLOYER_URL, PRINCIPLES } from '../lib/portfolio';
+  import { CTA, FEATURED, PRINCIPLES } from '../lib/portfolio';
   import {
-    byUrl,
-    currentRole,
     experienceGroups,
     featuredProject,
     formatYear,
+    headlineTitle,
     selectedSystems,
     shortOrgName,
     upstreamContributions,
@@ -17,25 +16,16 @@
   let { resume }: { resume: Resume } = $props();
 
   const basics = $derived(resume.basics ?? {});
-  const role = $derived(currentRole(resume));
+  const title = $derived(headlineTitle(resume));
   const featured = $derived(featuredProject(resume));
   const systems = $derived(selectedSystems(resume));
-  const platformRole = $derived(byUrl(resume.work, HEADLINE_EMPLOYER_URL));
   const upstream = $derived(upstreamContributions(resume));
   const groups = $derived(experienceGroups(resume));
-
-  // The Emergence AI entry appears both as a system and in the timeline. Show
-  // the opening sentence here so the same paragraph is not printed twice.
-  function lede(text?: string): string {
-    if (!text) return '';
-    const stop = text.indexOf('. ');
-    return stop === -1 ? text : text.slice(0, stop + 1);
-  }
 
   function span(start?: string, end?: string): string {
     const from = formatYear(start);
     const to = end ? formatYear(end) : 'Present';
-    return from ? `${from} — ${to}` : to;
+    return from ? `${from} – ${to}` : to;
   }
 </script>
 
@@ -45,10 +35,8 @@
     {#if basics.location?.city}{basics.location.city}, {basics.location.countryCode ?? ''}{/if}
   </p>
   <h1 id="hero-name">{basics.name}</h1>
-  {#if role?.position}
-    <p class="hero-role">
-      {role.position}{#if role.name}<span class="at">&nbsp;at&nbsp;</span>{role.name}{/if}
-    </p>
+  {#if title}
+    <p class="hero-role">{title}</p>
   {/if}
   {#if basics.summary}
     <p class="hero-summary">{basics.summary}</p>
@@ -59,8 +47,8 @@
     <a class="btn" href={CTA.terminal.href}>{CTA.terminal.label}</a>
   </div>
   <p class="hero-note">
-    The terminal is the same résumé, compiled to WebAssembly and served through a
-    kubectl-style CLI. Everything on this page works without it.
+    The terminal is a Go CLI compiled to WebAssembly, reading the same résumé data as this
+    page. You don't have to open it to read anything here.
   </p>
 </section>
 
@@ -109,18 +97,6 @@
 
   <h3 class="sub-h">Selected systems</h3>
   <ul class="cards tap-links">
-    {#if platformRole}
-      <li class="card">
-        <p class="kicker mono">Internal platform</p>
-        <h4>{platformRole.name}</h4>
-        <p>{lede(platformRole.summary)}</p>
-        {#if platformRole.url}
-          <ExternalLink href={platformRole.url}>
-            {platformRole.url.replace(/^https?:\/\//, '')}
-          </ExternalLink>
-        {/if}
-      </li>
-    {/if}
     {#each systems as system (system.url)}
       <li class="card">
         <p class="kicker mono">{system.position ?? 'Open source'}</p>
@@ -241,10 +217,6 @@
     font-size: clamp(1.05rem, 2.4vw, 1.4rem);
     font-weight: 550;
     color: var(--color-accent);
-  }
-  .hero-role .at {
-    color: var(--color-text-muted);
-    font-weight: 400;
   }
   .hero-summary {
     margin: 0 0 1.75rem;

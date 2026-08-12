@@ -55,6 +55,18 @@ test.describe('portfolio', () => {
     expect(consoleErrors, `console errors:\n${consoleErrors.join('\n')}`).toEqual([]);
   });
 
+  // The prose was rewritten to drop the em dash; it is the tell the author
+  // asked to keep out of the copy, so both the editorial strings and the
+  // canonical résumé document are checked against it.
+  test('rendered copy carries no em dashes', async ({ page }) => {
+    for (const route of ['/', '/#/resume']) {
+      await page.goto(route);
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+      const text = (await page.locator('body').innerText()) ?? '';
+      expect(text, `em dash in rendered copy at ${route}`).not.toContain('—');
+    }
+  });
+
   test('hash routes are linkable, reloadable and survive back/forward', async ({ page }) => {
     await page.goto('/#/resume');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });

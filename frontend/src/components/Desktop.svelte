@@ -20,13 +20,13 @@
     await tick();
     if (manager.windows.length === 0) {
       const { w, h } = desktopSize();
-      manager.open('kubectl — terminal', w, h);
+      manager.open('kubectl', w, h);
     }
   });
 
   function openTerminal() {
     const { w, h } = desktopSize();
-    manager.open(`kubectl — terminal #${manager.windows.length + 1}`, w, h);
+    manager.open(`kubectl #${manager.windows.length + 1}`, w, h);
   }
 
   export function open() {

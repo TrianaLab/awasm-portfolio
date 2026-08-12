@@ -12,7 +12,7 @@
 </script>
 
 <a class="ext" {href} target="_blank" rel="noreferrer noopener">
-  {@render children()}<span class="sr-only">{context ? ` — ${context}` : ''} (opens in a new tab)</span
+  {@render children()}<span class="sr-only">{context ? `, ${context}` : ''} (opens in a new tab)</span
   ><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
     <path d="M7 17 17 7M9 7h8v8" />
   </svg>

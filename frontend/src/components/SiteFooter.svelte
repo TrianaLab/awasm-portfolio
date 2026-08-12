@@ -26,8 +26,8 @@
 
     <div class="meta">
       <p class="colophon">
-        Built with Go compiled to WebAssembly, Svelte and xterm.js. The résumé and the PDF are
-        generated at runtime from a single JSON Resume document.
+        Go compiled to WebAssembly, Svelte and xterm.js. The résumé page and the PDF both come
+        from one JSON Resume document, rendered at runtime.
       </p>
       <GitHubRepoCard repo={GITHUB_REPO} />
     </div>

@@ -203,7 +203,7 @@ function buildLanguages(resume: Resume): Content[] {
   return (resume.languages ?? []).map((l) => ({
     text: [
       { text: l.language ?? '', style: 'entryTitle' },
-      { text: ' — ', style: 'entrySummary' },
+      { text: ': ', style: 'entrySummary' },
       { text: l.fluency ?? '', style: 'entrySubtitle' },
     ],
     margin: [0, 0, 0, 4],

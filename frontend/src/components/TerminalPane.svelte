@@ -22,8 +22,9 @@
   <div class="bar">
     <p class="lede">
       <span class="mono prompt" aria-hidden="true">$</span>
-      The same résumé, served by a Go CLI compiled to WebAssembly. Nothing here is faked —
-      <code>kubectl</code> is really running in your browser.
+      A Go CLI compiled to WebAssembly, serving the résumé as <code>kubectl</code>-style
+      resources. Nothing is pre-recorded: the completion and the error messages come from the
+      binary itself.
     </p>
     <button type="button" class="btn" onclick={() => desktop?.open()}>New terminal</button>
   </div>
@@ -37,7 +38,7 @@
             type="button"
             class="chip"
             onclick={() => copy(s.command)}
-            aria-label="Copy command: {s.command} — {s.hint}"
+            aria-label="Copy command: {s.command}, {s.hint}"
             title={s.hint}
           >
             <code>{s.command}</code>

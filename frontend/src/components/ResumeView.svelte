@@ -62,8 +62,8 @@
         <a class="btn" href="#/">Back to overview</a>
       </div>
       <p class="hero-note">
-        Generated at download time from the same JSON Resume document this page renders — vector
-        text, no images, parseable by applicant tracking systems.
+        Generated in the browser when you click, from the same JSON Resume document this page
+        renders. Vector text and no images, so applicant tracking systems can parse it.
       </p>
     </div>
   </header>

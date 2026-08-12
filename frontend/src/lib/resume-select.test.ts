@@ -5,6 +5,7 @@ import {
   currentRole,
   experienceGroups,
   formatYear,
+  headlineTitle,
   pageTitle,
   personJsonLd,
   shortOrgName,
@@ -83,8 +84,17 @@ describe('resume selectors', () => {
     expect(formatYear(undefined)).toBe('');
   });
 
-  it('builds the document title from the canonical name and current role', () => {
-    expect(pageTitle(sample, 'fallback')).toBe('Ada Lovelace — Principal');
+  it('headlines the standing label, not the current job title', () => {
+    expect(headlineTitle(sample)).toBe('Mathematician');
+    // Falls back to the latest position only when there is no label at all.
+    expect(headlineTitle({ ...sample, basics: { ...sample.basics, label: undefined } })).toBe(
+      'Principal',
+    );
+    expect(headlineTitle(null)).toBeUndefined();
+  });
+
+  it('builds the document title from the canonical name and headline title', () => {
+    expect(pageTitle(sample, 'fallback')).toBe('Ada Lovelace · Mathematician');
     expect(pageTitle(null, 'fallback')).toBe('fallback');
   });
 
@@ -92,7 +102,8 @@ describe('resume selectors', () => {
     const jsonLd = JSON.parse(personJsonLd(sample) ?? '{}');
     expect(jsonLd['@type']).toBe('Person');
     expect(jsonLd.name).toBe('Ada Lovelace');
-    expect(jsonLd.jobTitle).toBe('Principal');
+    expect(jsonLd.jobTitle).toBe('Mathematician');
+    expect(jsonLd.worksFor.name).toBe('Analytical Co');
     expect(jsonLd.sameAs).toContain('https://github.com/ada');
     expect(personJsonLd(null)).toBeNull();
   });

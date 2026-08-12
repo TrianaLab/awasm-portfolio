@@ -8,10 +8,15 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execFileSync } from 'node:child_process';
 import { validate, schema } from '@jsonresume/schema';
-import { FEATURED, SELECTED_SYSTEM_URLS, HEADLINE_EMPLOYER_URL } from './portfolio';
+import { FEATURED, SELECTED_SYSTEM_URLS } from './portfolio';
 import { RESUME_QUERY } from './wasm';
 import { buildResumeDocDef } from './pdf';
-import { currentRole, experienceGroups, featuredProject, selectedSystems } from './resume-select';
+import {
+  experienceGroups,
+  featuredProject,
+  headlineTitle,
+  selectedSystems,
+} from './resume-select';
 import type { Resume } from './schema';
 
 const REPO_ROOT = new URL('../../..', import.meta.url).pathname;
@@ -66,11 +71,11 @@ describe('canonical JSON Resume document', () => {
   it('resolves every résumé reference held by the presentation config', () => {
     expect(featuredProject(doc), `featured project ${FEATURED.url} is missing`).toBeDefined();
     expect(selectedSystems(doc)).toHaveLength(SELECTED_SYSTEM_URLS.length);
-    expect(doc.work?.some((w) => w.url === HEADLINE_EMPLOYER_URL)).toBe(true);
   });
 
   it('supplies everything the home-page view models need', () => {
-    expect(currentRole(doc)?.position).toBeTruthy();
+    // The hero headline reads basics.label, so the document must carry one.
+    expect(headlineTitle(doc)).toBeTruthy();
     expect(experienceGroups(doc).length).toBeGreaterThan(0);
     expect(featuredProject(doc)?.summary).toBeTruthy();
   });

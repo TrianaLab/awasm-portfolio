@@ -49,11 +49,12 @@ export const CTA = {
 export const FEATURED = {
   url: 'https://github.com/TrianaLab/pacto',
   eyebrow: 'Featured work',
-  thesis: 'Pacto is to service operations what OpenAPI is to HTTP APIs.',
+  thesis:
+    'Pacto is to agents what Internal Developer Platforms are to humans. That is the direction, and a good part of it is still an open draft.',
   problem:
-    'A service’s operational contract — what it needs, what it promises, how it scales, how it fails — is folklore. It lives in runbooks, Helm values and the heads of the people who were on call last quarter, and it drifts away from the artifact the moment either one changes.',
+    'What a service needs to run, and what it promises back, is rarely written down anywhere a machine can read it. It lives in Helm values and in whoever was on call last quarter, and it goes stale as soon as the code or the cluster moves. Ask what a change will break and someone has to go and find out.',
   approach:
-    'Describe the contract once, ship it next to the image in the same OCI registry, and make the platform verify running workloads against it. Deployment stops being a pile of YAML and becomes an assertion the cluster can check.',
+    'Write the contract once and push it to the same OCI registry as the image. The operator checks running workloads against it and reports what has drifted. I have a draft PR open that would take this a layer up, into a graph over services, contract revisions and deployed targets, so you can ask what a change reaches before it ships. That part is not merged yet.',
 } as const;
 
 /**
@@ -66,25 +67,22 @@ export const SELECTED_SYSTEM_URLS = [
   'https://github.com/TrianaLab/remake',
 ] as const;
 
-/** Employers whose entries carry the most weight on the home page. */
-export const HEADLINE_EMPLOYER_URL = 'https://emergence.ai';
-
 /**
  * Editorial "how I work" statements. These are opinions about practice, not
  * résumé facts, so they belong here rather than in the canonical document.
  */
 export const PRINCIPLES: { title: string; body: string }[] = [
   {
-    title: 'Contracts over conventions',
-    body: 'A golden path that is only documented is a suggestion. Encode it so the platform can check it, and the interface becomes the guardrail.',
+    title: 'Rules a machine can check',
+    body: 'Conventions that only live in a README go stale and nobody notices for a while. That is most of what Pacto is about: the check fails instead of a reviewer catching it.',
   },
   {
-    title: 'Operational knowledge belongs in tooling',
-    body: 'Anything a senior engineer has to remember at 3am is a defect in the interface. Push it into the CLI, the operator, the admission check.',
+    title: 'Nothing important kept in someone’s head',
+    body: 'If I had to remember a specific trick to get a deploy through, it goes into the CLI or the operator afterwards.',
   },
   {
-    title: 'Boring where it counts',
-    body: 'Interesting infrastructure pages you. I spend novelty budget on the developer interface and keep everything underneath dull and observable.',
+    title: 'Boring underneath',
+    body: 'The unusual part should be the thing engineers type into. Below that I would rather run stock components other people have already debugged.',
   },
 ];
 
@@ -98,7 +96,5 @@ export const TERMINAL_SUGGESTIONS: { command: string; hint: string }[] = [
 
 export const SEO = {
   /** Runtime <title>: {name} and {role} are filled from the canonical résumé. */
-  titleTemplate: '{name} — {role}',
-  tagline:
-    'Platform engineer building contract-driven deployment systems for cloud-native infrastructure.',
+  titleTemplate: '{name} · {role}',
 } as const;

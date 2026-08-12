@@ -10,14 +10,23 @@ export function byUrl<T extends { url?: string }>(items: T[] | undefined, url: s
   return (items ?? []).find((item) => item.url === url);
 }
 
-/** The most recent role, used for the hero title and the document title. */
+/** The most recent role. Used for `worksFor`, not for the headline. */
 export function currentRole(resume: Resume | null): Work | null {
   return resume?.work?.[0] ?? null;
 }
 
+/**
+ * The headline title is `basics.label`, not the current job title: the
+ * standing professional identity outlives any one employer, and the most
+ * recent position is already visible in the experience timeline.
+ */
+export function headlineTitle(resume: Resume | null): string | undefined {
+  return resume?.basics?.label ?? currentRole(resume)?.position ?? undefined;
+}
+
 export function pageTitle(resume: Resume | null, fallback: string): string {
   const name = resume?.basics?.name;
-  const role = currentRole(resume)?.position ?? resume?.basics?.label;
+  const role = headlineTitle(resume);
   if (!name) return fallback;
   if (!role) return name;
   return SEO.titleTemplate.replace('{name}', name).replace('{role}', role);
@@ -97,7 +106,7 @@ export function personJsonLd(resume: Resume | null): string | null {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: basics.name,
-    jobTitle: currentRole(resume)?.position ?? basics.label,
+    jobTitle: headlineTitle(resume),
     description: basics.summary,
     email: basics.email ? `mailto:${basics.email}` : undefined,
     url: basics.url,
