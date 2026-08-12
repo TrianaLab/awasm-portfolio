@@ -43,10 +43,13 @@
     });
   });
 
+  // Sized from the desktop only. The viewport is taller than the desktop by
+  // the header and the terminal chrome, so falling back to it would maximize
+  // to a height the desktop then clips.
   function maximize() {
-    const w = desktopEl?.clientWidth ?? window.innerWidth;
-    const h = desktopEl?.clientHeight ?? window.innerHeight;
-    manager.toggleMaximize(win.id, w, h);
+    const desk = desktopRect();
+    if (!desk) return;
+    manager.toggleMaximize(win.id, desk.w, desk.h);
   }
 
   // ─── Drag from the chrome bar ───────────────────────────────────────

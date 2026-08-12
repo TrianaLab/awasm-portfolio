@@ -3,6 +3,9 @@
   import Section from './Section.svelte';
   import TimelineEntry from './TimelineEntry.svelte';
   import SkillCloud from './SkillCloud.svelte';
+  import DownloadButton from './DownloadButton.svelte';
+  import ExternalLink from './ExternalLink.svelte';
+  import { CTA } from '../lib/portfolio';
 
   let { resume }: { resume: Resume } = $props();
 
@@ -30,15 +33,15 @@
 
 <div class="resume">
   <header class="hero">
-    {#if basics.image}<img class="avatar" src={basics.image} alt={basics.name ?? 'avatar'} />{/if}
+    {#if basics.image}<img class="avatar" src={basics.image} alt="" />{/if}
     <div class="hero-text">
+      <p class="kicker mono">Résumé</p>
       <h1 class="hero-name">{basics.name ?? 'Unnamed'}</h1>
       {#if basics.label}<p class="hero-label">{basics.label}</p>{/if}
       {#if basics.summary}<p class="hero-summary">{basics.summary}</p>{/if}
       <ul class="hero-meta">
         {#if basics.location?.city}
           <li>
-            <span class="meta-icon" aria-hidden="true">📍</span>
             {basics.location.city}{basics.location.region ? `, ${basics.location.region}` : ''}
           </li>
         {/if}
@@ -46,18 +49,22 @@
           <li><a href="mailto:{basics.email}">{basics.email}</a></li>
         {/if}
         {#if basics.url}
-          <li><a href={basics.url} target="_blank" rel="noreferrer">{basics.url.replace(/^https?:\/\//, '')}</a></li>
+          <li><a href={basics.url}>{basics.url.replace(/^https?:\/\//, '')}</a></li>
         {/if}
+        {#each basics.profiles ?? [] as p (p.network)}
+          {#if p.url}
+            <li><ExternalLink href={p.url}>{p.network}</ExternalLink></li>
+          {/if}
+        {/each}
       </ul>
-      {#if basics.profiles && basics.profiles.length > 0}
-        <ul class="profiles">
-          {#each basics.profiles as p, i (i)}
-            <li>
-              <a href={p.url} target="_blank" rel="noreferrer">{p.network}</a>
-            </li>
-          {/each}
-        </ul>
-      {/if}
+      <div class="hero-actions">
+        <DownloadButton label={CTA.resume.label} primary />
+        <a class="btn" href="#/">Back to overview</a>
+      </div>
+      <p class="hero-note">
+        Generated in the browser when you click, from the same JSON Resume document this page
+        renders. Vector text and no images, so applicant tracking systems can parse it.
+      </p>
     </div>
   </header>
 
@@ -77,6 +84,22 @@
     </Section>
   {/if}
 
+  {#if resume.volunteer && resume.volunteer.length > 0}
+    <Section title="Open source & volunteering">
+      {#each resume.volunteer as v, i (i)}
+        <TimelineEntry
+          title={v.organization}
+          subtitle={v.position}
+          startDate={v.startDate}
+          endDate={v.endDate}
+          url={v.url}
+          summary={v.summary}
+          highlights={v.highlights}
+        />
+      {/each}
+    </Section>
+  {/if}
+
   {#if resume.education && resume.education.length > 0}
     <Section title="Education">
       {#each resume.education as e, i (i)}
@@ -88,22 +111,7 @@
           url={e.url}
           summary={e.score}
           highlights={e.courses}
-        />
-      {/each}
-    </Section>
-  {/if}
-
-  {#if resume.volunteer && resume.volunteer.length > 0}
-    <Section title="Open source & volunteering">
-      {#each resume.volunteer as v, i (i)}
-        <TimelineEntry
-          title={v.position}
-          subtitle={v.organization}
-          startDate={v.startDate}
-          endDate={v.endDate}
-          url={v.url}
-          summary={v.summary}
-          highlights={v.highlights}
+          highlightsLabel="Coursework"
         />
       {/each}
     </Section>
@@ -127,12 +135,7 @@
   {#if resume.certificates && resume.certificates.length > 0}
     <Section title="Certificates">
       {#each resume.certificates as c, i (i)}
-        <TimelineEntry
-          title={c.name}
-          subtitle={c.issuer}
-          startDate={c.date}
-          url={c.url}
-        />
+        <TimelineEntry title={c.name} subtitle={c.issuer} startDate={c.date} url={c.url} point />
       {/each}
     </Section>
   {/if}
@@ -140,12 +143,7 @@
   {#if resume.awards && resume.awards.length > 0}
     <Section title="Awards">
       {#each resume.awards as a, i (i)}
-        <TimelineEntry
-          title={a.title}
-          subtitle={a.awarder}
-          startDate={a.date}
-          summary={a.summary}
-        />
+        <TimelineEntry title={a.title} subtitle={a.awarder} startDate={a.date} summary={a.summary} point />
       {/each}
     </Section>
   {/if}
@@ -159,6 +157,7 @@
           startDate={p.releaseDate}
           url={p.url}
           summary={p.summary}
+          point
         />
       {/each}
     </Section>
@@ -185,17 +184,16 @@
 
 <style>
   .resume {
-    flex: 1;
-    max-width: 920px;
+    width: 100%;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 0 1rem;
-    overflow-y: auto;
+    padding: clamp(2rem, 5vw, 3.5rem) var(--page-pad) 4rem;
   }
 
   .hero {
     display: flex;
     gap: 1.5rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid var(--color-border);
   }
@@ -210,43 +208,53 @@
 
   .hero-text {
     flex: 1;
+    min-width: 0;
+  }
+  .kicker {
+    margin: 0 0 0.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
   }
   .hero-name {
-    font-size: 2rem;
-    margin: 0 0 0.25rem 0;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    letter-spacing: -0.02em;
+    margin: 0 0 0.2rem 0;
     color: var(--color-text);
   }
   .hero-label {
     font-size: 1.1rem;
     color: var(--color-accent);
     margin: 0 0 1rem 0;
-    font-weight: 500;
+    font-weight: 550;
   }
   .hero-summary {
-    margin: 0 0 1rem 0;
+    margin: 0 0 1.25rem 0;
+    max-width: 68ch;
     color: var(--color-text);
     line-height: 1.65;
   }
-  .hero-meta,
-  .profiles {
+  .hero-meta {
     list-style: none;
-    margin: 0;
+    margin: 0 0 1.5rem;
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
-    font-size: 0.9rem;
-  }
-  .hero-meta li,
-  .profiles li {
+    gap: 0.5rem 1.25rem;
+    font-size: 0.88rem;
     color: var(--color-text-muted);
   }
-  .meta-icon {
-    margin-right: 0.25rem;
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
   }
-  .profiles {
-    margin-top: 0.5rem;
-    font-family: var(--font-mono);
+  .hero-note {
+    margin: 1rem 0 0;
+    max-width: 60ch;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
   }
 
   @media (max-width: 640px) {
@@ -257,9 +265,6 @@
     .avatar {
       width: 72px;
       height: 72px;
-    }
-    .hero-name {
-      font-size: 1.5rem;
     }
   }
 </style>

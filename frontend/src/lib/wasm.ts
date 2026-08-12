@@ -21,6 +21,9 @@ function spawnWorker(): Promise<Worker> {
       if (event.data?.type === 'ready') {
         worker.removeEventListener('message', ready);
         resolve(worker);
+      } else if (event.data?.type === 'boot-error') {
+        worker.removeEventListener('message', ready);
+        reject(new Error(event.data.error ?? 'the WebAssembly engine failed to start'));
       }
     };
     worker.addEventListener('message', ready);
@@ -73,11 +76,18 @@ export async function completeLine(line: string): Promise<string[]> {
 }
 
 /**
+ * The single command that produces the canonical JSON Resume document. The
+ * web résumé, the home page, the PDF and the ATS output all go through it, so
+ * there is exactly one source of résumé facts.
+ */
+export const RESUME_QUERY = 'kubectl get resume main-resume -o json';
+
+/**
  * Fetches the resume.json by running the same kubectl-style command the
  * user would type in the terminal, then parses the wrapping array.
  */
 export async function fetchResume(): Promise<Resume> {
-  const raw = await runCommand('kubectl get resume main-resume -o json');
+  const raw = await runCommand(RESUME_QUERY);
   const parsed = JSON.parse(raw) as Resume[] | Resume;
   return Array.isArray(parsed) ? parsed[0] : parsed;
 }

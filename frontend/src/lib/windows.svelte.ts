@@ -66,6 +66,7 @@ export interface WindowManager {
   move(id: string, x: number, y: number): void;
   resize(id: string, w: number, h: number): void;
   toggleMaximize(id: string, desktopW: number, desktopH: number): void;
+  clampToDesktop(desktopW: number, desktopH: number): void;
   isMaximized(id: string): boolean;
   updateSnapHint(pointerX: number, pointerY: number, desktopW: number, desktopH: number): void;
   clearSnapHint(): void;
@@ -177,6 +178,24 @@ export function createWindowManager(): WindowManager {
     win.h = Math.max(MIN_H, desktopH);
   }
 
+  // Pulls every window back inside the desktop, shrinking it only as far as
+  // the CSS minimums allow. Windows already within bounds are left byte-for-
+  // byte alone, so running this on every desktop resize never disturbs an
+  // arrangement the user made.
+  function clampToDesktop(desktopW: number, desktopH: number) {
+    if (desktopW < 1 || desktopH < 1) return;
+    for (const win of windows) {
+      const w = Math.min(win.w, Math.max(MIN_W, desktopW));
+      const h = Math.min(win.h, Math.max(MIN_H, desktopH));
+      const x = Math.min(Math.max(0, win.x), Math.max(0, desktopW - w));
+      const y = Math.min(Math.max(0, win.y), Math.max(0, desktopH - h));
+      if (win.w !== w) win.w = w;
+      if (win.h !== h) win.h = h;
+      if (win.x !== x) win.x = x;
+      if (win.y !== y) win.y = y;
+    }
+  }
+
   function isMaximized(id: string): boolean {
     const win = find(id);
     return !!win?.previousGeometry;
@@ -241,6 +260,7 @@ export function createWindowManager(): WindowManager {
     move,
     resize,
     toggleMaximize,
+    clampToDesktop,
     isMaximized,
     updateSnapHint,
     clearSnapHint,

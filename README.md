@@ -7,7 +7,7 @@
 [![GitHub Release](https://img.shields.io/github/v/release/TrianaLab/awasm-portfolio)](https://github.com/TrianaLab/awasm-portfolio/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-AWASM Portfolio is a WebAssembly-powered application that emulates a console, letting visitors interact with the developer's resume using `kubectl`-style commands. The data layer follows the [JSON Resume Schema](https://jsonresume.org/schema). The whole thing runs client-side: Go compiled to WASM in a Web Worker for the command engine, Svelte 5 for the UI, pdfmake for runtime PDF generation.
+AWASM Portfolio is a WebAssembly-powered engineering portfolio. The landing page reads as a normal portfolio; behind `#/terminal` the same content is served by a `kubectl`-style console, so visitors can query the resume as if it were a cluster. The data layer follows the [JSON Resume Schema](https://jsonresume.org/schema). The whole thing runs client-side: Go compiled to WASM in a Web Worker for the command engine, Svelte 5 for the UI, pdfmake for runtime PDF generation.
 
 Try it live at [edudiaz.dev](https://edudiaz.dev) :globe_with_meridians:.
 
@@ -17,8 +17,9 @@ Try it live at [edudiaz.dev](https://edudiaz.dev) :globe_with_meridians:.
 flowchart LR
     subgraph SPA [Svelte 5 SPA · main thread]
         direction TB
-        Term(Terminal · xterm.js)
-        Resume(Resume view · Svelte)
+        Home(Portfolio · home route)
+        Resume(Resume view · resume route)
+        Term(Terminal · terminal route · xterm.js)
         PDF(Download PDF · pdfmake)
     end
 
@@ -31,14 +32,16 @@ flowchart LR
         Exec --> Wasm
     end
 
-    Term --> Bridge
+    Home --> Bridge
     Resume --> Bridge
+    Term --> Bridge
     PDF --> Bridge
     Bridge -- postMessage --> Worker
 ```
 
 - **Go side** (`cmd/`, `internal/`): the kubectl-style command surface, in-memory repository, output formatters. Compiled to WebAssembly.
-- **Frontend** (`frontend/`): Svelte 5 + Vite + TypeScript SPA. Renders the terminal and the resume view, talks to the Go core through a typed Worker bridge.
+- **Frontend** (`frontend/`): Svelte 5 + Vite + TypeScript SPA. Three hash routes — the portfolio (`#/`, with `#/work`, `#/experience` and `#/about` as in-page anchors), the resume (`#/resume`) and the terminal (`#/terminal`, lazy-loaded) — all fed by the same document through a typed Worker bridge.
+- **Presentation vs. facts**: [`frontend/src/lib/portfolio.ts`](frontend/src/lib/portfolio.ts) holds navigation, featured-project selection and editorial copy; it references resume entries by their canonical `url` and never copies a fact. [`frontend/src/lib/resume-select.ts`](frontend/src/lib/resume-select.ts) combines the two into the view models the components render.
 - **PDF**: when the user clicks the download button, `frontend/src/lib/pdf.ts` maps the same JSON Resume to a pdfmake document and triggers the download. Text in the PDF is vector (selectable / searchable / ATS-parseable).
 
 ## Run it locally :computer:
@@ -72,19 +75,20 @@ cp frontend/.env.example frontend/.env.local
 # then edit frontend/.env.local
 ```
 
-| Variable           | Default                       | Used by                                                            |
-| ------------------ | ----------------------------- | ------------------------------------------------------------------ |
-| `VITE_BRAND`       | `edudiaz`                     | Page `<title>` — rendered as `{VITE_BRAND} - awasm portfolio`      |
-| `VITE_DOMAIN`      | `edudiaz.dev`                 | Brand mark in the topbar (`~/{VITE_DOMAIN}`)                       |
-| `VITE_GITHUB_REPO` | `TrianaLab/awasm-portfolio`   | Topbar repo card (release tag + stars + forks via GitHub REST API) |
+| Variable           | Default                     | Used by                                                                       |
+| ------------------ | --------------------------- | ----------------------------------------------------------------------------- |
+| `VITE_DOMAIN`      | `edudiaz.dev`               | Brand mark in the topbar (`~/{VITE_DOMAIN}`) and the fallback page `<title>`  |
+| `VITE_GITHUB_REPO` | `TrianaLab/awasm-portfolio` | Footer repo card (release tag + stars + forks via GitHub REST API)            |
+
+Once the resume loads, the page `<title>` is rebuilt from `basics.name` and the current role.
 
 The defaults match the upstream demo. Override them at build time:
 
 ```bash
-VITE_BRAND=alice VITE_DOMAIN=alice.dev VITE_GITHUB_REPO=alice/portfolio make ui
+VITE_DOMAIN=alice.dev VITE_GITHUB_REPO=alice/portfolio make ui
 ```
 
-**3. UI** — edit the Svelte components under [`frontend/src/components/`](frontend/src/components/). `make dev` gives you HMR while editing.
+**3. UI** — edit the Svelte components under [`frontend/src/components/`](frontend/src/components/), and the presentation model in [`frontend/src/lib/portfolio.ts`](frontend/src/lib/portfolio.ts) for navigation, the featured project and the suggested terminal commands. `make dev` gives you HMR while editing.
 
 After any change, `make build` regenerates everything end-to-end.
 
@@ -92,9 +96,9 @@ After any change, `make build` regenerates everything end-to-end.
 
 - **Fully client-side** — no backend, no auth, deploys as a static site.
 - **kubectl-style CLI** — `kubectl get`, `describe`, `create`, `delete` against an in-memory resume "cluster".
-- **Modern UI** — Svelte 5 runes, theme-aware, responsive.
+- **Modern UI** — Svelte 5 runes, light/dark themes, responsive, keyboard-accessible, reduced-motion aware.
 - **PDF on the fly** — click the download button to get a vector PDF generated in the browser from the same JSON.
-- **Schema-compliant data** — the JSON shape matches the JSON Resume v1 spec.
+- **Schema-compliant data** — the resume validates against the official [`@jsonresume/schema`](https://www.npmjs.com/package/@jsonresume/schema) package in CI (`frontend/src/lib/resume-schema.test.ts`), so it stays usable with standard JSON Resume tooling and third-party themes.
 - **100% Go coverage**, gocyclo ≤ 15, golangci-lint clean.
 
 ## Contributing :handshake:

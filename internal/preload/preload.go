@@ -95,7 +95,7 @@ func buildBasics(mk func(kind, name string) models.Meta) *types.Basics {
 		Email:    "edudiazasencio@gmail.com",
 		Url:      "https://edudiaz.dev",
 		Phone:    "+34 622287557",
-		Summary:  "Platform Engineer working across cloud-native infrastructure, WebAssembly and systems-level tooling. At Emergence AI I design the engineering operating model and the platform every service deploys through — and that deployment interface is Pacto, the OCI-distributed contract system I also ship as open source through TrianaLab (alongside awasm-portfolio and remake). I contribute upstream across the CNCF landscape (KEDA, Artifact Hub, container2wasm, CloudTTY) and to Docker, Fermyon and Spin.",
+		Summary:  "The work of mine you can actually read is open source. Most of it sits under TrianaLab: Pacto, an OCI-distributed contract system for cloud-native services, plus awasm-portfolio, the site serving this resume, and remake, a small CLI that ships Makefiles as OCI artifacts. My day job is platform engineering at Emergence AI. The rest goes upstream, in docs and fixes for KEDA, Artifact Hub, container2wasm, CloudTTY, Argo CD, Docker and Spin.",
 		Location: types.Location{
 			PostalCode:  "41010",
 			City:        "Sevilla",
@@ -117,7 +117,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			Position:  "Senior Staff Platform Engineer",
 			URL:       "https://emergence.ai",
 			StartDate: "2026-07-01",
-			Summary:   "Set the technical direction of the Emergence AI platform and the engineering operating model behind it — the contract-driven deployment standard, the single golden path and the ownership boundaries every team ships through. Same platform I built as Platform Engineer, now with a broader mandate over how the org designs, deploys and runs services, still anchored on Pacto, the OCI-distributed contract system I also author as open source.",
+			Summary:   "Platform engineering at Emergence AI, on a wider scope than when I joined. Internal work and still in progress, so there is little I can show publicly.",
 		},
 		{
 			Meta:      mk("work", "work-mlops-emergenceai"),
@@ -126,7 +126,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://emergence.ai",
 			StartDate: "2024-07-29",
 			EndDate:   "2026-07-01",
-			Summary:   "Own the Emergence AI platform end-to-end. Designed the engineering operating model every team deploys through — contract-driven deployment, a single enforced golden path, clear ownership boundaries — and built the platform layer behind it: declarative cluster and cloud-resource provisioning, managed secrets, policy enforcement, end-to-end observability and a programmable CI/CD pipeline that runs identically locally and in CI. The deployment interface is Pacto, the OCI-distributed contract system I also author as open source — so the platform I run internally and the project I ship publicly converge on the same artifact.",
+			Summary:   "Platform and infrastructure engineering on the systems Emergence AI runs internally. Nothing public to link here.",
 		},
 		{
 			Meta:      mk("work", "work-prodeng-appian"),
@@ -135,7 +135,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2024-02-01",
 			EndDate:   "2024-07-29",
-			Summary:   "Built the Kubernetes-native platform services product teams shipped on top of, across cloud and self-managed deployments. Owned the data-platform primitives — lifecycle, retention, analytics APIs — that removed recurring toil from downstream services and helped drive Appian's broader migration to a Kubernetes-native architecture.",
+			Summary:   "Built the Kubernetes-native platform services product teams shipped on top of, across cloud and self-managed deployments. Owned the data-platform primitives (lifecycle, retention, analytics APIs) that removed recurring toil from downstream services and helped drive Appian's broader migration to a Kubernetes-native architecture.",
 		},
 		{
 			Meta:      mk("work", "work-ssoleng-appian"),
@@ -144,7 +144,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2023-10-01",
 			EndDate:   "2024-02-01",
-			Summary:   "Resolved the Kubernetes and cloud incidents that escalated past lower tiers — the failures whose root cause spanned observability, networking and automation at once. Translated recurring failure modes into platform-level changes that prevented them at the source rather than re-running the same diagnosis next quarter.",
+			Summary:   "Resolved the Kubernetes and cloud incidents that escalated past lower tiers: the failures whose root cause spanned observability, networking and automation at once. Translated recurring failure modes into platform-level changes that prevented them at the source rather than re-running the same diagnosis next quarter.",
 		},
 		{
 			Meta:      mk("work", "work-soleng-appian"),
@@ -226,7 +226,7 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			Position:     "Author and maintainer",
 			URL:          "https://github.com/TrianaLab/pacto",
 			StartDate:    "2026-03-03",
-			Summary:      "An OCI-distributed contract system for cloud-native services. Pacto pairs a CLI, dashboard and Kubernetes operator so teams describe a service's operational contract once — interfaces, dependencies, runtime semantics, configuration, scaling — then validate, diff, distribute it via OCI registries and verify alignment against running workloads. Explores what testing-in-production for infrastructure should look like when contracts travel with the artifact instead of living in a separate repo.",
+			Summary:      "An OCI-distributed contract system for cloud-native services, built from a CLI, a dashboard and a Kubernetes operator. A team writes a service's operational contract once, then validates and diffs it, distributes it through OCI registries and checks running workloads against it. Current work extends those separate contracts into a versioned operational graph.",
 		},
 		{
 			Meta:         mk("volunteer", "volunteer-remake"),
@@ -234,7 +234,7 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			Position:     "Author and maintainer",
 			URL:          "https://github.com/TrianaLab/remake",
 			StartDate:    "2025-05-23",
-			Summary:      "A lightweight CLI that packages and shares Makefiles as OCI artifacts — bringing the same versioning and distribution model OCI gave containers to the build-system glue that lives alongside them.",
+			Summary:      "A lightweight CLI that packages and shares Makefiles as OCI artifacts, bringing the same versioning and distribution model OCI gave containers to the build-system glue that lives alongside them.",
 		},
 		{
 			Meta:         mk("volunteer", "volunteer-trianalab-awasmportfolio"),

@@ -3,7 +3,8 @@ import { test, expect } from '@playwright/test';
 // Cross-cutting helpers ─ all tab-completion specs hit the same first
 // terminal and need a focused helper textarea to send keystrokes into.
 async function bootTerminal(page: import('@playwright/test').Page) {
-  await page.goto('/');
+  // The terminal lives behind its own route now.
+  await page.goto('/#/terminal');
   await expect(page.locator('.xterm')).toContainText('Welcome', { timeout: 10_000 });
   const helper = page.locator('.xterm-helper-textarea').first();
   await helper.focus();

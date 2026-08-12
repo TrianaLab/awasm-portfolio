@@ -18,6 +18,7 @@
     "pdfmake": "^0.3.8"
   },
   "devDependencies": {
+    "@jsonresume/schema": "^1.3.1",
     "@playwright/test": "^1.60.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tsconfig/svelte": "^5.0.4",
