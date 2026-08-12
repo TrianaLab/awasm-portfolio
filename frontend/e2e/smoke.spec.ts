@@ -58,6 +58,23 @@ test.describe('portfolio', () => {
   // The prose was rewritten to drop the em dash; it is the tell the author
   // asked to keep out of the copy, so both the editorial strings and the
   // canonical résumé document are checked against it.
+  // The repo URL is résumé data; the project site is presentation config. A
+  // visitor who wants to try the thing should not have to read Go to find it.
+  test('featured project links to both the project site and the repository', async ({ page }) => {
+    await page.goto('/');
+    const featured = page.locator('.featured');
+    await expect(featured).toBeVisible({ timeout: 10_000 });
+
+    await expect(featured.getByRole('link', { name: /Visit the Pacto website/ })).toHaveAttribute(
+      'href',
+      'https://pacto.run',
+    );
+    await expect(featured.getByRole('link', { name: /View the GitHub repository/ })).toHaveAttribute(
+      'href',
+      'https://github.com/TrianaLab/pacto',
+    );
+  });
+
   test('rendered copy carries no em dashes', async ({ page }) => {
     for (const route of ['/', '/#/resume']) {
       await page.goto(route);
@@ -91,10 +108,13 @@ test.describe('portfolio', () => {
     await page.goto('/#/resume');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
 
+    const hashBefore = await page.evaluate(() => location.hash);
+
     await page.keyboard.press('Tab');
     await expect(page.getByRole('link', { name: 'Skip to main content' })).toBeFocused();
     await page.keyboard.press('Enter');
 
+    expect(await page.evaluate(() => location.hash)).toBe(hashBefore);
     expect(await page.evaluate(() => document.documentElement.dataset.view)).toBe('resume');
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('main');
   });
@@ -308,6 +328,87 @@ test.describe('terminal', () => {
     // The view is a terminal, so the h1 is screen-reader only — but without it
     // the document has no level-1 heading and its outline starts at 2.
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  });
+
+  // The lazy chunk can resolve after the user has navigated away, so the pane
+  // mounts under `.terminal-layer[hidden]`, where the desktop has no box at
+  // all. Geometry guessed at that moment (zeroes, or the whole viewport, which
+  // is taller than the desktop by the header and the terminal chrome) leaves
+  // the window hanging below the desktop, clipped by its overflow: hidden.
+  test('a pane that mounts while hidden still opens inside the desktop', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    let release: () => void = () => {};
+    const held = new Promise<void>((resolve) => (release = resolve));
+    await page.route('**/assets/TerminalPane-*.js', async (route) => {
+      await held;
+      await route.continue();
+    });
+
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'pacto' })).toBeVisible({ timeout: 10_000 });
+
+    // Ask for the terminal, then leave before the chunk can resolve.
+    await nav(page, 'Terminal').click();
+    await expect(page.locator('.terminal-layer')).toBeVisible();
+    await expect(page.locator('.desktop')).toHaveCount(0);
+    await nav(page, 'Work').click();
+    await expect(page.locator('.terminal-layer')).toBeHidden();
+
+    // Let it mount, hidden, with nothing to measure.
+    release();
+    await expect(page.locator('.desktop')).toHaveCount(1);
+    await expect(page.locator('.desktop')).toBeHidden();
+    await page.waitForTimeout(500);
+
+    await nav(page, 'Terminal').click();
+    await terminalReady(page);
+
+    const win = page.locator('[role="dialog"]').first();
+    await expect(win).toBeVisible();
+    const box = (await settledBox(win))!;
+    const desktop = (await page.locator('.desktop').boundingBox())!;
+
+    expect(box.x, 'window starts left of the desktop').toBeGreaterThanOrEqual(desktop.x - 1);
+    expect(box.y, 'window starts above the desktop').toBeGreaterThanOrEqual(desktop.y - 1);
+    expect(box.x + box.width, 'window runs past the right of the desktop').toBeLessThanOrEqual(
+      desktop.x + desktop.width + 1,
+    );
+    expect(box.y + box.height, 'window hangs below the desktop').toBeLessThanOrEqual(
+      desktop.y + desktop.height + 1,
+    );
+
+    // Still a working terminal, not just a correctly placed rectangle.
+    await page.locator('.xterm-helper-textarea').first().focus();
+    await page.keyboard.type('kubectl get namespace');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.xterm').first()).toContainText('default', { timeout: 10_000 });
+  });
+
+  test('skip link preserves the terminal view and everything running in it', async ({ page }) => {
+    await page.goto(TERMINAL);
+    await terminalReady(page);
+
+    // Observable state to lose: a second window, and output in the first.
+    await page.getByRole('button', { name: 'New terminal' }).click();
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+    await page.locator('.xterm-helper-textarea').first().focus();
+    await page.keyboard.type('kubectl get namespace');
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.xterm').first()).toContainText('default', { timeout: 10_000 });
+
+    const hashBefore = await page.evaluate(() => location.hash);
+
+    // The terminal holds focus here, so the skip link is not the first tab
+    // stop the way it is on a document view; reach it directly.
+    await page.getByRole('link', { name: 'Skip to main content' }).focus();
+    await page.keyboard.press('Enter');
+
+    expect(await page.evaluate(() => location.hash)).toBe(hashBefore);
+    expect(await page.evaluate(() => document.documentElement.dataset.view)).toBe('terminal');
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('main');
+    await expect(page.locator('[role="dialog"]')).toHaveCount(2);
+    await expect(page.locator('.xterm').first()).toContainText('default');
   });
 
   test('window is not clipped at 200% zoom', async ({ page }) => {

@@ -49,6 +49,10 @@ export const CTA = {
  */
 export const FEATURED = {
   url: 'https://github.com/TrianaLab/pacto',
+  // Presentation, not résumé data: JSON Resume has one `url` per entry and
+  // that one is the repository. The project site belongs here instead of as a
+  // proprietary field in the canonical document.
+  website: 'https://pacto.run',
   eyebrow: 'Featured work',
   thesis:
     'Pacto is to agents what Internal Developer Platforms are to humans. That is the direction, and a good part of it is still an open draft.',

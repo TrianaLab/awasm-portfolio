@@ -1,35 +1,57 @@
 <script lang="ts">
-  import { onMount, tick } from 'svelte';
+  import { onMount } from 'svelte';
   import Window from './Window.svelte';
   import Terminal from './Terminal.svelte';
   import { createWindowManager } from '../lib/windows.svelte';
 
   const manager = createWindowManager();
   let desktopEl = $state<HTMLDivElement | null>(null);
+  // Last real measurement, so the "New terminal" button has something to size
+  // against between resizes.
+  let lastSize: { w: number; h: number } | null = null;
+  let openedFirst = false;
 
-  // `||`, not `??`: a pane that mounts while its layer is still `hidden`
-  // measures 0, and zeroes would open the first window at phone size in the
-  // top-left corner for the rest of the session.
-  function desktopSize(): { w: number; h: number } {
-    return {
-      w: desktopEl?.clientWidth || window.innerWidth,
-      h: desktopEl?.clientHeight || window.innerHeight,
-    };
+  /**
+   * The desktop's own box, or null while it has none. Window geometry has to
+   * come from this element and never from the viewport: the viewport is taller
+   * by the site header and the terminal chrome, so a window sized against
+   * `innerHeight` hangs below the desktop and is cut off by its overflow.
+   * The pane mounts hidden whenever its lazy chunk resolves after the user has
+   * navigated away, and a hidden element has no box to measure at all.
+   */
+  function measure(): { w: number; h: number } | null {
+    const w = desktopEl?.clientWidth ?? 0;
+    const h = desktopEl?.clientHeight ?? 0;
+    if (w < 1 || h < 1) return null;
+    lastSize = { w, h };
+    return lastSize;
   }
 
-  onMount(async () => {
-    // Wait one tick so the desktop element is actually sized before we
-    // measure it — otherwise the first window opens against zeroes.
-    await tick();
-    if (manager.windows.length === 0) {
-      const { w, h } = desktopSize();
-      manager.open('kubectl', w, h);
-    }
+  onMount(() => {
+    // An observer rather than a measurement at mount time: when the pane
+    // mounts hidden there is nothing to measure yet, and the first window has
+    // to wait for the layer to be shown instead of guessing.
+    const observer = new ResizeObserver(() => {
+      const previous = lastSize;
+      const size = measure();
+      if (!size) return;
+      if (!openedFirst) {
+        openedFirst = true;
+        manager.open('kubectl', size.w, size.h);
+      } else if (!previous || previous.w !== size.w || previous.h !== size.h) {
+        manager.clampToDesktop(size.w, size.h);
+      }
+    });
+    if (desktopEl) observer.observe(desktopEl);
+    return () => observer.disconnect();
   });
 
   function openTerminal() {
-    const { w, h } = desktopSize();
-    manager.open(`kubectl #${manager.windows.length + 1}`, w, h);
+    const size = measure() ?? lastSize;
+    // Off screen: the observer opens the first window once there is a desktop
+    // to place it on.
+    if (!size) return;
+    manager.open(`kubectl #${manager.windows.length + 1}`, size.w, size.h);
   }
 
   export function open() {

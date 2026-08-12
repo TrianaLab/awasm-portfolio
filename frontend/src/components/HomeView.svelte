@@ -85,13 +85,16 @@
         <div><dt>Licence</dt><dd>Open source</dd></div>
       </dl>
 
-      {#if featured.url}
-        <p class="featured-links tap-links">
+      <p class="featured-links tap-links">
+        <ExternalLink href={FEATURED.website} context="{shortOrgName(featured.organization)} project website">
+          Visit the Pacto website
+        </ExternalLink>
+        {#if featured.url}
           <ExternalLink href={featured.url} context="{shortOrgName(featured.organization)} on GitHub">
-            View the repository
+            View the GitHub repository
           </ExternalLink>
-        </p>
-      {/if}
+        {/if}
+      </p>
     </article>
   {/if}
 
@@ -330,6 +333,10 @@
     font-weight: 550;
   }
   .featured-links {
+    display: flex;
+    flex-wrap: wrap;
+    /* Row gap clears the .tap-links hit boxes when these wrap on a phone. */
+    gap: 0.6rem 1.5rem;
     margin: 1.25rem 0 0;
   }
 
