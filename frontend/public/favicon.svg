@@ -1,5 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="6" fill="#0d1117"/>
-  <path d="M7 11l4 5-4 5" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="14" y1="22" x2="24" y2="22" stroke="#58a6ff" stroke-width="2.5" stroke-linecap="round"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#58a6ff"/>
+  <g fill="none" stroke="#0d1117" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M8 10.5 4 16l4 5.5"/>
+    <path d="M24 10.5 28 16l-4 5.5"/>
+  </g>
+  <!-- lowercase e, Roboto Medium outline (Apache-2.0), vendored via pdfmake -->
+  <path fill="#0d1117" transform="translate(9.541 22.268) scale(0.011586 -0.011586)"
+        d="M601 -20Q481 -20 384.5 19.5Q288 59 220.5 130.0Q153 201 117.0 297.0Q81 393 81 504V544Q81 671 118.0 774.0Q155 877 221.0 950.5Q287 1024 377.0 1063.0Q467 1102 572 1102Q688 1102 775.0 1063.0Q862 1024 919.5 953.5Q977 883 1005.5 786.0Q1034 689 1034 572V469H198V642H796V661Q794 726 770.5 783.0Q747 840 699.0 875.0Q651 910 571 910Q511 910 464.5 884.5Q418 859 387.0 811.0Q356 763 339.5 695.5Q323 628 323 544V504Q323 433 342.5 372.5Q362 312 400.0 267.0Q438 222 492.0 196.5Q546 171 615 171Q702 171 770.0 206.0Q838 241 888 305L1015 182Q980 131 924.0 84.5Q868 38 787.5 9.0Q707 -20 601 -20Z"/>
 </svg>
