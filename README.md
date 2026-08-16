@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/TrianaLab/awasm-portfolio/actions/workflows/ci.yml/badge.svg)](https://github.com/TrianaLab/awasm-portfolio/actions/workflows/ci.yml)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/TrianaLab/awasm-portfolio)](https://pkg.go.dev/github.com/TrianaLab/awasm-portfolio)
-[![Go Report Card](https://goreportcard.com/badge/github.com/TrianaLab/awasm-portfolio)](https://goreportcard.com/report/github.com/TrianaLab/awasm-portfolio)
 [![codecov](https://codecov.io/github/TrianaLab/awasm-portfolio/graph/badge.svg)](https://codecov.io/github/TrianaLab/awasm-portfolio)
 [![GitHub Release](https://img.shields.io/github/v/release/TrianaLab/awasm-portfolio)](https://github.com/TrianaLab/awasm-portfolio/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)

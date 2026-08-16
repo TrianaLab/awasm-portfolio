@@ -135,7 +135,7 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			URL:       "https://appian.com",
 			StartDate: "2024-02-01",
 			EndDate:   "2024-07-29",
-			Summary:   "Built the Kubernetes-native platform services product teams shipped on top of, across cloud and self-managed deployments. Owned the data-platform primitives (lifecycle, retention, analytics APIs) that removed recurring toil from downstream services and helped drive Appian's broader migration to a Kubernetes-native architecture.",
+			Summary:   "Worked on the Kubernetes team building services that supported elastic scale and let product teams ship frequent, reliable, high-impact changes. Focused on reducing the friction and toil around data in new product services and features (lifecycle management, retention, analytics, easy-to-use APIs) as part of making Appian more Kubernetes-native across cloud and self-managed deployments.",
 		},
 		{
 			Meta:      mk("work", "work-ssoleng-appian"),
