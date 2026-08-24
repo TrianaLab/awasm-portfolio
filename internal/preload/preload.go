@@ -210,7 +210,7 @@ func buildEducation(mk func(kind, name string) models.Meta) []types.Education {
 		{
 			Meta:        mk("education", "education-gitt-us"),
 			Institution: "Universidad de Sevilla",
-			URL:         "https://etsi.us.es/en/studies-and-qualifications/degrees/degree-in-telecommunications-technology-engineering",
+			URL:         "https://etsi.us.es/en/studies-and-qualifications/degrees/degree-in-telecommunications-engineering",
 			Area:        "Telecommunications",
 			StudyType:   "B.Eng",
 			StartDate:   "2016-09-01",
