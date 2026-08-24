@@ -95,6 +95,14 @@ export function formatYear(date?: string): string {
   return Number.isNaN(parsed.getTime()) ? date : String(parsed.getUTCFullYear());
 }
 
+/** "2026-01-01" → "Jan 2026". Needed wherever two spans share a year. */
+export function formatMonthYear(date?: string): string {
+  if (!date) return '';
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return date;
+  return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
 /**
  * schema.org Person built from the canonical document — structured data with
  * no second copy of the facts living in markup.

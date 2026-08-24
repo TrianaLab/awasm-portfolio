@@ -76,7 +76,7 @@ test.describe('portfolio', () => {
   });
 
   test('rendered copy carries no em dashes', async ({ page }) => {
-    for (const route of ['/', '/#/resume']) {
+    for (const route of ['/', '/#/education']) {
       await page.goto(route);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
       const text = (await page.locator('body').innerText()) ?? '';
@@ -85,7 +85,7 @@ test.describe('portfolio', () => {
   });
 
   test('hash routes are linkable, reloadable and survive back/forward', async ({ page }) => {
-    await page.goto('/#/resume');
+    await page.goto('/#/education');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
     await expect(page.locator('body')).toContainText('Experience');
 
@@ -105,8 +105,8 @@ test.describe('portfolio', () => {
   // bypass mechanism keyboard users are guaranteed to hit would eject them
   // from the view they were skipping into.
   test('skip link moves focus into main without changing the route', async ({ page }) => {
-    await page.goto('/#/resume');
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
+    await page.goto(TERMINAL);
+    await terminalReady(page);
 
     const hashBefore = await page.evaluate(() => location.hash);
 
@@ -115,7 +115,7 @@ test.describe('portfolio', () => {
     await page.keyboard.press('Enter');
 
     expect(await page.evaluate(() => location.hash)).toBe(hashBefore);
-    expect(await page.evaluate(() => document.documentElement.dataset.view)).toBe('resume');
+    expect(await page.evaluate(() => document.documentElement.dataset.view)).toBe('terminal');
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('main');
   });
 
@@ -236,14 +236,14 @@ test.describe('portfolio', () => {
     const box = await toggle.boundingBox();
     expect(box!.height, 'menu button must be a comfortable touch target').toBeGreaterThanOrEqual(44);
 
-    await expect(nav(page, 'Résumé')).toBeHidden();
+    await expect(nav(page, 'Education')).toBeHidden();
     await expect(toggle).toHaveAttribute('aria-expanded', 'false');
     await toggle.click();
     await expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    await expect(nav(page, 'Résumé')).toBeVisible();
+    await expect(nav(page, 'Education')).toBeVisible();
 
-    await nav(page, 'Résumé').click();
-    await expect(nav(page, 'Résumé')).toBeHidden();
+    await nav(page, 'Education').click();
+    await expect(nav(page, 'Education')).toBeHidden();
     await expect(page.locator('body')).toContainText('Experience', { timeout: 10_000 });
   });
 
@@ -258,7 +258,7 @@ test.describe('portfolio', () => {
   });
 
   test('education section renders course names as text, not [object Object]', async ({ page }) => {
-    await page.goto('/#/resume');
+    await page.goto('/#/education');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 10_000 });
 
     // Secondary detail is collapsed on the page; open it before reading text.
@@ -440,7 +440,7 @@ test.describe('terminal', () => {
     await page.waitForTimeout(400);
     await expect(page.locator('.xterm').first()).toContainText('default');
 
-    await nav(page, 'Résumé').click();
+    await nav(page, 'Education').click();
     await page.waitForTimeout(300);
     await nav(page, 'Terminal').click();
     await page.waitForTimeout(300);
@@ -453,7 +453,7 @@ test.describe('terminal', () => {
     await page.goto(TERMINAL);
     await terminalReady(page);
 
-    await nav(page, 'Résumé').click();
+    await nav(page, 'Education').click();
     await expect(page.locator('.terminal-layer')).toBeHidden();
     // display:none takes it out of the tab order and the a11y tree, so the
     // résumé and the terminal are never simultaneously interactive.
@@ -762,7 +762,7 @@ test.describe('terminal', () => {
     await terminalReady(page);
 
     // Snapshot the preloaded resume content first.
-    await nav(page, 'Résumé').click();
+    await nav(page, 'Education').click();
     await expect(page.locator('body')).toContainText('Eduardo', { timeout: 10_000 });
 
     // Mutate via the terminal: delete + recreate the resume.
@@ -778,7 +778,7 @@ test.describe('terminal', () => {
 
     // Switch back to the resume view; refreshResume must refetch and the
     // recreated (empty) resume should render — no Experience section.
-    await nav(page, 'Résumé').click();
+    await nav(page, 'Education').click();
     await page.waitForTimeout(500);
     const body = await page.locator('main').innerText();
     expect(body, 'after recreate the resume should be empty — no Experience section').not.toContain(

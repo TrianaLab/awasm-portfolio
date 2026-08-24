@@ -1,5 +1,6 @@
 <script lang="ts">
   import ThemeToggle from './ThemeToggle.svelte';
+  import DownloadButton from './DownloadButton.svelte';
   import { NAV } from '../lib/portfolio';
   import { DOMAIN } from '../lib/config';
   import type { View } from '../lib/portfolio';
@@ -14,7 +15,7 @@
   // points at the home section the user has navigated to.
   function isCurrent(href: string): boolean {
     const target = href.replace('#/', '');
-    if (target === 'resume' || target === 'terminal') return view === target;
+    if (target === 'terminal') return view === target;
     return view === 'home' && section === target;
   }
 
@@ -61,6 +62,7 @@
   </nav>
 
   <div class="tools">
+    <DownloadButton />
     <ThemeToggle {theme} />
     <button
       type="button"

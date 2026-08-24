@@ -10,17 +10,16 @@
 // the real CLI over the canonical document and fails if any URL or resource
 // name referenced below stops resolving — that is the intended guard rail.
 
-export type View = 'home' | 'resume' | 'terminal';
+export type View = 'home' | 'terminal';
 
 /** Home-page section ids that double as routes (`#/work` → home + scroll). */
-export const HOME_SECTIONS = ['work', 'experience', 'about'] as const;
+export const HOME_SECTIONS = ['work', 'experience', 'education', 'about'] as const;
 
 export type Location = { view: View; section: string | null };
 
 /** Parses `window.location.hash` into a view + optional home section. */
 export function parseHash(hash: string): Location {
   const path = hash.replace(/^#\/?/, '').replace(/\/+$/, '').toLowerCase();
-  if (path === 'resume') return { view: 'resume', section: null };
   if (path === 'terminal') return { view: 'terminal', section: null };
   if ((HOME_SECTIONS as readonly string[]).includes(path)) {
     return { view: 'home', section: path };
@@ -31,8 +30,8 @@ export function parseHash(hash: string): Location {
 export const NAV: { href: string; label: string }[] = [
   { href: '#/work', label: 'Work' },
   { href: '#/experience', label: 'Experience' },
+  { href: '#/education', label: 'Education' },
   { href: '#/about', label: 'About' },
-  { href: '#/resume', label: 'Résumé' },
   { href: '#/terminal', label: 'Terminal' },
 ];
 

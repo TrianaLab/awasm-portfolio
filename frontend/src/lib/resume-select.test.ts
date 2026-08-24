@@ -38,18 +38,18 @@ describe('parseHash', () => {
   it.each([
     ['', 'home', null],
     ['#/', 'home', null],
-    ['#/resume', 'resume', null],
     ['#/terminal', 'terminal', null],
     ['#/work', 'home', 'work'],
     ['#/experience', 'home', 'experience'],
     ['#/about', 'home', 'about'],
+    ['#/education', 'home', 'education'],
     ['#/nonsense', 'home', null],
   ])('maps %s to %s/%s', (hash, view, section) => {
     expect(parseHash(hash)).toEqual({ view, section });
   });
 
   it('ignores case and a trailing slash', () => {
-    expect(parseHash('#/Resume/')).toEqual({ view: 'resume', section: null });
+    expect(parseHash('#/Education/')).toEqual({ view: 'home', section: 'education' });
   });
 });
 
