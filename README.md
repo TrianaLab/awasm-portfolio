@@ -39,7 +39,7 @@ flowchart LR
 ```
 
 - **Go side** (`cmd/`, `internal/`): the kubectl-style command surface, in-memory repository, output formatters. Compiled to WebAssembly.
-- **Frontend** (`frontend/`): Svelte 5 + Vite + TypeScript SPA. Three hash routes — the portfolio (`#/`, with `#/work`, `#/experience` and `#/about` as in-page anchors), the resume (`#/resume`) and the terminal (`#/terminal`, lazy-loaded) — all fed by the same document through a typed Worker bridge.
+- **Frontend** (`frontend/`): Svelte 5 + Vite + TypeScript SPA. Two hash routes — the portfolio (`#/`, with `#/work`, `#/experience`, `#/education` and `#/about` as in-page anchors) and the terminal (`#/terminal`, lazy-loaded) — both fed by the same document through a typed Worker bridge.
 - **Presentation vs. facts**: [`frontend/src/lib/portfolio.ts`](frontend/src/lib/portfolio.ts) holds navigation, featured-project selection and editorial copy; it references resume entries by their canonical `url` and never copies a fact. [`frontend/src/lib/resume-select.ts`](frontend/src/lib/resume-select.ts) combines the two into the view models the components render.
 - **PDF**: when the user clicks the download button, `frontend/src/lib/pdf.ts` maps the same JSON Resume to a pdfmake document and triggers the download. Text in the PDF is vector (selectable / searchable / ATS-parseable).
 

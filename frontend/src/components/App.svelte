@@ -3,7 +3,6 @@
   import SiteHeader from './SiteHeader.svelte';
   import SiteFooter from './SiteFooter.svelte';
   import HomeView from './HomeView.svelte';
-  import ResumeView from './ResumeView.svelte';
   import { createTheme } from '../lib/theme.svelte';
   import { fetchResume } from '../lib/wasm';
   import { PAGE_TITLE } from '../lib/config';
@@ -141,11 +140,7 @@
         Could not load the résumé data: {error}
       </p>
     {:else if resume}
-      {#if loc.view === 'home'}
-        <HomeView {resume} />
-      {:else}
-        <ResumeView {resume} />
-      {/if}
+      <HomeView {resume} />
     {/if}
   {/if}
 

@@ -1,11 +1,13 @@
 <script lang="ts">
   import DownloadButton from './DownloadButton.svelte';
   import ExternalLink from './ExternalLink.svelte';
+  import TimelineEntry from './TimelineEntry.svelte';
   import type { Resume } from '../lib/schema';
   import { CTA, FEATURED, PRINCIPLES } from '../lib/portfolio';
   import {
     experienceGroups,
     featuredProject,
+    formatMonthYear,
     formatYear,
     headlineTitle,
     selectedSystems,
@@ -22,9 +24,17 @@
   const upstream = $derived(upstreamContributions(resume));
   const groups = $derived(experienceGroups(resume));
 
+  /** Company header: years are enough for the outer span. */
   function span(start?: string, end?: string): string {
     const from = formatYear(start);
     const to = end ? formatYear(end) : 'Present';
+    return from ? `${from} – ${to}` : to;
+  }
+
+  /** Individual roles: months, so two promotions in one year stay distinct. */
+  function roleSpan(start?: string, end?: string): string {
+    const from = formatMonthYear(start);
+    const to = end ? formatMonthYear(end) : 'Present';
     return from ? `${from} – ${to}` : to;
   }
 </script>
@@ -154,11 +164,9 @@
             <li class="role">
               <div class="role-head">
                 <h4>{r.position}</h4>
-                <span class="role-span mono">{span(r.startDate, r.endDate)}</span>
+                <span class="role-span mono">{roleSpan(r.startDate, r.endDate)}</span>
               </div>
-              <!-- Only the most recent role in each company block carries its
-                   summary; the full history stays on the résumé page. -->
-              {#if ri === 0 && r.summary}
+              {#if r.summary}
                 <p class="role-summary">{r.summary}</p>
               {/if}
             </li>
@@ -168,9 +176,39 @@
     {/each}
   </ol>
   <p class="band-foot">
-    <a class="btn" href="#/resume">Read the full résumé</a>
+    <DownloadButton label={CTA.resume.label} />
   </p>
 </section>
+
+<!-- Education --------------------------------------------------------- -->
+{#if (resume.education ?? []).length > 0 || (resume.certificates ?? []).length > 0}
+  <section id="education" class="band" tabindex="-1" aria-labelledby="education-h">
+    <h2 id="education-h" class="section-h">Education</h2>
+    <div class="entries">
+      {#each resume.education ?? [] as e, i (i)}
+        <TimelineEntry
+          title={e.studyType ? `${e.studyType} · ${e.area ?? ''}` : e.area}
+          subtitle={e.institution}
+          startDate={e.startDate}
+          endDate={e.endDate}
+          url={e.url}
+          summary={e.score}
+          highlights={e.courses}
+          highlightsLabel="Coursework"
+        />
+      {/each}
+    </div>
+
+    {#if (resume.certificates ?? []).length > 0}
+      <h3 class="sub-h">Certifications</h3>
+      <div class="entries">
+        {#each resume.certificates ?? [] as c, i (i)}
+          <TimelineEntry title={c.name} subtitle={c.issuer} startDate={c.date} url={c.url} point />
+        {/each}
+      </div>
+    {/if}
+  </section>
+{/if}
 
 <!-- About ------------------------------------------------------------- -->
 <section id="about" class="band" tabindex="-1" aria-labelledby="about-h">
@@ -195,10 +233,38 @@
       {/each}
     </dl>
   {/if}
+
+  {#if (resume.languages ?? []).length > 0}
+    <h3 class="sub-h">Languages</h3>
+    <dl class="skills">
+      {#each resume.languages ?? [] as lang (lang.language)}
+        <div>
+          <dt>{lang.language}</dt>
+          <dd>{lang.fluency ?? ''}</dd>
+        </div>
+      {/each}
+    </dl>
+  {/if}
+
+  {#if (resume.interests ?? []).length > 0}
+    <h3 class="sub-h">Outside work</h3>
+    <dl class="skills">
+      {#each resume.interests ?? [] as interest (interest.name)}
+        <div>
+          <dt>{interest.name}</dt>
+          <dd>{(interest.keywords ?? []).join(' · ')}</dd>
+        </div>
+      {/each}
+    </dl>
+  {/if}
 </section>
 
 <style>
   .hero {
+    /* width:100% is load-bearing: <main> is a column flex container, and a
+       cross-axis `margin: auto` cancels the default stretch, leaving each
+       band shrink-wrapped to its own content instead of the page width. */
+    width: 100%;
     max-width: var(--page-max);
     margin: 0 auto;
     padding: clamp(2.5rem, 8vw, 5rem) var(--page-pad) clamp(2rem, 5vw, 3.5rem);
@@ -240,6 +306,7 @@
   }
 
   .band {
+    width: 100%;
     max-width: var(--page-max);
     margin: 0 auto;
     padding: clamp(2rem, 5vw, 3.5rem) var(--page-pad);
@@ -267,6 +334,11 @@
   }
   .band-foot {
     margin: 2rem 0 0;
+  }
+  .entries {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
   }
 
   /* Featured project ------------------------------------------------- */

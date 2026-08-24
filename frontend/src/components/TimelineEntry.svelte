@@ -1,5 +1,6 @@
 <script lang="ts">
   import ExternalLink from './ExternalLink.svelte';
+  import { formatMonthYear } from '../lib/resume-select';
 
   let {
     title,
@@ -27,21 +28,14 @@
   } = $props();
 
   const dateRange = $derived(
-    point ? formatDate(startDate ?? endDate) : formatRange(startDate, endDate),
+    point ? formatMonthYear(startDate ?? endDate) : formatRange(startDate, endDate),
   );
 
   function formatRange(start?: string, end?: string): string {
     if (!start && !end) return '';
-    const left = formatDate(start);
-    const right = end ? formatDate(end) : 'Present';
+    const left = formatMonthYear(start);
+    const right = end ? formatMonthYear(end) : 'Present';
     return `${left} → ${right}`;
-  }
-
-  function formatDate(d?: string): string {
-    if (!d) return '';
-    const parsed = new Date(d);
-    if (Number.isNaN(parsed.getTime())) return d;
-    return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
   }
 </script>
 
