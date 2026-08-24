@@ -120,12 +120,21 @@ func buildWork(mk func(kind, name string) models.Meta) []types.Work {
 			Summary:   "Platform engineering at Emergence AI, on a wider scope than when I joined. Internal work and still in progress, so there is little I can show publicly.",
 		},
 		{
+			Meta:      mk("work", "work-staffeng-emergenceai"),
+			Company:   "Emergence AI",
+			Position:  "Staff Platform Engineer",
+			URL:       "https://emergence.ai",
+			StartDate: "2026-01-01",
+			EndDate:   "2026-07-01",
+			Summary:   "Platform engineering at Emergence AI, owning a broader slice of the internal platform than in the previous role. Internal work, so there is little I can show publicly.",
+		},
+		{
 			Meta:      mk("work", "work-mlops-emergenceai"),
 			Company:   "Emergence AI",
 			Position:  "Platform Engineer",
 			URL:       "https://emergence.ai",
 			StartDate: "2024-07-29",
-			EndDate:   "2026-07-01",
+			EndDate:   "2026-01-01",
 			Summary:   "Platform and infrastructure engineering on the systems Emergence AI runs internally. Nothing public to link here.",
 		},
 		{
@@ -204,8 +213,8 @@ func buildEducation(mk func(kind, name string) models.Meta) []types.Education {
 			URL:         "https://etsi.us.es/en/studies-and-qualifications/degrees/degree-in-telecommunications-technology-engineering",
 			Area:        "Telecommunications",
 			StudyType:   "B.Eng",
-			StartDate:   "2021-09-01",
-			EndDate:     "2022-06-01",
+			StartDate:   "2016-09-01",
+			EndDate:     "2021-06-01",
 			Courses: []string{
 				"Physics", "Mathematics", "Statistics", "Theory of Circuits",
 				"Electronics", "Operating Systems", "Telecommunication Network Management",
@@ -307,6 +316,14 @@ func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 			URL:          "https://github.com/argoproj/argo-cd/commits/master/?author=edu-diaz",
 			StartDate:    "2026-07-20",
 			Summary:      "Clarified a misleading git authentication failure in Argo CD, the CNCF GitOps continuous-delivery tool for Kubernetes. The repo-server now surfaces a real authentication error instead of Git's cryptic \"terminal prompts disabled\" message.",
+		},
+		{
+			Meta:         mk("volunteer", "volunteer-helm-docs"),
+			Organization: "Helm",
+			Position:     "Open-source contributor",
+			URL:          "https://github.com/helm/helm-www/commits/main/?author=edu-diaz",
+			StartDate:    "2026-05-25",
+			Summary:      "Pointed the YAML Anchors appendix of the Helm Chart Template Guide at library charts, the Helm-native mechanism for reuse across charts, so readers hitting the documented round-trip pitfall get an alternative instead of a dead end. Applied to both the v3 and v4 docs.",
 		},
 	}
 }
