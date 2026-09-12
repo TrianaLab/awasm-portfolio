@@ -41,30 +41,55 @@ export const CTA = {
   resume: { label: 'Download résumé' },
 } as const;
 
-/**
- * The one project the home page is built around. Referenced by the canonical
- * URL of its JSON Resume entry; the copy below is editorial framing, not a
- * restatement of the entry's own description.
- */
-export const FEATURED = {
-  url: 'https://github.com/TrianaLab/pacto',
+export type FeaturedConfig = {
+  url: string;
   // Presentation, not résumé data: JSON Resume has one `url` per entry and
   // that one is the repository. The project site belongs here instead of as a
   // proprietary field in the canonical document.
-  website: 'https://pacto.run',
-  eyebrow: 'Featured work',
-  thesis:
-    'Pacto is to agents what Internal Developer Platforms are to humans. That is the direction, and a good part of it is still an open draft.',
-  problem:
-    'What a service needs to run, and what it promises back, is rarely written down anywhere a machine can read it. It lives in Helm values and in whoever was on call last quarter, and it goes stale as soon as the code or the cluster moves. Ask what a change will break and someone has to go and find out.',
-  approach:
-    'Write the contract once and push it to the same OCI registry as the image. The operator checks running workloads against it and reports what has drifted. I have a draft PR open that would take this a layer up, into a graph over services, contract revisions and deployed targets, so you can ask what a change reaches before it ships. That part is not merged yet.',
-} as const;
+  website: string;
+  websiteLabel: string;
+  eyebrow: string;
+  thesis: string;
+  problem: string;
+  approach: string;
+};
+
+/**
+ * The projects the home page is built around, in display order. Each is
+ * referenced by the canonical URL of its JSON Resume entry; the copy below is
+ * editorial framing, not a restatement of the entry's own description.
+ */
+export const FEATURED: FeaturedConfig[] = [
+  {
+    url: 'https://github.com/TrianaLab/mira',
+    website: 'https://miradb.dev',
+    websiteLabel: 'Visit the Mira website',
+    eyebrow: 'Latest work',
+    thesis:
+      'Short term memory for autonomous systems. When an agent is handed a live incident, the telemetry should be something it can read and reason over directly, not a dashboard built for a human to squint at.',
+    problem:
+      'Every telemetry backend I have run converts OTLP into something else on the way in: rows in a column store, Parquet files, a time series index. Each conversion is a place fidelity can go missing, and most of them want a cluster and a database alongside before you get to ask the first question.',
+    approach:
+      'Keep the OpenTelemetry model as the on-disk layout, so there is nothing to convert. Blocks are Arrow IPC, aligned so a query reads the buffers straight out of the page cache, and the block directory is the only state there is, which is what removes the coordination layer. One binary then serves a query API, an MCP endpoint, a browser UI and a terminal UI off that same read path.',
+  },
+  {
+    url: 'https://github.com/TrianaLab/pacto',
+    website: 'https://pacto.run',
+    websiteLabel: 'Visit the Pacto website',
+    eyebrow: 'Featured work',
+    thesis:
+      'Pacto is to agents what Internal Developer Platforms are to humans. That is the direction, and a good part of it is still an open draft.',
+    problem:
+      'What a service needs to run, and what it promises back, is rarely written down anywhere a machine can read it. It lives in Helm values and in whoever was on call last quarter, and it goes stale as soon as the code or the cluster moves. Ask what a change will break and someone has to go and find out.',
+    approach:
+      'Write the contract once and push it to the same OCI registry as the image. The operator checks running workloads against it and reports what has drifted. I have a draft PR open that would take this a layer up, into a graph over services, contract revisions and deployed targets, so you can ask what a change reaches before it ships. That part is not merged yet.',
+  },
+];
 
 /**
  * Projects surfaced as "Selected systems", in display order. Every entry is a
- * canonical `volunteer[].url` from the résumé document. FEATURED.url is shown
- * separately above this list and is deliberately excluded here.
+ * canonical `volunteer[].url` from the résumé document. The FEATURED urls are
+ * shown separately above this list and are deliberately excluded here.
  */
 export const SELECTED_SYSTEM_URLS = [
   'https://edudiaz.dev',

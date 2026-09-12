@@ -3,10 +3,10 @@
   import ExternalLink from './ExternalLink.svelte';
   import TimelineEntry from './TimelineEntry.svelte';
   import type { Resume } from '../lib/schema';
-  import { CTA, FEATURED, PRINCIPLES } from '../lib/portfolio';
+  import { CTA, PRINCIPLES } from '../lib/portfolio';
   import {
     experienceGroups,
-    featuredProject,
+    featuredProjects,
     formatMonthYear,
     formatYear,
     headlineTitle,
@@ -19,7 +19,7 @@
 
   const basics = $derived(resume.basics ?? {});
   const title = $derived(headlineTitle(resume));
-  const featured = $derived(featuredProject(resume));
+  const featured = $derived(featuredProjects(resume));
   const systems = $derived(selectedSystems(resume));
   const upstream = $derived(upstreamContributions(resume));
   const groups = $derived(experienceGroups(resume));
@@ -66,47 +66,48 @@
 <section id="work" class="band" tabindex="-1" aria-labelledby="work-h">
   <h2 id="work-h" class="section-h">Work</h2>
 
-  {#if featured}
-    <article class="featured" aria-labelledby="featured-h">
-      <p class="kicker mono">{FEATURED.eyebrow}</p>
-      <h3 id="featured-h">{shortOrgName(featured.organization)}</h3>
-      <p class="thesis">{FEATURED.thesis}</p>
+  {#each featured as { config, entry } (config.url)}
+    {@const name = shortOrgName(entry.organization)}
+    <article class="featured" aria-labelledby="featured-h-{name}">
+      <p class="kicker mono">{config.eyebrow}</p>
+      <h3 id="featured-h-{name}">{name}</h3>
+      <p class="thesis">{config.thesis}</p>
 
       <div class="featured-grid">
         <div>
           <h4>The problem</h4>
-          <p>{FEATURED.problem}</p>
+          <p>{config.problem}</p>
         </div>
         <div>
           <h4>The approach</h4>
-          <p>{FEATURED.approach}</p>
+          <p>{config.approach}</p>
         </div>
         <div class="featured-system">
           <h4>The system</h4>
-          <p>{featured.summary}</p>
+          <p>{entry.summary}</p>
         </div>
       </div>
 
       <dl class="facts">
-        {#if featured.position}
-          <div><dt>Role</dt><dd>{featured.position}</dd></div>
+        {#if entry.position}
+          <div><dt>Role</dt><dd>{entry.position}</dd></div>
         {/if}
-        <div><dt>Since</dt><dd class="mono">{formatYear(featured.startDate)}</dd></div>
+        <div><dt>Since</dt><dd class="mono">{formatYear(entry.startDate)}</dd></div>
         <div><dt>Licence</dt><dd>Open source</dd></div>
       </dl>
 
       <p class="featured-links tap-links">
-        <ExternalLink href={FEATURED.website} context="{shortOrgName(featured.organization)} project website">
-          Visit the Pacto website
+        <ExternalLink href={config.website} context="{name} project website">
+          {config.websiteLabel}
         </ExternalLink>
-        {#if featured.url}
-          <ExternalLink href={featured.url} context="{shortOrgName(featured.organization)} on GitHub">
+        {#if entry.url}
+          <ExternalLink href={entry.url} context="{name} on GitHub">
             View the GitHub repository
           </ExternalLink>
         {/if}
       </p>
     </article>
-  {/if}
+  {/each}
 
   <h3 class="sub-h">Selected systems</h3>
   <ul class="cards tap-links">
@@ -348,6 +349,9 @@
     border-left: 3px solid var(--color-accent);
     border-radius: var(--radius-md);
     background: var(--color-bg-elevated);
+  }
+  .featured + .featured {
+    margin-top: 1rem;
   }
   .featured h3 {
     margin: 0;

@@ -4,6 +4,7 @@
 
 import type { Resume, Volunteer, Work } from './schema';
 import { FEATURED, SELECTED_SYSTEM_URLS, SEO } from './portfolio';
+import type { FeaturedConfig } from './portfolio';
 
 /** Looks an entry up by its canonical URL — the stable key across the doc. */
 export function byUrl<T extends { url?: string }>(items: T[] | undefined, url: string): T | undefined {
@@ -32,8 +33,13 @@ export function pageTitle(resume: Resume | null, fallback: string): string {
   return SEO.titleTemplate.replace('{name}', name).replace('{role}', role);
 }
 
-export function featuredProject(resume: Resume | null): Volunteer | undefined {
-  return byUrl(resume?.volunteer, FEATURED.url);
+export type FeaturedProject = { config: FeaturedConfig; entry: Volunteer };
+
+/** Featured projects, in the order configured, minus any that no longer exist. */
+export function featuredProjects(resume: Resume | null): FeaturedProject[] {
+  return FEATURED.map((config) => ({ config, entry: byUrl(resume?.volunteer, config.url) })).filter(
+    (p): p is FeaturedProject => p.entry !== undefined,
+  );
 }
 
 /** Selected systems, in the order configured, minus any that no longer exist. */
@@ -45,7 +51,7 @@ export function selectedSystems(resume: Resume | null): Volunteer[] {
 
 /** Everything else in `volunteer` — the compact upstream-contributions list. */
 export function upstreamContributions(resume: Resume | null): Volunteer[] {
-  const featuredUrls = new Set<string>([FEATURED.url, ...SELECTED_SYSTEM_URLS]);
+  const featuredUrls = new Set<string>([...FEATURED.map((f) => f.url), ...SELECTED_SYSTEM_URLS]);
   return (resume?.volunteer ?? []).filter((v) => !v.url || !featuredUrls.has(v.url));
 }
 
