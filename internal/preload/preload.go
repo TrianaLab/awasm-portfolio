@@ -95,7 +95,7 @@ func buildBasics(mk func(kind, name string) models.Meta) *types.Basics {
 		Email:    "edudiazasencio@gmail.com",
 		Url:      "https://edudiaz.dev",
 		Phone:    "+34 622287557",
-		Summary:  "The work of mine you can actually read is open source. Most of it sits under TrianaLab: Pacto, an OCI-distributed contract system for cloud-native services, plus awasm-portfolio, the site serving this resume, and remake, a small CLI that ships Makefiles as OCI artifacts. My day job is platform engineering at Emergence AI. The rest goes upstream, in docs and fixes for KEDA, Artifact Hub, container2wasm, CloudTTY, Argo CD, Docker and Spin.",
+		Summary:  "The work of mine you can actually read is open source. Most of it sits under TrianaLab: Pacto, an OCI-distributed contract system for cloud-native services, Mira, an OTLP-native telemetry storage engine an agent can query over MCP, plus awasm-portfolio, the site serving this resume, and remake, a small CLI that ships Makefiles as OCI artifacts. My day job is platform engineering at Emergence AI. The rest goes upstream, in docs and fixes for KEDA, Artifact Hub, container2wasm, CloudTTY, Argo CD, Docker and Spin.",
 		Location: types.Location{
 			PostalCode:  "41010",
 			City:        "Sevilla",
@@ -230,6 +230,14 @@ func buildEducation(mk func(kind, name string) models.Meta) []types.Education {
 func buildVolunteer(mk func(kind, name string) models.Meta) []types.Volunteer {
 	return []types.Volunteer{
 		{
+			Meta:         mk("volunteer", "volunteer-trianalab-mira"),
+			Organization: "TrianaLab: mira",
+			Position:     "Author and maintainer",
+			URL:          "https://github.com/TrianaLab/mira",
+			StartDate:    "2026-09-08",
+			Summary:      "An OTLP-native telemetry storage engine in a single Rust binary. Logs, traces and metrics land as Arrow IPC blocks that keep the OpenTelemetry resource, scope and signal model as their on-disk layout, so a read maps the block and skips the translation step other backends pay on the way in. A query API, an MCP endpoint, a browser UI and a terminal UI run off that one read path, with no cluster, no sidecar and no database beside it.",
+		},
+		{
 			Meta:         mk("volunteer", "volunteer-trianalab-pacto"),
 			Organization: "TrianaLab: pacto",
 			Position:     "Author and maintainer",
@@ -360,7 +368,7 @@ func buildSkills(mk func(kind, name string) models.Meta) []types.Skill {
 			Meta:     mk("skill", "skill-programming-languages"),
 			Skill:    "Programming Languages",
 			Level:    "Advanced",
-			Keywords: []string{"Go", "Python", "Java", "C", "Bash", "WebAssembly (Wasm)"},
+			Keywords: []string{"Go", "Rust", "Python", "Java", "C", "Bash", "WebAssembly (Wasm)"},
 		},
 		{
 			Meta:     mk("skill", "skill-kubernetes-cloud-native"),

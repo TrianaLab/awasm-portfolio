@@ -13,7 +13,7 @@ import { RESUME_QUERY } from './wasm';
 import { buildResumeDocDef } from './pdf';
 import {
   experienceGroups,
-  featuredProject,
+  featuredProjects,
   headlineTitle,
   selectedSystems,
 } from './resume-select';
@@ -77,7 +77,7 @@ describe('canonical JSON Resume document', () => {
   });
 
   it('resolves every résumé reference held by the presentation config', () => {
-    expect(featuredProject(doc), `featured project ${FEATURED.url} is missing`).toBeDefined();
+    expect(featuredProjects(doc).map((p) => p.config.url)).toEqual(FEATURED.map((f) => f.url));
     expect(selectedSystems(doc)).toHaveLength(SELECTED_SYSTEM_URLS.length);
   });
 
@@ -92,6 +92,8 @@ describe('canonical JSON Resume document', () => {
     // The hero headline reads basics.label, so the document must carry one.
     expect(headlineTitle(doc)).toBeTruthy();
     expect(experienceGroups(doc).length).toBeGreaterThan(0);
-    expect(featuredProject(doc)?.summary).toBeTruthy();
+    for (const { config, entry } of featuredProjects(doc)) {
+      expect(entry.summary, `${config.url} has no summary`).toBeTruthy();
+    }
   });
 });

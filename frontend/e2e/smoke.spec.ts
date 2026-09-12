@@ -60,19 +60,27 @@ test.describe('portfolio', () => {
   // canonical résumé document are checked against it.
   // The repo URL is résumé data; the project site is presentation config. A
   // visitor who wants to try the thing should not have to read Go to find it.
-  test('featured project links to both the project site and the repository', async ({ page }) => {
-    await page.goto('/');
-    const featured = page.locator('.featured');
-    await expect(featured).toBeVisible({ timeout: 10_000 });
+  test('featured projects link to both the project site and the repository', async ({ page }) => {
+    const cards = [
+      { name: 'mira', site: 'https://miradb.dev', repo: 'https://github.com/TrianaLab/mira' },
+      { name: 'pacto', site: 'https://pacto.run', repo: 'https://github.com/TrianaLab/pacto' },
+    ];
 
-    await expect(featured.getByRole('link', { name: /Visit the Pacto website/ })).toHaveAttribute(
-      'href',
-      'https://pacto.run',
-    );
-    await expect(featured.getByRole('link', { name: /View the GitHub repository/ })).toHaveAttribute(
-      'href',
-      'https://github.com/TrianaLab/pacto',
-    );
+    await page.goto('/');
+    await expect(page.locator('.featured')).toHaveCount(cards.length, { timeout: 10_000 });
+
+    for (const { name, site, repo } of cards) {
+      const card = page
+        .locator('.featured')
+        .filter({ has: page.getByRole('heading', { name, exact: true }) });
+      await expect(
+        card.getByRole('link', { name: new RegExp(`Visit the ${name} website`, 'i') }),
+      ).toHaveAttribute('href', site);
+      await expect(card.getByRole('link', { name: /View the GitHub repository/ })).toHaveAttribute(
+        'href',
+        repo,
+      );
+    }
   });
 
   test('rendered copy carries no em dashes', async ({ page }) => {
